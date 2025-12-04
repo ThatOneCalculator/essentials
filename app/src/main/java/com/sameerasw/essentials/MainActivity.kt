@@ -6,6 +6,7 @@ import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,6 +16,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -24,9 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -37,12 +37,18 @@ import com.sameerasw.essentials.ui.theme.EssentialsTheme
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 class MainActivity : ComponentActivity() {
+    val viewModel: MainViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        viewModel.check(this)
         setContent {
             EssentialsTheme {
                 val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
@@ -84,46 +90,42 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    override fun onResume() {
+        super.onResume()
+        viewModel.check(this)
+    }
 }
 
 @Composable
 fun ScreenOffWidgetSetup(modifier: Modifier = Modifier) {
+    val viewModel: MainViewModel = viewModel()
+    val isAccessibilityEnabled by viewModel.isAccessibilityEnabled
     val context = LocalContext.current
-    var isAccessibilityEnabled by remember { mutableStateOf(isAccessibilityServiceEnabled(context)) }
 
     Column(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.Start
     ) {
-        if (isAccessibilityEnabled) {
-            Text(text = "Accessibility permission granted. You can now add the Screen Off widget to your home screen.")
-        } else {
-            Text(text = "To use the Screen Off widget, enable accessibility permission for this app.")
-            Button(onClick = {
-                val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-                context.startActivity(intent)
-            }) {
-                Text("Go to Accessibility Settings")
-            }
-            Button(onClick = {
-                isAccessibilityEnabled = isAccessibilityServiceEnabled(context)
-            }) {
-                Text("Check Status")
+        Card(modifier = Modifier.padding(16.dp)) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                if (isAccessibilityEnabled) {
+                    Text("Accessibility permission granted. You can now add the Screen Off widget to your home screen.")
+                } else {
+                    Text("To use the Screen Off widget, enable accessibility permission for this app.")
+                    Button(onClick = {
+                        val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+                        context.startActivity(intent)
+                    }) {
+                        Text("Go to Accessibility Settings")
+                    }
+                }
             }
         }
     }
-}
-
-private fun isAccessibilityServiceEnabled(context: android.content.Context): Boolean {
-    val enabledServices = Settings.Secure.getString(
-        context.contentResolver,
-        Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
-    )
-    val serviceName = "${context.packageName}/${ScreenOffAccessibilityService::class.java.name}"
-    return enabledServices?.contains(serviceName) == true
 }
 
 @Preview(showBackground = true)
