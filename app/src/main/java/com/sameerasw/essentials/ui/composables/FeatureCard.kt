@@ -26,7 +26,8 @@ fun FeatureCard(
     onToggle: (Boolean) -> Unit,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    hasMoreSettings: Boolean = true
+    hasMoreSettings: Boolean = true,
+    isToggleEnabled: Boolean = true
 ) {
     Card(
         colors = CardDefaults.cardColors(
@@ -50,9 +51,11 @@ fun FeatureCard(
                     contentDescription = "More settings"
                 )
             }
+            // If the toggle is disabled, show it visually OFF and prevent toggling
             Switch(
-                checked = isEnabled,
-                onCheckedChange = onToggle
+                checked = if (isToggleEnabled) isEnabled else false,
+                onCheckedChange = { checked -> if (isToggleEnabled) onToggle(checked) },
+                enabled = isToggleEnabled
             )
         }
     }

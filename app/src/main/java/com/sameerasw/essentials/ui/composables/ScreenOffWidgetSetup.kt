@@ -63,7 +63,8 @@ fun ScreenOffWidgetSetup(viewModel: MainViewModel, modifier: Modifier = Modifier
                 }
             },
             onClick = { context.startActivity(Intent(context, FeatureSettingsActivity::class.java).apply { putExtra("feature", "Screen off widget") }) },
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(16.dp),
+            isToggleEnabled = isAccessibilityEnabled
         )
     }
 }
