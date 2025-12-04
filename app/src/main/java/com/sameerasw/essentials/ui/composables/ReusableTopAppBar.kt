@@ -1,9 +1,6 @@
 package com.sameerasw.essentials.ui.composables
 
 import androidx.compose.foundation.background
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -14,7 +11,9 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
+import com.sameerasw.essentials.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,7 +41,7 @@ fun ReusableTopAppBar(
             if (hasBack) {
                 IconButton(onClick = { onBackClick?.invoke() }) {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        painter = painterResource(id = R.drawable.rounded_arrow_back_24),
                         contentDescription = "Back"
                     )
                 }
@@ -52,7 +51,7 @@ fun ReusableTopAppBar(
             if (hasSearch) {
                 IconButton(onClick = { onSearchClick?.invoke() }) {
                     Icon(
-                        imageVector = Icons.Filled.Search,
+                        painter = painterResource(id = R.drawable.rounded_search_24),
                         contentDescription = "Search"
                     )
                 }

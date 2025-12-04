@@ -1,6 +1,7 @@
 package com.sameerasw.essentials
 
 import android.os.Bundle
+import android.os.Vibrator
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -17,8 +18,14 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import com.sameerasw.essentials.ui.composables.HapticFeedbackPicker
 import com.sameerasw.essentials.ui.composables.ReusableTopAppBar
+import com.sameerasw.essentials.ui.composables.SettingsCard
 import com.sameerasw.essentials.ui.theme.EssentialsTheme
+import com.sameerasw.essentials.utils.HapticFeedbackType
+import com.sameerasw.essentials.utils.performHapticFeedback
 
 @OptIn(ExperimentalMaterial3Api::class)
 class FeatureSettingsActivity : ComponentActivity() {
@@ -29,6 +36,13 @@ class FeatureSettingsActivity : ComponentActivity() {
         val feature = intent.getStringExtra("feature") ?: "Feature"
         setContent {
             EssentialsTheme {
+                val context = LocalContext.current
+                val vibrator = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                    context.getSystemService(android.os.VibratorManager::class.java)?.defaultVibrator
+                } else {
+                    @Suppress("DEPRECATION")
+                    context.getSystemService(VIBRATOR_SERVICE) as? Vibrator
+                }
                 val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
                 Scaffold(
                     modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -43,14 +57,28 @@ class FeatureSettingsActivity : ComponentActivity() {
                         )
                     }
                 ) { innerPadding ->
-                    // Placeholder content
                     Column(
                         modifier = Modifier
                             .padding(innerPadding)
                             .fillMaxSize()
                             .verticalScroll(rememberScrollState())
                     ) {
-                        Text("Advanced settings for $feature")
+                        Text(
+                            "Advanced settings for $feature",
+                            style = MaterialTheme.typography.headlineSmall,
+                            modifier = Modifier.padding(16.dp)
+                        )
+
+                        SettingsCard(title = "Haptic Feedback") {
+                            HapticFeedbackPicker(
+                                selectedFeedback = HapticFeedbackType.SUBTLE,
+                                onFeedbackSelected = { type ->
+                                    if (vibrator != null) {
+                                        performHapticFeedback(vibrator, type)
+                                    }
+                                }
+                            )
+                        }
                     }
                 }
             }
