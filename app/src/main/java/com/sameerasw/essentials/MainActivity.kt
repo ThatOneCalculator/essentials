@@ -12,7 +12,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.Modifier
 import com.sameerasw.essentials.ui.composables.ReusableTopAppBar
@@ -31,6 +31,7 @@ class MainActivity : ComponentActivity() {
         viewModel.check(this)
         setContent {
             EssentialsTheme {
+                var searchRequested by remember { mutableStateOf(false) }
                 val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
                 Scaffold(
                     modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -41,6 +42,7 @@ class MainActivity : ComponentActivity() {
                             hasBack = false,
                             hasSearch = true,
                             hasSettings = true,
+                            onSearchClick = { searchRequested = true },
                             onSettingsClick = { startActivity(Intent(this, SettingsActivity::class.java)) },
                             scrollBehavior = scrollBehavior
                         )
@@ -48,7 +50,9 @@ class MainActivity : ComponentActivity() {
                 ) { innerPadding ->
                     ScreenOffWidgetSetup(
                         viewModel = viewModel,
-                        modifier = Modifier.padding(innerPadding)
+                        modifier = Modifier.padding(innerPadding),
+                        searchRequested = searchRequested,
+                        onSearchHandled = { searchRequested = false }
                     )
                 }
             }

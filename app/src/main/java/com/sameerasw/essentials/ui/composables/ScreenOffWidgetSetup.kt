@@ -6,39 +6,63 @@ import android.content.ComponentName
 import android.content.Intent
 import android.provider.Settings
 import android.widget.RemoteViews
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.gestures.animateScrollBy
+import androidx.compose.foundation.rememberScrollState
 import com.sameerasw.essentials.FeatureSettingsActivity
 import com.sameerasw.essentials.MainViewModel
 import com.sameerasw.essentials.R
 import com.sameerasw.essentials.PermissionRegistry
 import com.sameerasw.essentials.ui.theme.EssentialsTheme
+import kotlinx.coroutines.delay
 
 // Preview helper view model instance (avoid constructing a ViewModel inside a composable)
 private val previewMainViewModel = MainViewModel()
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ScreenOffWidgetSetup(viewModel: MainViewModel, modifier: Modifier = Modifier) {
+fun ScreenOffWidgetSetup(
+    viewModel: MainViewModel,
+    modifier: Modifier = Modifier,
+    searchRequested: Boolean = false,
+    onSearchHandled: () -> Unit = {}
+) {
     val isAccessibilityEnabled by viewModel.isAccessibilityEnabled
     val isWidgetEnabled by viewModel.isWidgetEnabled
     val context = LocalContext.current
 
-    var showSheet by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+    var showSheet by remember { mutableStateOf(false) }
 
     // If the sheet is open and the required permission(s) are now granted, close the sheet automatically.
     LaunchedEffect(showSheet, isAccessibilityEnabled) {
@@ -90,13 +114,49 @@ fun ScreenOffWidgetSetup(viewModel: MainViewModel, modifier: Modifier = Modifier
         )
     }
 
+    // UI: add a full-width search bar at the top, then push the FeatureCard below it
+    val scrollState = rememberScrollState()
+    var query by remember { mutableStateOf("") }
+    val focusRequester = remember { FocusRequester() }
+    val focusManager = LocalFocusManager.current
+    var isFocused by remember { mutableStateOf(false) }
+
+    // When searchRequested becomes true, scroll to top and focus the search field
+    LaunchedEffect(searchRequested) {
+        if (searchRequested) {
+            // Scroll to top and focus the field
+            scrollState.animateScrollTo(0)
+            // wait a bit for the scroll to happen and layout to settle
+            delay(100)
+            focusRequester.requestFocus()
+            onSearchHandled()
+        }
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState()),
+            .verticalScroll(scrollState)
+            .pointerInput(Unit) {
+                detectTapGestures(onTap = { focusManager.clearFocus() })
+            },
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.Start
     ) {
+        OutlinedTextField(
+            value = query,
+            onValueChange = { query = it },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+                .focusRequester(focusRequester)
+                .onFocusChanged { isFocused = it.isFocused },
+            // show placeholder only when not focused and empty
+            placeholder = { if (!isFocused && query.isEmpty()) Text("Search for tools, mods and tweaks") },
+            shape = RoundedCornerShape(64.dp),
+            singleLine = true
+        )
+
         FeatureCard(
             title = "Screen off widget",
             isEnabled = isWidgetEnabled,

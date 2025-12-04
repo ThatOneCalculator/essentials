@@ -1,18 +1,15 @@
 package com.sameerasw.essentials.ui.composables
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
-import androidx.compose.material3.LargeTopAppBar
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -25,15 +22,19 @@ import androidx.compose.ui.unit.dp
 fun ReusableTopAppBar(
     title: String,
     hasBack: Boolean = false,
-    hasSearch: Boolean = true,
+    hasSearch: Boolean = true, // kept for compatibility but intentionally ignored
     hasSettings: Boolean = false,
     onBackClick: (() -> Unit)? = null,
     onSearchClick: (() -> Unit)? = null,
     onSettingsClick: (() -> Unit)? = null,
     scrollBehavior: TopAppBarScrollBehavior? = null
 ) {
+    // Determine collapsed state from scrollBehavior (0 = expanded, 1 = collapsed)
+    val collapsedFraction = scrollBehavior?.state?.collapsedFraction ?: 0f
+    val isCollapsed = collapsedFraction > 0.5f
+
     LargeFlexibleTopAppBar(
-        colors = TopAppBarDefaults.largeTopAppBarColors(
+        colors = TopAppBarDefaults.topAppBarColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainer
         ),
 
@@ -57,18 +58,9 @@ fun ReusableTopAppBar(
             }
         },
         actions = {
-            if (hasSearch) {
-                // Increase hit target and icon size for the search button
-                IconButton(onClick = { onSearchClick?.invoke() }, modifier = Modifier.size(64.dp)) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.rounded_search_24),
-                        contentDescription = "Search",
-                        modifier = Modifier.size(32.dp)
-                    )
-                }
-            }
+            // Intentionally hide the search action permanently (search handled in-screen)
 
-            // Add Settings button to the right of Search when requested
+            // Add Settings button to the right
             if (hasSettings) {
                 IconButton(onClick = { onSettingsClick?.invoke() }, modifier = Modifier.size(64.dp)) {
                     Icon(
