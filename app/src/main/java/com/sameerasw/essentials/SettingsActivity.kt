@@ -119,6 +119,26 @@ fun SettingsContent(viewModel: MainViewModel, modifier: Modifier = Modifier) {
             modifier = Modifier.padding(16.dp)
         )
 
+        PermissionCard(
+            iconRes = R.drawable.rounded_android_cell_dual_4_bar_24,
+            title = "Read Phone State",
+            dependentFeatures = listOf("Smart Data"),
+            actionLabel = "Grant Permission",
+            isGranted = androidx.core.content.ContextCompat.checkSelfPermission(
+                context,
+                android.Manifest.permission.READ_PHONE_STATE
+            ) == android.content.pm.PackageManager.PERMISSION_GRANTED,
+            onActionClick = {
+                // Request permission
+                androidx.core.app.ActivityCompat.requestPermissions(
+                    context as androidx.activity.ComponentActivity,
+                    arrayOf(android.Manifest.permission.READ_PHONE_STATE),
+                    1001
+                )
+            },
+            modifier = Modifier.padding(16.dp)
+        )
+
         AboutSection()
 
     }

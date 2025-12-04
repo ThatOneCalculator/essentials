@@ -41,7 +41,6 @@ import com.sameerasw.essentials.FeatureSettingsActivity
 import com.sameerasw.essentials.MainViewModel
 import com.sameerasw.essentials.R
 import com.sameerasw.essentials.PermissionRegistry
-import com.sameerasw.essentials.StatusBarIconViewModel
 import com.sameerasw.essentials.ui.theme.EssentialsTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.Job
@@ -91,12 +90,21 @@ fun ScreenOffWidgetSetup(
                     if (!isWriteSecureSettingsEnabled) {
                         missing.add(
                             PermissionItem(
-                                iconRes = R.drawable.rounded_chevron_right_24,
+                                iconRes = R.drawable.rounded_security_24,
                                 title = "Write Secure Settings",
                                 description = "Required to change status bar icon visibility",
                                 dependentFeatures = PermissionRegistry.getFeatures("WRITE_SECURE_SETTINGS"),
-                                actionLabel = "Settings",
-                                action = {},
+                                actionLabel = "Copy ADB",
+                                action = {
+                                    val adbCommand = "adb shell pm grant com.sameerasw.essentials android.permission.WRITE_SECURE_SETTINGS"
+                                    val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                    val clip = android.content.ClipData.newPlainText("adb_command", adbCommand)
+                                    clipboard.setPrimaryClip(clip)
+                                },
+                                secondaryActionLabel = "Check",
+                                secondaryAction = {
+                                    viewModel.isWriteSecureSettingsEnabled.value = viewModel.canWriteSecureSettings(context)
+                                },
                                 isGranted = isWriteSecureSettingsEnabled
                             )
                         )
