@@ -263,7 +263,7 @@ fun StatusBarIconSettingsUI(
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.rounded_android_wifi_3_bar_24),
+                        painter = painterResource(id = R.drawable.rounded_cell_wifi_24),
                         contentDescription = "Smart WiFi",
                         modifier = Modifier.size(24.dp),
                         tint = MaterialTheme.colorScheme.primary
