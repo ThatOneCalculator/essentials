@@ -1,17 +1,18 @@
 package com.sameerasw.essentials.ui.composables
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,36 +28,52 @@ fun FeatureCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     hasMoreSettings: Boolean = true,
-    isToggleEnabled: Boolean = true
+    isToggleEnabled: Boolean = true,
+    onDisabledToggleClick: (() -> Unit)? = null
 ) {
     Card(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceBright
         ),
         modifier = modifier.clickable { onClick() }) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)) {
+
+            // Title on the left
             Text(
                 text = title,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.align(Alignment.CenterStart)
             )
-            if (hasMoreSettings) {
-                Icon(
-                    modifier = Modifier.padding(end = 12.dp),
-                    painter = painterResource(id = R.drawable.rounded_chevron_right_24),
-                    contentDescription = "More settings"
-                )
+
+            // Trailing actions: optional icon and switch aligned to the end
+            Row(
+                modifier = Modifier.align(Alignment.CenterEnd),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.End
+            ) {
+                if (hasMoreSettings) {
+                    Icon(
+                        modifier = Modifier.padding(end = 12.dp).size(24.dp),
+                        painter = painterResource(id = R.drawable.rounded_chevron_right_24),
+                        contentDescription = "More settings"
+                    )
+                }
+
+                // Put Switch inside a Box and, when disabled, overlay an invisible clickable
+                Box {
+                    Switch(
+                        checked = if (isToggleEnabled) isEnabled else false,
+                        onCheckedChange = { checked -> if (isToggleEnabled) onToggle(checked) },
+                        enabled = isToggleEnabled
+                    )
+
+                    if (!isToggleEnabled && onDisabledToggleClick != null) {
+                        // Invisible overlay catches taps even if the child consumes them
+                        Box(modifier = Modifier.matchParentSize().clickable { onDisabledToggleClick() })
+                    }
+                }
             }
-            // If the toggle is disabled, show it visually OFF and prevent toggling
-            Switch(
-                checked = if (isToggleEnabled) isEnabled else false,
-                onCheckedChange = { checked -> if (isToggleEnabled) onToggle(checked) },
-                enabled = isToggleEnabled
-            )
         }
     }
 }

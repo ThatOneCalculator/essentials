@@ -12,12 +12,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.Text
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -28,11 +30,65 @@ import com.sameerasw.essentials.MainViewModel
 import com.sameerasw.essentials.R
 import com.sameerasw.essentials.ui.theme.EssentialsTheme
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScreenOffWidgetSetup(viewModel: MainViewModel, modifier: Modifier = Modifier) {
     val isAccessibilityEnabled by viewModel.isAccessibilityEnabled
     val isWidgetEnabled by viewModel.isWidgetEnabled
     val context = LocalContext.current
+
+    var showSheet by remember { mutableStateOf(false) }
+
+    // If the sheet is open and the required permission(s) are now granted, close the sheet automatically.
+    LaunchedEffect(showSheet, isAccessibilityEnabled) {
+        if (showSheet) {
+            val missing = mutableListOf<PermissionItem>()
+            if (!isAccessibilityEnabled) {
+                missing.add(
+                    PermissionItem(
+                        title = "Accessibility",
+                        description = "Required to perform screen off actions via widget",
+                        actionLabel = "Open Accessibility Settings",
+                        action = {
+                            context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+                        }
+                    )
+                )
+            }
+
+            if (missing.isEmpty()) {
+                // All required permissions are now granted -> close the sheet
+                showSheet = false
+            }
+            // else: keep sheet open and it will display the missing items (handled below)
+        }
+    }
+
+    // Build the list of missing permissions to display when the sheet is shown
+    val missingPermissions = remember(isAccessibilityEnabled) {
+        val list = mutableListOf<PermissionItem>()
+        if (!isAccessibilityEnabled) {
+            list.add(
+                PermissionItem(
+                    title = "Accessibility",
+                    description = "Required to perform screen off actions via widget",
+                    actionLabel = "Open Accessibility Settings",
+                    action = {
+                        context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+                    }
+                )
+            )
+        }
+        list
+    }
+
+    if (showSheet) {
+        PermissionsBottomSheet(
+            onDismissRequest = { showSheet = false },
+            featureTitle = "Screen off widget",
+            permissions = missingPermissions
+        )
+    }
 
     Column(
         modifier = modifier
@@ -64,7 +120,11 @@ fun ScreenOffWidgetSetup(viewModel: MainViewModel, modifier: Modifier = Modifier
             },
             onClick = { context.startActivity(Intent(context, FeatureSettingsActivity::class.java).apply { putExtra("feature", "Screen off widget") }) },
             modifier = Modifier.padding(16.dp),
-            isToggleEnabled = isAccessibilityEnabled
+            isToggleEnabled = isAccessibilityEnabled,
+            onDisabledToggleClick = {
+                // Show bottom sheet
+                showSheet = true
+            }
         )
     }
 }
