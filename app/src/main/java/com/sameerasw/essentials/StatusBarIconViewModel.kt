@@ -18,10 +18,16 @@ import kotlinx.coroutines.launch
 class StatusBarIconViewModel : ViewModel() {
     val isWriteSecureSettingsEnabled = mutableStateOf(false)
     val isMobileDataVisible = mutableStateOf(true)
-    val isWiFiVisible = mutableStateOf(false)
+    val isWiFiVisible = mutableStateOf(true)
     val isSmartWiFiEnabled = mutableStateOf(false)
     val isSmartDataEnabled = mutableStateOf(false)
     val selectedNetworkTypes = mutableStateOf(setOf(NetworkType.NETWORK_4G, NetworkType.NETWORK_5G))
+
+    // New icon visibility states
+    val isVpnVisible = mutableStateOf(true)
+    val isAlarmClockVisible = mutableStateOf(true)
+    val isHotspotVisible = mutableStateOf(true)
+    val isBluetoothVisible = mutableStateOf(true)
 
     private var updateJob: Job? = null
     private var smartWifiJob: Job? = null
@@ -30,7 +36,7 @@ class StatusBarIconViewModel : ViewModel() {
 
     companion object {
         const val ICON_BLACKLIST_SETTING = "icon_blacklist"
-        const val BASE_BLACKLIST = "rotate,vowifi,ims,nfc,vpn,volte,alarm_clock,headset,hotspot,bluetooth,ims_volte,vpn"
+        const val BASE_BLACKLIST = "rotate,vowifi,ims,nfc,volte,headset,ims_volte"
         const val PREF_SMART_WIFI_ENABLED = "smart_wifi_enabled"
         const val PREF_SMART_DATA_ENABLED = "smart_data_enabled"
         const val PREF_SELECTED_NETWORK_TYPES = "selected_network_types"
@@ -57,6 +63,7 @@ class StatusBarIconViewModel : ViewModel() {
         context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
             putBoolean("icon_mobile_visible", visible)
         }
+
         updateIconBlacklist(context)
     }
 
@@ -140,6 +147,34 @@ class StatusBarIconViewModel : ViewModel() {
             blacklistItems.remove("wifi")
         }
 
+        // Add or remove vpn from blacklist based on visibility
+        if (!isVpnVisible.value && !blacklistItems.contains("vpn")) {
+            blacklistItems.add("vpn")
+        } else if (isVpnVisible.value) {
+            blacklistItems.remove("vpn")
+        }
+
+        // Add or remove alarm_clock from blacklist based on visibility
+        if (!isAlarmClockVisible.value && !blacklistItems.contains("alarm_clock")) {
+            blacklistItems.add("alarm_clock")
+        } else if (isAlarmClockVisible.value) {
+            blacklistItems.remove("alarm_clock")
+        }
+
+        // Add or remove hotspot from blacklist based on visibility
+        if (!isHotspotVisible.value && !blacklistItems.contains("hotspot")) {
+            blacklistItems.add("hotspot")
+        } else if (isHotspotVisible.value) {
+            blacklistItems.remove("hotspot")
+        }
+
+        // Add or remove bluetooth from blacklist based on visibility
+        if (!isBluetoothVisible.value && !blacklistItems.contains("bluetooth")) {
+            blacklistItems.add("bluetooth")
+        } else if (isBluetoothVisible.value) {
+            blacklistItems.remove("bluetooth")
+        }
+
         val newBlacklist = blacklistItems.joinToString(",")
 
         try {
@@ -187,6 +222,31 @@ class StatusBarIconViewModel : ViewModel() {
             }
         }
 
+        // Handle other icon visibility (VPN, Alarm Clock, Hotspot, Bluetooth)
+        if (!isVpnVisible.value && !blacklistItems.contains("vpn")) {
+            blacklistItems.add("vpn")
+        } else if (isVpnVisible.value) {
+            blacklistItems.remove("vpn")
+        }
+
+        if (!isAlarmClockVisible.value && !blacklistItems.contains("alarm_clock")) {
+            blacklistItems.add("alarm_clock")
+        } else if (isAlarmClockVisible.value) {
+            blacklistItems.remove("alarm_clock")
+        }
+
+        if (!isHotspotVisible.value && !blacklistItems.contains("hotspot")) {
+            blacklistItems.add("hotspot")
+        } else if (isHotspotVisible.value) {
+            blacklistItems.remove("hotspot")
+        }
+
+        if (!isBluetoothVisible.value && !blacklistItems.contains("bluetooth")) {
+            blacklistItems.add("bluetooth")
+        } else if (isBluetoothVisible.value) {
+            blacklistItems.remove("bluetooth")
+        }
+
         val newBlacklist = blacklistItems.joinToString(",")
 
         try {
@@ -209,6 +269,11 @@ class StatusBarIconViewModel : ViewModel() {
 
     private fun updateSmartDataBlacklist(context: Context, networkType: NetworkType) {
         if (!isSmartDataEnabled.value || !isWriteSecureSettingsEnabled.value || !isMobileDataVisible.value) {
+            return
+        }
+
+        // If Smart WiFi is enabled and WiFi is connected, let Smart WiFi handle mobile data visibility
+        if (isSmartWiFiEnabled.value && isWifiConnected(context)) {
             return
         }
 
@@ -236,6 +301,31 @@ class StatusBarIconViewModel : ViewModel() {
             if (isMobileDataVisible.value) {
                 blacklistItems.remove("mobile")
             }
+        }
+
+        // Handle other icon visibility (VPN, Alarm Clock, Hotspot, Bluetooth)
+        if (!isVpnVisible.value && !blacklistItems.contains("vpn")) {
+            blacklistItems.add("vpn")
+        } else if (isVpnVisible.value) {
+            blacklistItems.remove("vpn")
+        }
+
+        if (!isAlarmClockVisible.value && !blacklistItems.contains("alarm_clock")) {
+            blacklistItems.add("alarm_clock")
+        } else if (isAlarmClockVisible.value) {
+            blacklistItems.remove("alarm_clock")
+        }
+
+        if (!isHotspotVisible.value && !blacklistItems.contains("hotspot")) {
+            blacklistItems.add("hotspot")
+        } else if (isHotspotVisible.value) {
+            blacklistItems.remove("hotspot")
+        }
+
+        if (!isBluetoothVisible.value && !blacklistItems.contains("bluetooth")) {
+            blacklistItems.add("bluetooth")
+        } else if (isBluetoothVisible.value) {
+            blacklistItems.remove("bluetooth")
         }
 
         val newBlacklist = blacklistItems.joinToString(",")
@@ -310,6 +400,10 @@ class StatusBarIconViewModel : ViewModel() {
         val prefs = context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE)
         isMobileDataVisible.value = prefs.getBoolean("icon_mobile_visible", true)
         isWiFiVisible.value = prefs.getBoolean("icon_wifi_visible", false)
+        isVpnVisible.value = prefs.getBoolean("icon_vpn_visible", false)
+        isAlarmClockVisible.value = prefs.getBoolean("icon_alarm_clock_visible", false)
+        isHotspotVisible.value = prefs.getBoolean("icon_hotspot_visible", false)
+        isBluetoothVisible.value = prefs.getBoolean("icon_bluetooth_visible", false)
     }
 
     private fun loadSmartWiFiPref(context: Context) {
@@ -356,5 +450,37 @@ class StatusBarIconViewModel : ViewModel() {
         updateJob?.cancel()
         smartWifiJob?.cancel()
         smartDataJob?.cancel()
+    }
+
+    fun setVpnVisible(visible: Boolean, context: Context) {
+        isVpnVisible.value = visible
+        context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
+            putBoolean("icon_vpn_visible", visible)
+        }
+        updateIconBlacklist(context)
+    }
+
+    fun setAlarmClockVisible(visible: Boolean, context: Context) {
+        isAlarmClockVisible.value = visible
+        context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
+            putBoolean("icon_alarm_clock_visible", visible)
+        }
+        updateIconBlacklist(context)
+    }
+
+    fun setHotspotVisible(visible: Boolean, context: Context) {
+        isHotspotVisible.value = visible
+        context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
+            putBoolean("icon_hotspot_visible", visible)
+        }
+        updateIconBlacklist(context)
+    }
+
+    fun setBluetoothVisible(visible: Boolean, context: Context) {
+        isBluetoothVisible.value = visible
+        context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
+            putBoolean("icon_bluetooth_visible", visible)
+        }
+        updateIconBlacklist(context)
     }
 }

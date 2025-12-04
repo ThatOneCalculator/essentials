@@ -135,6 +135,118 @@ fun StatusBarIconSettingsUI(
                         enabled = isPermissionGranted
                     )
                 }
+
+                // VPN Row
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.rounded_vpn_key_24),
+                        contentDescription = "VPN",
+                        modifier = Modifier.size(24.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = "VPN",
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Switch(
+                        checked = viewModel.isVpnVisible.value,
+                        onCheckedChange = { isChecked ->
+                            viewModel.setVpnVisible(isChecked, context)
+                        },
+                        enabled = isPermissionGranted
+                    )
+                }
+
+                // Alarm Clock Row
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.rounded_alarm_24),
+                        contentDescription = "Alarm Clock",
+                        modifier = Modifier.size(24.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = "Alarm Clock",
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Switch(
+                        checked = viewModel.isAlarmClockVisible.value,
+                        onCheckedChange = { isChecked ->
+                            viewModel.setAlarmClockVisible(isChecked, context)
+                        },
+                        enabled = isPermissionGranted
+                    )
+                }
+
+                // Hotspot Row
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.rounded_wifi_tethering_24),
+                        contentDescription = "Hotspot",
+                        modifier = Modifier.size(24.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = "Hotspot",
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Switch(
+                        checked = viewModel.isHotspotVisible.value,
+                        onCheckedChange = { isChecked ->
+                            viewModel.setHotspotVisible(isChecked, context)
+                        },
+                        enabled = isPermissionGranted
+                    )
+                }
+
+                // Bluetooth Row
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.rounded_bluetooth_24),
+                        contentDescription = "Bluetooth",
+                        modifier = Modifier.size(24.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = "Bluetooth",
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Switch(
+                        checked = viewModel.isBluetoothVisible.value,
+                        onCheckedChange = { isChecked ->
+                            viewModel.setBluetoothVisible(isChecked, context)
+                        },
+                        enabled = isPermissionGranted
+                    )
+                }
             }
         }
 
@@ -172,7 +284,7 @@ fun StatusBarIconSettingsUI(
                         onCheckedChange = { isChecked ->
                             viewModel.setSmartWiFiEnabled(isChecked, context)
                         },
-                        enabled = isPermissionGranted
+                        enabled = isPermissionGranted && viewModel.isMobileDataVisible.value
                     )
                 }
 
@@ -234,7 +346,7 @@ fun StatusBarIconSettingsUI(
                             enabled = isPermissionGranted && androidx.core.content.ContextCompat.checkSelfPermission(
                                 context,
                                 android.Manifest.permission.READ_PHONE_STATE
-                            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+                            ) == android.content.pm.PackageManager.PERMISSION_GRANTED && viewModel.isMobileDataVisible.value
                         )
 
                         // Invisible overlay catches taps on disabled Switch
