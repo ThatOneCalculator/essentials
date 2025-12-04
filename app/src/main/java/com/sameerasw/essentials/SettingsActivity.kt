@@ -27,13 +27,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sameerasw.essentials.ui.composables.ReusableTopAppBar
 import com.sameerasw.essentials.ui.theme.EssentialsTheme
-import androidx.compose.material3.Card
-import androidx.compose.material3.Text
-import androidx.compose.material3.Button
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column as ColumnLayout
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
+import com.sameerasw.essentials.ui.composables.PermissionCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 class SettingsActivity : ComponentActivity() {
@@ -91,26 +89,19 @@ fun SettingsContent(viewModel: MainViewModel, modifier: Modifier = Modifier) {
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.Start
     ) {
-        // Permissions card: fill full width and always show the button so user can enable/disable access
-        Card(modifier = Modifier
-            .padding(16.dp)
-            .fillMaxWidth()) {
-            ColumnLayout(modifier = Modifier.padding(16.dp)) {
-                if (!isAccessibilityEnabled) {
-                    Text("To use accessibility features, enable accessibility permission for this app.")
-                } else {
-                    Text("Accessibility permission is granted")
-                }
-
-                // Always offer the user a quick way to jump to Settings so they can enable or disable the permission
-                Button(onClick = {
-                    val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-                    context.startActivity(intent)
-                }, modifier = Modifier.padding(top = 8.dp)) {
-                    Text("Open Accessibility Settings")
-                }
-            }
-        }
+        // Use the new PermissionCard composable
+        PermissionCard(
+            iconRes = R.drawable.rounded_settings_accessibility_24,
+            title = "Accessibility",
+            dependentFeatures = PermissionRegistry.getFeatures("ACCESSIBILITY"),
+            actionLabel = if (isAccessibilityEnabled) "Open Accessibility Settings" else "Enable Accessibility",
+            isGranted = isAccessibilityEnabled,
+            onActionClick = {
+                val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+                context.startActivity(intent)
+            },
+            modifier = Modifier.padding(16.dp)
+        )
 
         // You can add other settings cards here if needed
     }

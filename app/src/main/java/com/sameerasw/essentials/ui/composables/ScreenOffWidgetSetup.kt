@@ -16,10 +16,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -28,7 +25,11 @@ import androidx.compose.ui.unit.dp
 import com.sameerasw.essentials.FeatureSettingsActivity
 import com.sameerasw.essentials.MainViewModel
 import com.sameerasw.essentials.R
+import com.sameerasw.essentials.PermissionRegistry
 import com.sameerasw.essentials.ui.theme.EssentialsTheme
+
+// Preview helper view model instance (avoid constructing a ViewModel inside a composable)
+private val previewMainViewModel = MainViewModel()
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,7 +38,7 @@ fun ScreenOffWidgetSetup(viewModel: MainViewModel, modifier: Modifier = Modifier
     val isWidgetEnabled by viewModel.isWidgetEnabled
     val context = LocalContext.current
 
-    var showSheet by remember { mutableStateOf(false) }
+    var showSheet by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
 
     // If the sheet is open and the required permission(s) are now granted, close the sheet automatically.
     LaunchedEffect(showSheet, isAccessibilityEnabled) {
@@ -46,12 +47,15 @@ fun ScreenOffWidgetSetup(viewModel: MainViewModel, modifier: Modifier = Modifier
             if (!isAccessibilityEnabled) {
                 missing.add(
                     PermissionItem(
+                        iconRes = R.drawable.rounded_settings_accessibility_24,
                         title = "Accessibility",
                         description = "Required to perform screen off actions via widget",
+                        dependentFeatures = PermissionRegistry.getFeatures("ACCESSIBILITY"),
                         actionLabel = "Open Accessibility Settings",
                         action = {
                             context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
-                        }
+                        },
+                        isGranted = isAccessibilityEnabled
                     )
                 )
             }
@@ -64,29 +68,25 @@ fun ScreenOffWidgetSetup(viewModel: MainViewModel, modifier: Modifier = Modifier
         }
     }
 
-    // Build the list of missing permissions to display when the sheet is shown
-    val missingPermissions = remember(isAccessibilityEnabled) {
-        val list = mutableListOf<PermissionItem>()
-        if (!isAccessibilityEnabled) {
-            list.add(
-                PermissionItem(
-                    title = "Accessibility",
-                    description = "Required to perform screen off actions via widget",
-                    actionLabel = "Open Accessibility Settings",
-                    action = {
-                        context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
-                    }
-                )
-            )
-        }
-        list
-    }
-
     if (showSheet) {
+        val permissionItems = listOf(
+            PermissionItem(
+                iconRes = R.drawable.rounded_settings_accessibility_24,
+                title = "Accessibility",
+                description = "Required to perform screen off actions via widget",
+                dependentFeatures = PermissionRegistry.getFeatures("ACCESSIBILITY"),
+                actionLabel = "Open Accessibility Settings",
+                action = {
+                    context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+                },
+                isGranted = isAccessibilityEnabled
+            )
+        )
+
         PermissionsBottomSheet(
             onDismissRequest = { showSheet = false },
             featureTitle = "Screen off widget",
-            permissions = missingPermissions
+            permissions = permissionItems
         )
     }
 
@@ -134,7 +134,7 @@ fun ScreenOffWidgetSetup(viewModel: MainViewModel, modifier: Modifier = Modifier
 fun ScreenOffWidgetSetupPreview() {
     EssentialsTheme {
         // Provide a mock ViewModel for preview
-        val mockViewModel = MainViewModel().apply {
+        val mockViewModel = previewMainViewModel.apply {
             // Set up any necessary state for the preview
             isAccessibilityEnabled.value = false
         }
