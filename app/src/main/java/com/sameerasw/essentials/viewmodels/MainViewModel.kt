@@ -22,6 +22,7 @@ import com.sameerasw.essentials.domain.model.AppSelection
 import com.sameerasw.essentials.utils.AppUtil
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.sameerasw.essentials.services.EdgeLightingService
 
 class MainViewModel : ViewModel() {
     val isAccessibilityEnabled = mutableStateOf(false)
@@ -97,8 +98,45 @@ class MainViewModel : ViewModel() {
 
     // Helper to show the overlay service for testing/triggering
     fun triggerEdgeLighting(context: Context) {
+        val radius = loadEdgeLightingCornerRadius(context)
         try {
-            context.startService(Intent(context, com.sameerasw.essentials.services.EdgeLightingService::class.java))
+            val intent = Intent(context, com.sameerasw.essentials.services.EdgeLightingService::class.java).apply {
+                putExtra("corner_radius_dp", radius)
+            }
+            context.startService(intent)
+        } catch (e: Exception) {
+            // ignore
+        }
+    }
+
+    // Helper to show the overlay service with custom corner radius
+    fun triggerEdgeLightingWithRadius(context: Context, cornerRadiusDp: Int) {
+        try {
+            val intent = Intent(context, com.sameerasw.essentials.services.EdgeLightingService::class.java).apply {
+                putExtra("corner_radius_dp", cornerRadiusDp)
+                putExtra("is_preview", true)
+            }
+            context.startService(intent)
+        } catch (e: Exception) {
+            // ignore
+        }
+    }
+
+    // Helper to remove preview overlay
+    fun removePreviewOverlay(context: Context) {
+        try {
+            // Remove from EdgeLightingService
+            val intent1 = Intent(context, EdgeLightingService::class.java).apply {
+                putExtra("remove_preview", true)
+            }
+            context.startService(intent1)
+
+            // Also remove from ScreenOffAccessibilityService if it's running
+            val intent2 = Intent(context, ScreenOffAccessibilityService::class.java).apply {
+                action = "SHOW_EDGE_LIGHTING"
+                putExtra("remove_preview", true)
+            }
+            context.startService(intent2)
         } catch (e: Exception) {
             // ignore
         }
@@ -276,5 +314,17 @@ class MainViewModel : ViewModel() {
             .edit()
             .putString("edge_lighting_selected_apps", json)
             .apply()
+    }
+
+    // Edge Lighting Corner Radius Methods
+    fun saveEdgeLightingCornerRadius(context: Context, radiusDp: Int) {
+        context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
+            putInt("edge_lighting_corner_radius", radiusDp)
+        }
+    }
+
+    fun loadEdgeLightingCornerRadius(context: Context): Int {
+        val prefs = context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE)
+        return prefs.getInt("edge_lighting_corner_radius", 20) // Default to 20 dp
     }
 }

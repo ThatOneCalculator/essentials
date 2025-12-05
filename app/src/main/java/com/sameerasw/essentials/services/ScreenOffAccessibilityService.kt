@@ -21,6 +21,8 @@ class ScreenOffAccessibilityService : AccessibilityService() {
     private var windowManager: WindowManager? = null
     private val overlayViews = mutableListOf<View>()
     private val handler = Handler(Looper.getMainLooper())
+    private var cornerRadiusDp: Int = OverlayHelper.CORNER_RADIUS_DP
+    private var isPreview: Boolean = false
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         // Not used for this feature
@@ -37,6 +39,15 @@ class ScreenOffAccessibilityService : AccessibilityService() {
             // Lock the screen
             performGlobalAction(GLOBAL_ACTION_LOCK_SCREEN)
         } else if (intent?.action == "SHOW_EDGE_LIGHTING") {
+            // Extract corner radius and preview flag from intent
+            cornerRadiusDp = intent.getIntExtra("corner_radius_dp", OverlayHelper.CORNER_RADIUS_DP)
+            isPreview = intent.getBooleanExtra("is_preview", false)
+            val removePreview = intent.getBooleanExtra("remove_preview", false)
+            if (removePreview) {
+                // Remove preview overlay
+                removeOverlay()
+                return super.onStartCommand(intent, flags, startId)
+            }
             // Accessibility elevation: show overlay from accessibility service so it can appear above more surfaces
             try {
                 showEdgeLighting()
@@ -73,6 +84,11 @@ class ScreenOffAccessibilityService : AccessibilityService() {
     }
 
     private fun showEdgeLighting() {
+        // For preview mode, remove existing overlays first to update with new corner radius
+        if (isPreview && overlayViews.isNotEmpty()) {
+            removeOverlay()
+        }
+
         // Avoid duplicates
         if (overlayViews.isNotEmpty()) return
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
@@ -85,18 +101,36 @@ class ScreenOffAccessibilityService : AccessibilityService() {
         }
 
         try {
-            val overlay = OverlayHelper.createOverlayView(this, android.R.color.system_accent1_100)
+            val overlay = OverlayHelper.createOverlayView(this, android.R.color.system_accent1_100, cornerRadiusDp = cornerRadiusDp)
             val params = OverlayHelper.createOverlayLayoutParams(overlayType)
 
             if (OverlayHelper.addOverlayView(windowManager, overlay, params)) {
                 overlayViews.add(overlay)
-                OverlayHelper.pulseOverlay(overlay) {
-                    // When pulsing completes, remove the overlay
-                    OverlayHelper.fadeOutAndRemoveOverlay(windowManager, overlay, overlayViews)
+                if (isPreview) {
+                    // For preview mode, just fade in and keep visible
+                    OverlayHelper.fadeInOverlay(overlay)
+                } else {
+                    // Normal mode: pulse the overlay
+                    OverlayHelper.pulseOverlay(overlay) {
+                        // When pulsing completes, remove the overlay
+                        OverlayHelper.fadeOutAndRemoveOverlay(windowManager, overlay, overlayViews)
+                    }
                 }
             }
         } catch (e: Exception) { e.printStackTrace() }
 
+    }
+
+    private fun removeOverlay() {
+        // Remove all overlays and clear the list
+        for (overlay in overlayViews) {
+            try {
+                OverlayHelper.fadeOutAndRemoveOverlay(windowManager, overlay, overlayViews)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+        overlayViews.clear()
     }
 
 }

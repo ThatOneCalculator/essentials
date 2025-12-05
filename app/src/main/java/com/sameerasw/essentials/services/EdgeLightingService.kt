@@ -32,6 +32,8 @@ class EdgeLightingService : Service() {
     private var windowManager: WindowManager? = null
     private val overlayViews = mutableListOf<View>()
     private val handler = Handler(Looper.getMainLooper())
+    private var cornerRadiusDp: Int = OverlayHelper.CORNER_RADIUS_DP
+    private var isPreview: Boolean = false
 
     private var screenReceiver: BroadcastReceiver? = null
 
@@ -83,6 +85,19 @@ class EdgeLightingService : Service() {
             return START_NOT_STICKY
         }
 
+        // Get corner radius from intent, default to OverlayHelper.CORNER_RADIUS_DP
+        cornerRadiusDp = intent?.getIntExtra("corner_radius_dp", OverlayHelper.CORNER_RADIUS_DP)
+            ?: OverlayHelper.CORNER_RADIUS_DP
+        isPreview = intent?.getBooleanExtra("is_preview", false) ?: false
+        val removePreview = intent?.getBooleanExtra("remove_preview", false) ?: false
+
+        if (removePreview) {
+            // Remove preview overlay and stop
+            removeOverlay()
+            stopSelf()
+            return START_NOT_STICKY
+        }
+
         // Ensure the process calls startForeground quickly when started via startForegroundService
         // to avoid RemoteServiceException (ForegroundServiceDidNotStartInTimeException).
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -96,7 +111,11 @@ class EdgeLightingService : Service() {
         // If accessibility service is enabled, delegate showing to it for higher elevation
         if (isAccessibilityServiceEnabled()) {
             try {
-                val ai = Intent(applicationContext, ScreenOffAccessibilityService::class.java).apply { action = "SHOW_EDGE_LIGHTING" }
+                val ai = Intent(applicationContext, ScreenOffAccessibilityService::class.java).apply {
+                    action = "SHOW_EDGE_LIGHTING"
+                    putExtra("corner_radius_dp", cornerRadiusDp)
+                    putExtra("is_preview", isPreview)
+                }
                 // Use startService to request the accessibility service perform the elevated overlay.
                 // Starting an accessibility service via startForegroundService can cause MissingForegroundServiceType
                 // exceptions because the accessibility service may not declare a foregroundServiceType. startService is
@@ -146,25 +165,36 @@ class EdgeLightingService : Service() {
     }
 
     private fun showOverlay() {
+        // For preview mode, remove existing overlays first to update with new corner radius
+        if (isPreview && overlayViews.isNotEmpty()) {
+            removeOverlay()
+        }
+
         if (overlayViews.isNotEmpty()) return
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
 
         try {
-            val overlay = OverlayHelper.createOverlayView(this, android.R.color.system_accent1_100)
+            val overlay = OverlayHelper.createOverlayView(this, android.R.color.system_accent1_100, cornerRadiusDp = cornerRadiusDp)
             val params = OverlayHelper.createOverlayLayoutParams(getOverlayType())
 
             if (OverlayHelper.addOverlayView(windowManager, overlay, params)) {
                 overlayViews.add(overlay)
-                OverlayHelper.pulseOverlay(overlay) {
-                    // When pulsing completes, remove the overlay
-                    OverlayHelper.fadeOutAndRemoveOverlay(windowManager, overlay, overlayViews) {
-                        // When all overlays are removed, stop foreground
-                        if (overlayViews.isEmpty()) {
-                            try {
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                    stopForeground(true)
-                                }
-                            } catch (_: Exception) { }
+                if (isPreview) {
+                    // For preview mode, just fade in and keep visible
+                    OverlayHelper.fadeInOverlay(overlay)
+                } else {
+                    // Normal mode: pulse the overlay
+                    OverlayHelper.pulseOverlay(overlay) {
+                        // When pulsing completes, remove the overlay
+                        OverlayHelper.fadeOutAndRemoveOverlay(windowManager, overlay, overlayViews) {
+                            // When all overlays are removed, stop foreground
+                            if (overlayViews.isEmpty()) {
+                                try {
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                        stopForeground(true)
+                                    }
+                                } catch (_: Exception) { }
+                            }
                         }
                     }
                 }

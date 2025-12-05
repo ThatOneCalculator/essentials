@@ -14,6 +14,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,6 +22,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,6 +38,8 @@ import com.sameerasw.essentials.ui.components.pickers.AppTypePicker
 import com.sameerasw.essentials.utils.AppUtil
 import com.sameerasw.essentials.viewmodels.MainViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -92,9 +96,50 @@ fun EdgeLightingSettingsUI(
         AppType.SYSTEM -> selectedApps.filter { it.isSystemApp } // System apps only
     }
 
+    // Corner radius state (default: 20 DP to match OverlayHelper.CORNER_RADIUS_DP)
+    var cornerRadiusDp by remember { mutableStateOf(viewModel.loadEdgeLightingCornerRadius(context).toFloat()) }
+    var isSliderActive by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
+
     Column(modifier = modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Button(onClick = { viewModel.triggerEdgeLighting(context) }) {
             Text(text = "Show test overlay")
+        }
+
+        // Corner Roundness Slider Section
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp)
+        ) {
+
+            Text(
+                text = "Corner radius",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(start = 0.dp, top = 16.dp, bottom = 8.dp),
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Slider(
+                value = cornerRadiusDp,
+                onValueChange = { newValue ->
+                    cornerRadiusDp = newValue
+                    isSliderActive = true
+                    // Show preview overlay while dragging
+                    viewModel.triggerEdgeLightingWithRadius(context, newValue.toInt())
+                },
+                onValueChangeFinished = {
+                    isSliderActive = false
+                    // Save the corner radius
+                    viewModel.saveEdgeLightingCornerRadius(context, cornerRadiusDp.toInt())
+                    // Wait 5 seconds then remove preview overlay
+                    coroutineScope.launch {
+                        delay(5000)
+                        viewModel.removePreviewOverlay(context)
+                    }
+                },
+                valueRange = 0f..50f,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
 
         // App Selection Section

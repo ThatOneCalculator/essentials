@@ -25,7 +25,11 @@ class NotificationListener : NotificationListenerService() {
                     android.util.Log.d("NotificationListener", "Edge lighting enabled, app ${sbn.packageName} selected: $appSelected")
                     if (appSelected) {
                         // Start the overlay service to show the lighting
-                        val intent = Intent(applicationContext, EdgeLightingService::class.java)
+                        val prefs = applicationContext.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE)
+                        val cornerRadius = prefs.getInt("edge_lighting_corner_radius", 20)
+                        val intent = Intent(applicationContext, EdgeLightingService::class.java).apply {
+                            putExtra("corner_radius_dp", cornerRadius)
+                        }
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                             applicationContext.startForegroundService(intent)
                         } else {
