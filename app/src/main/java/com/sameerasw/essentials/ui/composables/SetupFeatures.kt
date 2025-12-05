@@ -76,6 +76,8 @@ fun SetupFeatures(
     val isNotificationListenerEnabled by viewModel.isNotificationListenerEnabled
     val isMapsPowerSavingEnabled by viewModel.isMapsPowerSavingEnabled
     val isEdgeLightingEnabled by viewModel.isEdgeLightingEnabled
+    val isOverlayPermissionGranted by viewModel.isOverlayPermissionGranted
+    val isEdgeLightingAccessibilityEnabled by viewModel.isEdgeLightingAccessibilityEnabled
     val context = LocalContext.current
 
     fun buildMapsPowerSavingPermissionItems(): List<PermissionItem> {
@@ -117,7 +119,7 @@ fun SetupFeatures(
                     title = "Notification listener",
                     description = "Required to detect when Maps is navigating.",
                     dependentFeatures = PermissionRegistry.getFeatures("NOTIFICATION_LISTENER"),
-                    actionLabel = "Enable listener",
+                    actionLabel = if (isNotificationListenerEnabled) "Permission granted" else "Grant listener",
                     action = { viewModel.requestNotificationListenerPermission(context) },
                     isGranted = isNotificationListenerEnabled
                 )
@@ -145,6 +147,8 @@ fun SetupFeatures(
         isShizukuAvailable,
         isShizukuPermissionGranted,
         isNotificationListenerEnabled,
+        isOverlayPermissionGranted,
+        isEdgeLightingAccessibilityEnabled,
         currentFeature
     ) {
         if (showSheet && currentFeature != null) {
@@ -193,6 +197,55 @@ fun SetupFeatures(
                 FEATURE_MAPS_POWER_SAVING -> {
                     missing.addAll(buildMapsPowerSavingPermissionItems())
                 }
+                "Edge lighting" -> {
+                    if (!isOverlayPermissionGranted) {
+                        missing.add(
+                            PermissionItem(
+                                iconRes = R.drawable.rounded_magnify_fullscreen_24,
+                                title = "Overlay Permission",
+                                description = "Required to display the edge lighting overlay on the screen",
+                                dependentFeatures = PermissionRegistry.getFeatures("DRAW_OVERLAYS"),
+                                actionLabel = "Grant Permission",
+                                action = {
+                                    val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:${context.packageName}"))
+                                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                    context.startActivity(intent)
+                                },
+                                isGranted = isOverlayPermissionGranted
+                            )
+                        )
+                    }
+                    if (!isEdgeLightingAccessibilityEnabled) {
+                        missing.add(
+                            PermissionItem(
+                                iconRes = R.drawable.rounded_settings_accessibility_24,
+                                title = "Accessibility Service",
+                                description = "Required to trigger edge lighting on new notifications",
+                                dependentFeatures = PermissionRegistry.getFeatures("ACCESSIBILITY"),
+                                actionLabel = "Enable in Settings",
+                                action = {
+                                    val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+                                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                    context.startActivity(intent)
+                                },
+                                isGranted = isEdgeLightingAccessibilityEnabled
+                            )
+                        )
+                    }
+                    if (!isNotificationListenerEnabled) {
+                        missing.add(
+                            PermissionItem(
+                                iconRes = R.drawable.rounded_notifications_unread_24,
+                                title = "Notification Listener",
+                                description = "Required to detect new notifications",
+                                dependentFeatures = PermissionRegistry.getFeatures("NOTIFICATION_LISTENER"),
+                                actionLabel = if (isNotificationListenerEnabled) "Permission granted" else "Grant listener",
+                                action = { viewModel.requestNotificationListenerPermission(context) },
+                                isGranted = isNotificationListenerEnabled
+                            )
+                        )
+                    }
+                }
             }
 
             if (missing.isEmpty()) {
@@ -237,6 +290,43 @@ fun SetupFeatures(
                 )
             )
             FEATURE_MAPS_POWER_SAVING -> buildMapsPowerSavingPermissionItems()
+            "Edge lighting" -> listOf(
+                PermissionItem(
+                    iconRes = R.drawable.rounded_magnify_fullscreen_24,
+                    title = "Overlay Permission",
+                    description = "Required to display the edge lighting overlay on the screen",
+                    dependentFeatures = PermissionRegistry.getFeatures("DRAW_OVERLAYS"),
+                    actionLabel = "Grant Permission",
+                    action = {
+                        val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:${context.packageName}"))
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                        context.startActivity(intent)
+                    },
+                    isGranted = isOverlayPermissionGranted
+                ),
+                PermissionItem(
+                    iconRes = R.drawable.rounded_settings_accessibility_24,
+                    title = "Accessibility Service",
+                    description = "Required to trigger edge lighting on new notifications",
+                    dependentFeatures = PermissionRegistry.getFeatures("ACCESSIBILITY"),
+                    actionLabel = "Enable in Settings",
+                    action = {
+                        val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                        context.startActivity(intent)
+                    },
+                    isGranted = isEdgeLightingAccessibilityEnabled
+                ),
+                PermissionItem(
+                    iconRes = R.drawable.rounded_notifications_unread_24,
+                    title = "Notification Listener",
+                    description = "Required to detect new notifications",
+                    dependentFeatures = PermissionRegistry.getFeatures("NOTIFICATION_LISTENER"),
+                    actionLabel = if (isNotificationListenerEnabled) "Permission granted" else "Grant listener",
+                    action = { viewModel.requestNotificationListenerPermission(context) },
+                    isGranted = isNotificationListenerEnabled
+                )
+            )
             else -> emptyList()
         }
 
@@ -270,7 +360,7 @@ fun SetupFeatures(
                 "Edge lighting",
                 R.drawable.rounded_magnify_fullscreen_24,
                 "Visuals",
-                "Show an edge highlight overlay for new notifications"
+                "Flash screen for notifications"
             )
         )
     }
@@ -384,7 +474,7 @@ fun SetupFeatures(
                         "Statusbar icons" -> isWriteSecureSettingsEnabled
                         "Caffeinate" -> true
                         FEATURE_MAPS_POWER_SAVING -> isShizukuAvailable && isShizukuPermissionGranted && isNotificationListenerEnabled
-                        "Edge lighting" -> true
+                        "Edge lighting" -> isOverlayPermissionGranted && isEdgeLightingAccessibilityEnabled && isNotificationListenerEnabled
                         else -> false
                     }
 

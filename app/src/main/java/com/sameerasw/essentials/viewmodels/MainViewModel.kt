@@ -31,6 +31,8 @@ class MainViewModel : ViewModel() {
     val isNotificationListenerEnabled = mutableStateOf(false)
     val isMapsPowerSavingEnabled = mutableStateOf(false)
     val isEdgeLightingEnabled = mutableStateOf(false)
+    val isOverlayPermissionGranted = mutableStateOf(false)
+    val isEdgeLightingAccessibilityEnabled = mutableStateOf(false)
     val hapticFeedbackType = mutableStateOf(HapticFeedbackType.SUBTLE)
 
     fun check(context: Context) {
@@ -47,6 +49,8 @@ class MainViewModel : ViewModel() {
         isShizukuAvailable.value = ShizukuUtils.isShizukuAvailable()
         isShizukuPermissionGranted.value = ShizukuUtils.hasPermission()
         isNotificationListenerEnabled.value = hasNotificationListenerPermission(context)
+        isOverlayPermissionGranted.value = canDrawOverlays(context)
+        isEdgeLightingAccessibilityEnabled.value = isEdgeLightingAccessibilityServiceEnabled(context)
         val prefs = context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE)
         isWidgetEnabled.value = prefs.getBoolean("widget_enabled", false)
         isStatusBarIconControlEnabled.value = prefs.getBoolean("status_bar_icon_control_enabled", false)
@@ -203,5 +207,26 @@ class MainViewModel : ViewModel() {
             }
         }
         return false
+    }
+
+    private fun canDrawOverlays(context: Context): Boolean {
+        return if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            Settings.canDrawOverlays(context)
+        } else {
+            true
+        }
+    }
+
+    private fun isEdgeLightingAccessibilityServiceEnabled(context: Context): Boolean {
+        return try {
+            val enabledServices = Settings.Secure.getString(
+                context.contentResolver,
+                Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+            )
+            val serviceName = "${context.packageName}/${ScreenOffAccessibilityService::class.java.name}"
+            enabledServices?.contains(serviceName) == true
+        } catch (e: Exception) {
+            false
+        }
     }
 }

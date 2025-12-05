@@ -84,7 +84,8 @@ class EdgeLightingService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (!canDrawOverlays()) {
+        // All three permissions are required for Edge Lighting to function
+        if (!canDrawOverlays() || !isAccessibilityServiceEnabled()) {
             stopSelf()
             return START_NOT_STICKY
         }
@@ -109,8 +110,9 @@ class EdgeLightingService : Service() {
                 // sufficient to deliver the intent to the AccessibilityService.
                 applicationContext.startService(ai)
             } catch (e: Exception) {
-                // fallback to normal overlay
-                showOverlay()
+                // If delegation fails, stop - don't fall back
+                stopSelf()
+                return START_NOT_STICKY
             }
 
             // We delegated to the accessibility service; stop foreground and finish quickly.
@@ -121,11 +123,7 @@ class EdgeLightingService : Service() {
             return START_NOT_STICKY
         }
 
-        showOverlay()
-
-        // Remove after 5 seconds
-        handler.postDelayed({ removeOverlay(); stopSelf() }, 5000)
-
+        stopSelf()
         return START_NOT_STICKY
     }
 
