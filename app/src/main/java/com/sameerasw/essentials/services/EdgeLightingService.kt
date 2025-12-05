@@ -150,7 +150,7 @@ class EdgeLightingService : Service() {
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
 
         try {
-            val overlay = OverlayHelper.createOverlayView(this, com.sameerasw.essentials.R.color.material_color_primary_expressive)
+            val overlay = OverlayHelper.createOverlayView(this, android.R.color.system_accent1_100)
             val params = OverlayHelper.createOverlayLayoutParams(getOverlayType())
 
             if (OverlayHelper.addOverlayView(windowManager, overlay, params)) {

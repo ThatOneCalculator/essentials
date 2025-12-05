@@ -85,7 +85,7 @@ class ScreenOffAccessibilityService : AccessibilityService() {
         }
 
         try {
-            val overlay = OverlayHelper.createOverlayView(this, com.sameerasw.essentials.R.color.material_color_primary_expressive)
+            val overlay = OverlayHelper.createOverlayView(this, android.R.color.system_accent1_100)
             val params = OverlayHelper.createOverlayLayoutParams(overlayType)
 
             if (OverlayHelper.addOverlayView(windowManager, overlay, params)) {
