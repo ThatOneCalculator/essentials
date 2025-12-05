@@ -15,6 +15,7 @@ import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.*
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import com.sameerasw.essentials.ui.components.ReusableTopAppBar
 import com.sameerasw.essentials.ui.composables.SetupFeatures
 import com.sameerasw.essentials.ui.theme.EssentialsTheme
@@ -35,6 +36,13 @@ class MainActivity : ComponentActivity() {
         viewModel.check(this)
         setContent {
             EssentialsTheme {
+                val context = LocalContext.current
+                val versionName = try {
+                    context.packageManager.getPackageInfo(context.packageName, 0).versionName
+                } catch (_: Exception) {
+                    "Unknown"
+                }
+
                 var searchRequested by remember { mutableStateOf(false) }
                 val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
                 Scaffold(
@@ -49,7 +57,7 @@ class MainActivity : ComponentActivity() {
                             onSearchClick = { searchRequested = true },
                             onSettingsClick = { startActivity(Intent(this, SettingsActivity::class.java)) },
                             scrollBehavior = scrollBehavior,
-                            subtitle = "V1.0"
+                            subtitle = "V$versionName"
                         )
                     }
                 ) { innerPadding ->
