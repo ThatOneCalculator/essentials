@@ -2,6 +2,7 @@ package com.sameerasw.essentials.viewmodels
 
 import android.Manifest
 import android.app.ActivityManager
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -10,6 +11,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
+import com.sameerasw.essentials.MapsState
+import com.sameerasw.essentials.services.NotificationListener
 import com.sameerasw.essentials.services.CaffeinateWakeLockService
 import com.sameerasw.essentials.services.ScreenOffAccessibilityService
 import com.sameerasw.essentials.utils.HapticFeedbackType
@@ -25,6 +28,8 @@ class MainViewModel : ViewModel() {
     val isCaffeinateActive = mutableStateOf(false)
     val isShizukuPermissionGranted = mutableStateOf(false)
     val isShizukuAvailable = mutableStateOf(false)
+    val isNotificationListenerEnabled = mutableStateOf(false)
+    val isMapsPowerSavingEnabled = mutableStateOf(false)
     val hapticFeedbackType = mutableStateOf(HapticFeedbackType.SUBTLE)
 
     fun check(context: Context) {
@@ -40,9 +45,12 @@ class MainViewModel : ViewModel() {
         ) == PackageManager.PERMISSION_GRANTED
         isShizukuAvailable.value = ShizukuUtils.isShizukuAvailable()
         isShizukuPermissionGranted.value = ShizukuUtils.hasPermission()
+        isNotificationListenerEnabled.value = hasNotificationListenerPermission(context)
         val prefs = context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE)
         isWidgetEnabled.value = prefs.getBoolean("widget_enabled", false)
         isStatusBarIconControlEnabled.value = prefs.getBoolean("status_bar_icon_control_enabled", false)
+        isMapsPowerSavingEnabled.value = prefs.getBoolean("maps_power_saving_enabled", false)
+        MapsState.isEnabled = isMapsPowerSavingEnabled.value
         loadHapticFeedback(context)
         checkCaffeinateActive(context)
     }
@@ -58,6 +66,14 @@ class MainViewModel : ViewModel() {
         isStatusBarIconControlEnabled.value = enabled
         context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
             putBoolean("status_bar_icon_control_enabled", enabled)
+        }
+    }
+
+    fun setMapsPowerSavingEnabled(enabled: Boolean, context: Context) {
+        isMapsPowerSavingEnabled.value = enabled
+        MapsState.isEnabled = enabled
+        context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
+            putBoolean("maps_power_saving_enabled", enabled)
         }
     }
 
@@ -112,6 +128,26 @@ class MainViewModel : ViewModel() {
             arrayOf(Manifest.permission.READ_PHONE_STATE),
             1001
         )
+    }
+
+    private fun hasNotificationListenerPermission(context: Context): Boolean {
+        return try {
+            val enabledServices = Settings.Secure.getString(
+                context.contentResolver,
+                "enabled_notification_listeners"
+            ) ?: return false
+            val componentName = ComponentName(context, NotificationListener::class.java)
+            enabledServices.contains(componentName.flattenToString())
+        } catch (_: Exception) {
+            false
+        }
+    }
+
+    fun requestNotificationListenerPermission(context: Context) {
+        val intent = Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+        context.startActivity(intent)
     }
 
     fun requestShizukuPermission() {
