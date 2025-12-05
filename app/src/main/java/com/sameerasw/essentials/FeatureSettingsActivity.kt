@@ -54,7 +54,8 @@ class FeatureSettingsActivity : ComponentActivity() {
         val featureDescriptions = mapOf(
             "Screen off widget" to "Invisible widget to turn the screen off",
             "Statusbar icons" to "Control the visibility of statusbar icons",
-            "Caffeinate" to "Keep the screen awake"
+            "Caffeinate" to "Keep the screen awake",
+            "Edge lighting" to "Preview edge lighting effects on new notifications"
         )
         val description = featureDescriptions[feature] ?: ""
         setContent {

@@ -12,8 +12,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -28,8 +31,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
+import com.sameerasw.essentials.R
 import com.sameerasw.essentials.domain.model.NotificationApp
 import com.sameerasw.essentials.domain.model.AppSelection
 import com.sameerasw.essentials.ui.components.containers.RoundedCardContainer
@@ -103,8 +108,10 @@ fun EdgeLightingSettingsUI(
     val coroutineScope = rememberCoroutineScope()
 
     Column(modifier = modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Button(onClick = { viewModel.triggerEdgeLighting(context) }) {
-            Text(text = "Show test overlay")
+
+        Button(onClick = { viewModel.triggerEdgeLighting(context) }, modifier = Modifier.fillMaxWidth()) {
+            Icon(painter = painterResource(id = R.drawable.rounded_play_arrow_24), contentDescription = null)
+            Text("Preview")
         }
 
         // Corner Roundness Slider Section
