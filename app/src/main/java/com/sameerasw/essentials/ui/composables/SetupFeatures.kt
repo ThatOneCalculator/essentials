@@ -191,9 +191,9 @@ fun ScreenOffWidgetSetup(
 
     val allFeatures = remember {
         mutableStateListOf(
-            FeatureItem("Screen off widget", R.drawable.rounded_settings_power_24),
-            FeatureItem("Status Bar Icon Control", R.drawable.rounded_interests_24),
-            FeatureItem("Caffeinate", R.drawable.rounded_coffee_24)
+            FeatureItem("Screen off widget", R.drawable.rounded_settings_power_24, "Tools"),
+            FeatureItem("Status Bar Icon Control", R.drawable.rounded_interests_24, "Visuals"),
+            FeatureItem("Caffeinate", R.drawable.rounded_coffee_24, "Tools")
         )
     }
 
@@ -251,58 +251,73 @@ fun ScreenOffWidgetSetup(
             }
         }
 
-        // Render filtered features
-        for (feature in filtered) {
-            val isEnabled = when (feature.title) {
-                "Screen off widget" -> isWidgetEnabled
-                "Status Bar Icon Control" -> isStatusBarIconControlEnabled
-                "Caffeinate" -> isCaffeinateActive
-                else -> false
+        // Render filtered features grouped by category
+        val categories = filtered.map { it.category }.distinct()
+        for (category in categories) {
+            val categoryFeatures = filtered.filter { it.category == category }
+
+            // Show category header if there are features in this category
+            if (categoryFeatures.isNotEmpty()) {
+                Text(
+                    text = category,
+                    style = androidx.compose.material3.MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp),
+                    color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
 
-            val isToggleEnabled = when (feature.title) {
-                "Screen off widget" -> isAccessibilityEnabled
-                "Status Bar Icon Control" -> isWriteSecureSettingsEnabled
-                "Caffeinate" -> true
-                else -> false
-            }
-
-            FeatureCard(
-                title = feature.title,
-                isEnabled = isEnabled,
-                onToggle = { enabled ->
-                    when (feature.title) {
-                        "Screen off widget" -> viewModel.setWidgetEnabled(enabled, context)
-                        "Status Bar Icon Control" -> viewModel.setStatusBarIconControlEnabled(
-                            enabled,
-                            context
-                        )
-
-                        "Caffeinate" -> if (enabled) viewModel.startCaffeinate(context) else viewModel.stopCaffeinate(
-                            context
-                        )
-                    }
-                },
-                onClick = {
-                    context.startActivity(
-                        Intent(context, FeatureSettingsActivity::class.java).apply {
-                            putExtra("feature", feature.title)
-                        }
-                    )
-                },
-                iconRes = feature.iconRes,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp),
-                isToggleEnabled = isToggleEnabled,
-                onDisabledToggleClick = {
-                    currentFeature = feature.title
-                    showSheet = true
+            for (feature in categoryFeatures) {
+                val isEnabled = when (feature.title) {
+                    "Screen off widget" -> isWidgetEnabled
+                    "Status Bar Icon Control" -> isStatusBarIconControlEnabled
+                    "Caffeinate" -> isCaffeinateActive
+                    else -> false
                 }
-            )
+
+                val isToggleEnabled = when (feature.title) {
+                    "Screen off widget" -> isAccessibilityEnabled
+                    "Status Bar Icon Control" -> isWriteSecureSettingsEnabled
+                    "Caffeinate" -> true
+                    else -> false
+                }
+
+                FeatureCard(
+                    title = feature.title,
+                    isEnabled = isEnabled,
+                    onToggle = { enabled ->
+                        when (feature.title) {
+                            "Screen off widget" -> viewModel.setWidgetEnabled(enabled, context)
+                            "Status Bar Icon Control" -> viewModel.setStatusBarIconControlEnabled(
+                                enabled,
+                                context
+                            )
+
+                            "Caffeinate" -> if (enabled) viewModel.startCaffeinate(context) else viewModel.stopCaffeinate(
+                                context
+                            )
+                        }
+                    },
+                    onClick = {
+                        context.startActivity(
+                            Intent(context, FeatureSettingsActivity::class.java).apply {
+                                putExtra("feature", feature.title)
+                            }
+                        )
+                    },
+                    iconRes = feature.iconRes,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp),
+                    isToggleEnabled = isToggleEnabled,
+                    onDisabledToggleClick = {
+                        currentFeature = feature.title
+                        showSheet = true
+                    }
+                )
+            }
         }
     }
 }
 
-private data class FeatureItem(val title: String, val iconRes: Int)
+private data class FeatureItem(val title: String, val iconRes: Int, val category: String)
 
 @Preview(showBackground = true)
 @Composable
