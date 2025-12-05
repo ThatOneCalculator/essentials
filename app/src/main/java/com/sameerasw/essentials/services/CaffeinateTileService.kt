@@ -1,7 +1,6 @@
-package com.sameerasw.essentials
+package com.sameerasw.essentials.services
 
 import android.app.ActivityManager
-import android.content.Context
 import android.content.Intent
 import android.provider.Settings
 import android.service.quicksettings.Tile
@@ -41,7 +40,7 @@ class CaffeinateTileService : BaseTileService() {
     }
 
     private fun isWakeLockServiceRunning(): Boolean {
-        val manager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        val manager = getSystemService(ACTIVITY_SERVICE) as ActivityManager
         for (service in manager.getRunningServices(Int.MAX_VALUE)) {
             if (CaffeinateWakeLockService::class.java.name == service.service.className) {
                 return true

@@ -1,6 +1,8 @@
 package com.sameerasw.essentials.ui.composables
 
+import android.content.ClipData
 import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
 import android.provider.Settings
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -38,9 +40,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import com.sameerasw.essentials.FeatureSettingsActivity
-import com.sameerasw.essentials.MainViewModel
+import com.sameerasw.essentials.viewmodels.MainViewModel
 import com.sameerasw.essentials.R
 import com.sameerasw.essentials.PermissionRegistry
+import com.sameerasw.essentials.ui.components.cards.FeatureCard
+import com.sameerasw.essentials.ui.components.sheets.PermissionItem
+import com.sameerasw.essentials.ui.components.sheets.PermissionsBottomSheet
 import com.sameerasw.essentials.ui.theme.EssentialsTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.Job
@@ -105,14 +110,17 @@ fun ScreenOffWidgetSetup(
                                 dependentFeatures = PermissionRegistry.getFeatures("WRITE_SECURE_SETTINGS"),
                                 actionLabel = "Copy ADB",
                                 action = {
-                                    val adbCommand = "adb shell pm grant com.sameerasw.essentials android.permission.WRITE_SECURE_SETTINGS"
-                                    val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as ClipboardManager
-                                    val clip = android.content.ClipData.newPlainText("adb_command", adbCommand)
+                                    val adbCommand =
+                                        "adb shell pm grant com.sameerasw.essentials android.permission.WRITE_SECURE_SETTINGS"
+                                    val clipboard =
+                                        context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                    val clip = ClipData.newPlainText("adb_command", adbCommand)
                                     clipboard.setPrimaryClip(clip)
                                 },
                                 secondaryActionLabel = "Check",
                                 secondaryAction = {
-                                    viewModel.isWriteSecureSettingsEnabled.value = viewModel.canWriteSecureSettings(context)
+                                    viewModel.isWriteSecureSettingsEnabled.value =
+                                        viewModel.canWriteSecureSettings(context)
                                 },
                                 isGranted = isWriteSecureSettingsEnabled
                             )
@@ -150,14 +158,17 @@ fun ScreenOffWidgetSetup(
                     dependentFeatures = PermissionRegistry.getFeatures("WRITE_SECURE_SETTINGS"),
                     actionLabel = "Copy ADB",
                     action = {
-                        val adbCommand = "adb shell pm grant com.sameerasw.essentials android.permission.WRITE_SECURE_SETTINGS"
-                        val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as ClipboardManager
-                        val clip = android.content.ClipData.newPlainText("adb_command", adbCommand)
+                        val adbCommand =
+                            "adb shell pm grant com.sameerasw.essentials android.permission.WRITE_SECURE_SETTINGS"
+                        val clipboard =
+                            context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                        val clip = ClipData.newPlainText("adb_command", adbCommand)
                         clipboard.setPrimaryClip(clip)
                     },
                     secondaryActionLabel = "Check",
                     secondaryAction = {
-                        viewModel.isWriteSecureSettingsEnabled.value = viewModel.canWriteSecureSettings(context)
+                        viewModel.isWriteSecureSettingsEnabled.value =
+                            viewModel.canWriteSecureSettings(context)
                     },
                     isGranted = isWriteSecureSettingsEnabled
                 )
@@ -180,8 +191,8 @@ fun ScreenOffWidgetSetup(
 
     val allFeatures = remember {
         mutableStateListOf(
-            FeatureItem("Screen off widget", R.drawable.rounded_power_settings_new_24),
-            FeatureItem("Status Bar Icon Control", R.drawable.rounded_chevron_right_24),
+            FeatureItem("Screen off widget", R.drawable.rounded_settings_power_24),
+            FeatureItem("Status Bar Icon Control", R.drawable.rounded_interests_24),
             FeatureItem("Caffeinate", R.drawable.rounded_coffee_24)
         )
     }
@@ -262,8 +273,14 @@ fun ScreenOffWidgetSetup(
                 onToggle = { enabled ->
                     when (feature.title) {
                         "Screen off widget" -> viewModel.setWidgetEnabled(enabled, context)
-                        "Status Bar Icon Control" -> viewModel.setStatusBarIconControlEnabled(enabled, context)
-                        "Caffeinate" -> if (enabled) viewModel.startCaffeinate(context) else viewModel.stopCaffeinate(context)
+                        "Status Bar Icon Control" -> viewModel.setStatusBarIconControlEnabled(
+                            enabled,
+                            context
+                        )
+
+                        "Caffeinate" -> if (enabled) viewModel.startCaffeinate(context) else viewModel.stopCaffeinate(
+                            context
+                        )
                     }
                 },
                 onClick = {
@@ -273,6 +290,7 @@ fun ScreenOffWidgetSetup(
                         }
                     )
                 },
+                iconRes = feature.iconRes,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp),
                 isToggleEnabled = isToggleEnabled,
                 onDisabledToggleClick = {

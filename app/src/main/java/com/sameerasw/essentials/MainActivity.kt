@@ -15,9 +15,10 @@ import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.*
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.Modifier
-import com.sameerasw.essentials.ui.composables.ReusableTopAppBar
+import com.sameerasw.essentials.ui.components.ReusableTopAppBar
 import com.sameerasw.essentials.ui.composables.ScreenOffWidgetSetup
 import com.sameerasw.essentials.ui.theme.EssentialsTheme
+import com.sameerasw.essentials.viewmodels.MainViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 class MainActivity : ComponentActivity() {

@@ -1,6 +1,11 @@
 package com.sameerasw.essentials
 
+import android.Manifest
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.provider.Settings
 import androidx.activity.ComponentActivity
@@ -23,14 +28,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
-import com.sameerasw.essentials.ui.composables.ReusableTopAppBar
+import com.sameerasw.essentials.ui.components.ReusableTopAppBar
 import com.sameerasw.essentials.ui.theme.EssentialsTheme
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
-import com.sameerasw.essentials.ui.composables.PermissionCard
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import com.sameerasw.essentials.ui.components.cards.PermissionCard
 import com.sameerasw.essentials.ui.components.dialogs.AboutSection
+import com.sameerasw.essentials.viewmodels.MainViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 class SettingsActivity : ComponentActivity() {
@@ -117,8 +124,8 @@ fun SettingsContent(viewModel: MainViewModel, modifier: Modifier = Modifier) {
             isGranted = isWriteSecureSettingsEnabled,
             onActionClick = {
                 val adbCommand = "adb shell pm grant com.sameerasw.essentials android.permission.WRITE_SECURE_SETTINGS"
-                val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                val clip = android.content.ClipData.newPlainText("adb_command", adbCommand)
+                val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val clip = ClipData.newPlainText("adb_command", adbCommand)
                 clipboard.setPrimaryClip(clip)
             },
             secondaryActionLabel = "Check",
@@ -133,15 +140,15 @@ fun SettingsContent(viewModel: MainViewModel, modifier: Modifier = Modifier) {
             title = "Read Phone State",
             dependentFeatures = listOf("Smart Data"),
             actionLabel = "Grant Permission",
-            isGranted = androidx.core.content.ContextCompat.checkSelfPermission(
+            isGranted = ContextCompat.checkSelfPermission(
                 context,
-                android.Manifest.permission.READ_PHONE_STATE
-            ) == android.content.pm.PackageManager.PERMISSION_GRANTED,
+                Manifest.permission.READ_PHONE_STATE
+            ) == PackageManager.PERMISSION_GRANTED,
             onActionClick = {
                 // Request permission
-                androidx.core.app.ActivityCompat.requestPermissions(
-                    context as androidx.activity.ComponentActivity,
-                    arrayOf(android.Manifest.permission.READ_PHONE_STATE),
+                ActivityCompat.requestPermissions(
+                    context as ComponentActivity,
+                    arrayOf(Manifest.permission.READ_PHONE_STATE),
                     1001
                 )
             },
@@ -156,9 +163,9 @@ fun SettingsContent(viewModel: MainViewModel, modifier: Modifier = Modifier) {
             isGranted = isPostNotificationsEnabled,
             onActionClick = {
                 // Request permission
-                androidx.core.app.ActivityCompat.requestPermissions(
-                    context as androidx.activity.ComponentActivity,
-                    arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
+                ActivityCompat.requestPermissions(
+                    context as ComponentActivity,
+                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
                     1002
                 )
             },

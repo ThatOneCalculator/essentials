@@ -48,7 +48,7 @@
         </activity>
 
         <service
-            android:name=".ScreenOffAccessibilityService"
+            android:name=".services.ScreenOffAccessibilityService"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
             android:exported="true">
             <intent-filter>
@@ -71,7 +71,7 @@
         </receiver>
 
         <service
-            android:name=".CaffeinateTileService"
+            android:name=".services.CaffeinateTileService"
             android:exported="true"
             android:icon="@drawable/rounded_coffee_24"
             android:label="Caffeinate"
@@ -81,7 +81,7 @@
             </intent-filter>
         </service>
         <service
-            android:name=".CaffeinateWakeLockService"
+            android:name=".services.CaffeinateWakeLockService"
             android:exported="false"
             android:foregroundServiceType="specialUse" />
     </application>

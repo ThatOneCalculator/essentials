@@ -24,15 +24,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.sameerasw.essentials.ui.composables.HapticFeedbackPicker
-import com.sameerasw.essentials.ui.composables.ReusableTopAppBar
-import com.sameerasw.essentials.ui.composables.SettingsCard
+import com.sameerasw.essentials.ui.components.ReusableTopAppBar
 import com.sameerasw.essentials.ui.theme.EssentialsTheme
 import com.sameerasw.essentials.utils.HapticFeedbackType
-import com.sameerasw.essentials.utils.performHapticFeedback
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.sameerasw.essentials.ui.composables.StatusBarIconSettingsUI
-import com.sameerasw.essentials.ui.composables.CaffeinateSettingsUI
+import com.sameerasw.essentials.ui.composables.configs.StatusBarIconSettingsUI
+import com.sameerasw.essentials.ui.composables.configs.CaffeinateSettingsUI
+import com.sameerasw.essentials.ui.composables.configs.ScreenOffWidgetSettingsUI
+import com.sameerasw.essentials.viewmodels.CaffeinateViewModel
+import com.sameerasw.essentials.viewmodels.MainViewModel
+import com.sameerasw.essentials.viewmodels.StatusBarIconViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 class FeatureSettingsActivity : ComponentActivity() {
@@ -91,19 +92,14 @@ class FeatureSettingsActivity : ComponentActivity() {
                     ) {
                         when (feature) {
                             "Screen off widget" -> {
-                                SettingsCard(title = "Haptic Feedback") {
-                                    HapticFeedbackPicker(
-                                        selectedFeedback = selectedHaptic,
-                                        onFeedbackSelected = { type ->
-                                            prefs.edit().putString("haptic_feedback_type", type.name).commit()
-                                            selectedHaptic = type
-                                            viewModel.setHapticFeedback(type, context)
-                                            if (vibrator != null) {
-                                                performHapticFeedback(vibrator, type)
-                                            }
-                                        }
-                                    )
-                                }
+                                ScreenOffWidgetSettingsUI(
+                                    viewModel = viewModel,
+                                    selectedHaptic = selectedHaptic,
+                                    onHapticSelected = { type -> selectedHaptic = type },
+                                    vibrator = vibrator,
+                                    prefs = prefs,
+                                    modifier = Modifier.padding(top = 16.dp)
+                                )
                             }
                             "Status Bar Icon Control" -> {
                                 val statusBarViewModel: StatusBarIconViewModel = viewModel()
@@ -126,19 +122,14 @@ class FeatureSettingsActivity : ComponentActivity() {
                                 )
                             }
                             else -> {
-                                SettingsCard(title = "Haptic Feedback") {
-                                    HapticFeedbackPicker(
-                                        selectedFeedback = selectedHaptic,
-                                        onFeedbackSelected = { type ->
-                                            prefs.edit().putString("haptic_feedback_type", type.name).commit()
-                                            selectedHaptic = type
-                                            viewModel.setHapticFeedback(type, context)
-                                            if (vibrator != null) {
-                                                performHapticFeedback(vibrator, type)
-                                            }
-                                        }
-                                    )
-                                }
+                                ScreenOffWidgetSettingsUI(
+                                    viewModel = viewModel,
+                                    selectedHaptic = selectedHaptic,
+                                    onHapticSelected = { type -> selectedHaptic = type },
+                                    vibrator = vibrator,
+                                    prefs = prefs,
+                                    modifier = Modifier.padding(top = 16.dp)
+                                )
                             }
                         }
                     }

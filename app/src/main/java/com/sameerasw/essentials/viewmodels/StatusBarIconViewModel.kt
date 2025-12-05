@@ -1,14 +1,17 @@
-package com.sameerasw.essentials
+package com.sameerasw.essentials.viewmodels
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.provider.Settings
 import android.telephony.TelephonyManager
 import androidx.compose.runtime.mutableStateOf
+import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
-import com.sameerasw.essentials.ui.composables.NetworkType
+import com.sameerasw.essentials.ui.components.pickers.NetworkType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -340,10 +343,10 @@ class StatusBarIconViewModel : ViewModel() {
     private fun getCurrentNetworkType(context: Context): NetworkType {
         return try {
             // Check if we have READ_PHONE_STATE permission
-            if (androidx.core.content.ContextCompat.checkSelfPermission(
+            if (ContextCompat.checkSelfPermission(
                     context,
-                    android.Manifest.permission.READ_PHONE_STATE
-                ) != android.content.pm.PackageManager.PERMISSION_GRANTED
+                    Manifest.permission.READ_PHONE_STATE
+                ) != PackageManager.PERMISSION_GRANTED
             ) {
                 return NetworkType.NETWORK_OTHER
             }

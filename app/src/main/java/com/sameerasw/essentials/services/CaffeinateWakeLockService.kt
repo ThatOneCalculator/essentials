@@ -1,4 +1,4 @@
-package com.sameerasw.essentials
+package com.sameerasw.essentials.services
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -6,10 +6,11 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
 import android.content.SharedPreferences
-import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
 import androidx.core.app.NotificationCompat
+import com.sameerasw.essentials.FeatureSettingsActivity
+import com.sameerasw.essentials.R
 
 class CaffeinateWakeLockService : Service() {
 

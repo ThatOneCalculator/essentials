@@ -1,4 +1,4 @@
-package com.sameerasw.essentials.ui.composables
+package com.sameerasw.essentials.ui.components.pickers
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row

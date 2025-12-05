@@ -1,4 +1,4 @@
-package com.sameerasw.essentials
+package com.sameerasw.essentials.services
 
 import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService

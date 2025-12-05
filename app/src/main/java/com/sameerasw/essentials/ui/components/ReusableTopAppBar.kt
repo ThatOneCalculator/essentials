@@ -1,4 +1,4 @@
-package com.sameerasw.essentials.ui.composables
+package com.sameerasw.essentials.ui.components
 
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3Api

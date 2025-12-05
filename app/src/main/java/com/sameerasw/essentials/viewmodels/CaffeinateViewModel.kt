@@ -1,10 +1,14 @@
-package com.sameerasw.essentials
+package com.sameerasw.essentials.viewmodels
 
+import android.Manifest
 import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import androidx.compose.runtime.mutableStateOf
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
+import com.sameerasw.essentials.services.CaffeinateWakeLockService
 
 class CaffeinateViewModel : ViewModel() {
     val isActive = mutableStateOf(false)
@@ -15,10 +19,10 @@ class CaffeinateViewModel : ViewModel() {
         isActive.value = isWakeLockServiceRunning(context)
         val prefs = context.getSharedPreferences("caffeinate_prefs", Context.MODE_PRIVATE)
         showNotification.value = prefs.getBoolean("show_notification", false)
-        postNotificationsGranted.value = androidx.core.content.ContextCompat.checkSelfPermission(
+        postNotificationsGranted.value = ContextCompat.checkSelfPermission(
             context,
-            android.Manifest.permission.POST_NOTIFICATIONS
-        ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+            Manifest.permission.POST_NOTIFICATIONS
+        ) == PackageManager.PERMISSION_GRANTED
     }
 
     fun toggle(context: Context) {

@@ -1,4 +1,4 @@
-package com.sameerasw.essentials.ui.composables
+package com.sameerasw.essentials.ui.components.cards
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -27,6 +27,7 @@ fun FeatureCard(
     onToggle: (Boolean) -> Unit,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    iconRes: Int? = null,
     hasMoreSettings: Boolean = true,
     isToggleEnabled: Boolean = true,
     onDisabledToggleClick: (() -> Unit)? = null
@@ -40,10 +41,21 @@ fun FeatureCard(
             .fillMaxWidth()
             .padding(16.dp)) {
 
-            Text(
-                text = title,
-                modifier = Modifier.align(Alignment.CenterStart)
-            )
+            Row(
+                modifier = Modifier.align(Alignment.CenterStart),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                if (iconRes != null) {
+                    Icon(
+                        painter = painterResource(id = iconRes),
+                        contentDescription = title,
+                        modifier = Modifier.size(24.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+                Text(text = title)
+            }
 
             Row(
                 modifier = Modifier.align(Alignment.CenterEnd),

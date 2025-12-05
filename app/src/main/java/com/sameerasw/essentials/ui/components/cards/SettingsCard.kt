@@ -1,4 +1,4 @@
-package com.sameerasw.essentials.ui.composables
+package com.sameerasw.essentials.ui.components.cards
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding

@@ -1,4 +1,4 @@
-package com.sameerasw.essentials.ui.composables
+package com.sameerasw.essentials.ui.components.cards
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.sameerasw.essentials.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -85,7 +86,7 @@ fun PermissionCard(
                 OutlinedButton(onClick = onActionClick, modifier = Modifier.fillMaxWidth()) {
                     Text(actionLabel)
                     Spacer(modifier = Modifier.weight(1f))
-                    Icon(painter = painterResource(id = com.sameerasw.essentials.R.drawable.rounded_arrow_forward_24), contentDescription = null)
+                    Icon(painter = painterResource(id = R.drawable.rounded_arrow_forward_24), contentDescription = null)
                 }
             } else {
                 // Show buttons - either single or dual buttons
@@ -112,7 +113,7 @@ fun PermissionCard(
                     Button(onClick = onActionClick, modifier = Modifier.fillMaxWidth()) {
                         Text(actionLabel)
                         Spacer(modifier = Modifier.weight(1f))
-                        Icon(painter = painterResource(id = com.sameerasw.essentials.R.drawable.rounded_arrow_forward_24), contentDescription = null)
+                        Icon(painter = painterResource(id = R.drawable.rounded_arrow_forward_24), contentDescription = null)
                     }
                 }
             }

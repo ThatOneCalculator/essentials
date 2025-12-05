@@ -1,10 +1,17 @@
-package com.sameerasw.essentials
+package com.sameerasw.essentials.viewmodels
 
+import android.Manifest
+import android.app.ActivityManager
 import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.provider.Settings
 import androidx.compose.runtime.mutableStateOf
+import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
+import com.sameerasw.essentials.services.CaffeinateWakeLockService
+import com.sameerasw.essentials.services.ScreenOffAccessibilityService
 import com.sameerasw.essentials.utils.HapticFeedbackType
 
 class MainViewModel : ViewModel() {
@@ -20,14 +27,14 @@ class MainViewModel : ViewModel() {
     fun check(context: Context) {
         isAccessibilityEnabled.value = isAccessibilityServiceEnabled(context)
         isWriteSecureSettingsEnabled.value = canWriteSecureSettings(context)
-        isReadPhoneStateEnabled.value = androidx.core.content.ContextCompat.checkSelfPermission(
+        isReadPhoneStateEnabled.value = ContextCompat.checkSelfPermission(
             context,
-            android.Manifest.permission.READ_PHONE_STATE
-        ) == android.content.pm.PackageManager.PERMISSION_GRANTED
-        isPostNotificationsEnabled.value = androidx.core.content.ContextCompat.checkSelfPermission(
+            Manifest.permission.READ_PHONE_STATE
+        ) == PackageManager.PERMISSION_GRANTED
+        isPostNotificationsEnabled.value = ContextCompat.checkSelfPermission(
             context,
-            android.Manifest.permission.POST_NOTIFICATIONS
-        ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+            Manifest.permission.POST_NOTIFICATIONS
+        ) == PackageManager.PERMISSION_GRANTED
         val prefs = context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE)
         isWidgetEnabled.value = prefs.getBoolean("widget_enabled", false)
         isStatusBarIconControlEnabled.value = prefs.getBoolean("status_bar_icon_control_enabled", false)
@@ -99,17 +106,17 @@ class MainViewModel : ViewModel() {
     }
 
     fun startCaffeinate(context: Context) {
-        context.startService(android.content.Intent(context, CaffeinateWakeLockService::class.java))
+        context.startService(Intent(context, CaffeinateWakeLockService::class.java))
         isCaffeinateActive.value = true
     }
 
     fun stopCaffeinate(context: Context) {
-        context.stopService(android.content.Intent(context, CaffeinateWakeLockService::class.java))
+        context.stopService(Intent(context, CaffeinateWakeLockService::class.java))
         isCaffeinateActive.value = false
     }
 
     private fun isCaffeinateServiceRunning(context: Context): Boolean {
-        val manager = context.getSystemService(android.content.Context.ACTIVITY_SERVICE) as android.app.ActivityManager
+        val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         for (service in manager.getRunningServices(Int.MAX_VALUE)) {
             if (CaffeinateWakeLockService::class.java.name == service.service.className) {
                 return true

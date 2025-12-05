@@ -1,6 +1,9 @@
-package com.sameerasw.essentials.ui.composables
+package com.sameerasw.essentials.ui.composables.configs
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,16 +19,22 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.sameerasw.essentials.R
-import com.sameerasw.essentials.StatusBarIconViewModel
+import com.sameerasw.essentials.viewmodels.StatusBarIconViewModel
+import com.sameerasw.essentials.ui.components.pickers.NetworkTypePicker
+import com.sameerasw.essentials.ui.components.sheets.PermissionItem
+import com.sameerasw.essentials.ui.components.sheets.PermissionsBottomSheet
+import com.sameerasw.essentials.ui.components.cards.SettingsCard
 
 @Composable
 fun StatusBarIconSettingsUI(
@@ -37,7 +46,7 @@ fun StatusBarIconSettingsUI(
     val isMobileDataVisible = viewModel.isMobileDataVisible.value
     val isWiFiVisible = viewModel.isWiFiVisible.value
 
-    var showPermissionSheet by remember { androidx.compose.runtime.mutableStateOf(false) }
+    var showPermissionSheet by remember { mutableStateOf(false) }
 
     // Refresh permission state when composable is shown
     LaunchedEffect(Unit) {
@@ -57,16 +66,16 @@ fun StatusBarIconSettingsUI(
                     dependentFeatures = listOf("Smart Data"),
                     actionLabel = "Grant Permission",
                     action = {
-                        androidx.core.app.ActivityCompat.requestPermissions(
-                            context as androidx.activity.ComponentActivity,
-                            arrayOf(android.Manifest.permission.READ_PHONE_STATE),
+                        ActivityCompat.requestPermissions(
+                            context as ComponentActivity,
+                            arrayOf(Manifest.permission.READ_PHONE_STATE),
                             1001
                         )
                     },
-                    isGranted = androidx.core.content.ContextCompat.checkSelfPermission(
+                    isGranted = ContextCompat.checkSelfPermission(
                         context,
-                        android.Manifest.permission.READ_PHONE_STATE
-                    ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+                        Manifest.permission.READ_PHONE_STATE
+                    ) == PackageManager.PERMISSION_GRANTED
                 )
             )
         )
@@ -315,10 +324,10 @@ fun StatusBarIconSettingsUI(
                     }
                     Box(
                         modifier = Modifier.clickable {
-                            val hasPermission = androidx.core.content.ContextCompat.checkSelfPermission(
+                            val hasPermission = ContextCompat.checkSelfPermission(
                                 context,
-                                android.Manifest.permission.READ_PHONE_STATE
-                            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+                                Manifest.permission.READ_PHONE_STATE
+                            ) == PackageManager.PERMISSION_GRANTED
 
                             if (!hasPermission) {
                                 // Show permission sheet if permission is missing
@@ -329,10 +338,10 @@ fun StatusBarIconSettingsUI(
                         Switch(
                             checked = viewModel.isSmartDataEnabled.value,
                             onCheckedChange = { isChecked ->
-                                val hasPermission = androidx.core.content.ContextCompat.checkSelfPermission(
+                                val hasPermission = ContextCompat.checkSelfPermission(
                                     context,
-                                    android.Manifest.permission.READ_PHONE_STATE
-                                ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+                                    Manifest.permission.READ_PHONE_STATE
+                                ) == PackageManager.PERMISSION_GRANTED
 
                                 if (isChecked && !hasPermission) {
                                     // Show permission sheet if trying to enable but no permission
@@ -343,24 +352,25 @@ fun StatusBarIconSettingsUI(
                                     viewModel.setSmartDataEnabled(isChecked, context)
                                 }
                             },
-                            enabled = isPermissionGranted && androidx.core.content.ContextCompat.checkSelfPermission(
+                            enabled = isPermissionGranted && ContextCompat.checkSelfPermission(
                                 context,
-                                android.Manifest.permission.READ_PHONE_STATE
-                            ) == android.content.pm.PackageManager.PERMISSION_GRANTED && viewModel.isMobileDataVisible.value
+                                Manifest.permission.READ_PHONE_STATE
+                            ) == PackageManager.PERMISSION_GRANTED && viewModel.isMobileDataVisible.value
                         )
 
                         // Invisible overlay catches taps on disabled Switch
-                        val isSwitchDisabled = !(isPermissionGranted && androidx.core.content.ContextCompat.checkSelfPermission(
-                            context,
-                            android.Manifest.permission.READ_PHONE_STATE
-                        ) == android.content.pm.PackageManager.PERMISSION_GRANTED)
+                        val isSwitchDisabled =
+                            !(isPermissionGranted && ContextCompat.checkSelfPermission(
+                                context,
+                                Manifest.permission.READ_PHONE_STATE
+                            ) == PackageManager.PERMISSION_GRANTED)
 
                         if (isSwitchDisabled) {
                             Box(modifier = Modifier.matchParentSize().clickable {
-                                val hasPermission = androidx.core.content.ContextCompat.checkSelfPermission(
+                                val hasPermission = ContextCompat.checkSelfPermission(
                                     context,
-                                    android.Manifest.permission.READ_PHONE_STATE
-                                ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+                                    Manifest.permission.READ_PHONE_STATE
+                                ) == PackageManager.PERMISSION_GRANTED
 
                                 if (!hasPermission) {
                                     // Show permission sheet if permission is missing
@@ -378,8 +388,14 @@ fun StatusBarIconSettingsUI(
                         onTypesSelected = { selectedTypes ->
                             viewModel.selectedNetworkTypes.value = selectedTypes
                             // Save to preferences
-                            val prefs = context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE)
-                            prefs.edit().putStringSet("selected_network_types", selectedTypes.map { it.name }.toSet()).apply()
+                            val prefs = context.getSharedPreferences(
+                                "essentials_prefs",
+                                Context.MODE_PRIVATE
+                            )
+                            prefs.edit().putStringSet(
+                                "selected_network_types",
+                                selectedTypes.map { it.name }.toSet()
+                            ).apply()
                         },
                         modifier = Modifier.padding(top = 8.dp)
                     )
