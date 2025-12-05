@@ -5,6 +5,7 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.provider.Settings
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -39,6 +40,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import com.sameerasw.essentials.FeatureSettingsActivity
 import com.sameerasw.essentials.viewmodels.MainViewModel
 import com.sameerasw.essentials.R
@@ -56,7 +59,7 @@ private val previewMainViewModel = MainViewModel()
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun ScreenOffWidgetSetup(
+fun SetupFeatures(
     viewModel: MainViewModel,
     modifier: Modifier = Modifier,
     searchRequested: Boolean = false,
@@ -241,7 +244,12 @@ fun ScreenOffWidgetSetup(
             leadingIcon = { Icon(painter = painterResource(id = R.drawable.rounded_search_24), contentDescription = "Search", modifier = Modifier.size(24.dp)) },
             placeholder = { if (!isFocused && query.isEmpty()) Text("Search for Tools, Mods and Tweaks") },
             shape = RoundedCornerShape(64.dp),
-            singleLine = true
+            singleLine = true,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant,
+                focusedContainerColor = androidx.compose.material3.MaterialTheme.colorScheme.surfaceBright
+            )
         )
 
         // Loading indicator while filtering
@@ -343,11 +351,11 @@ private data class FeatureItem(val title: String, val iconRes: Int, val category
 
 @Preview(showBackground = true)
 @Composable
-fun ScreenOffWidgetSetupPreview() {
+fun SetupFeaturesPreview() {
     EssentialsTheme {
         val mockViewModel = previewMainViewModel.apply {
             isAccessibilityEnabled.value = false
         }
-        ScreenOffWidgetSetup(viewModel = mockViewModel)
+        SetupFeatures(viewModel = mockViewModel)
     }
 }

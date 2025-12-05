@@ -16,7 +16,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.Modifier
 import com.sameerasw.essentials.ui.components.ReusableTopAppBar
-import com.sameerasw.essentials.ui.composables.ScreenOffWidgetSetup
+import com.sameerasw.essentials.ui.composables.SetupFeatures
 import com.sameerasw.essentials.ui.theme.EssentialsTheme
 import com.sameerasw.essentials.viewmodels.MainViewModel
 
@@ -50,7 +50,7 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                 ) { innerPadding ->
-                    ScreenOffWidgetSetup(
+                    SetupFeatures(
                         viewModel = viewModel,
                         modifier = Modifier.padding(innerPadding),
                         searchRequested = searchRequested,
