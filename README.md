@@ -5,15 +5,23 @@ Essential tools, mods and workarounds for Pixels
 - [x] Empty widget on Home Screen to lock screen
 - [x] Dynamic statusbar icons hiding
 - [x] Keep display awake
+- [x] Edge lighting
+- [x] Google maps power saving mode
 - [ ] Long press volume key while screen off to toggle flashlight
 - [ ] Automatically turn off night light for certain apps
 - [ ] QS tile to toggle privacy mode (hide notification content on lock screen, ...)
 - [ ] Make the previous track button on bluetooth devices like the current music track
-- [ ] Edge lighting and camera ring light for notifications (on AOD)
 - [ ] Show notification icons on AOD but hide them when display turned on
 - [ ] Live actitivites for many things
 
 # Screenshots
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/a6a574ac-a1cb-44d5-b8c7-4fbca08647f1" width="19%" />
+  <img src="https://github.com/user-attachments/assets/e2b20eff-a232-420c-be90-b1308363f4f7" width="19%" />
+  <img src="https://github.com/user-attachments/assets/7fb98791-e4b4-43f1-98a8-4ab6aeb1d0f0" width="19%" />
+  <img src="https://github.com/user-attachments/assets/f126681d-ba53-4e45-911c-c9cb69350848" width="19%" />
+  <img src="https://github.com/user-attachments/assets/fc1593ec-ebf4-485a-bef4-7dd8ae6edb2a" width="19%" />
+</p>
 <p align="center">
   <img src="https://github.com/user-attachments/assets/36dfaed1-89b5-4998-987b-40d5203598a7" width="19%" />
   <img src="https://github.com/user-attachments/assets/22e9deea-6fb8-43bc-9923-f711f5447c70" width="19%" />
