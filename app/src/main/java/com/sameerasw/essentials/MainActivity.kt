@@ -15,9 +15,12 @@ import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.*
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.Modifier
-import com.sameerasw.essentials.ui.composables.ReusableTopAppBar
-import com.sameerasw.essentials.ui.composables.ScreenOffWidgetSetup
+import androidx.compose.ui.platform.LocalContext
+import com.sameerasw.essentials.ui.components.ReusableTopAppBar
+import com.sameerasw.essentials.ui.composables.SetupFeatures
 import com.sameerasw.essentials.ui.theme.EssentialsTheme
+import com.sameerasw.essentials.utils.ShizukuUtils
+import com.sameerasw.essentials.viewmodels.MainViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 class MainActivity : ComponentActivity() {
@@ -26,11 +29,20 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        // Initialize Shizuku
+        ShizukuUtils.initialize()
         // initialize permission registry
         initPermissionRegistry()
         viewModel.check(this)
         setContent {
             EssentialsTheme {
+                val context = LocalContext.current
+                val versionName = try {
+                    context.packageManager.getPackageInfo(context.packageName, 0).versionName
+                } catch (_: Exception) {
+                    "Unknown"
+                }
+
                 var searchRequested by remember { mutableStateOf(false) }
                 val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
                 Scaffold(
@@ -44,11 +56,12 @@ class MainActivity : ComponentActivity() {
                             hasSettings = true,
                             onSearchClick = { searchRequested = true },
                             onSettingsClick = { startActivity(Intent(this, SettingsActivity::class.java)) },
-                            scrollBehavior = scrollBehavior
+                            scrollBehavior = scrollBehavior,
+                            subtitle = "V$versionName"
                         )
                     }
                 ) { innerPadding ->
-                    ScreenOffWidgetSetup(
+                    SetupFeatures(
                         viewModel = viewModel,
                         modifier = Modifier.padding(innerPadding),
                         searchRequested = searchRequested,

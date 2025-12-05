@@ -1,4 +1,4 @@
-package com.sameerasw.essentials.ui.composables
+package com.sameerasw.essentials.ui.components.sheets
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -10,6 +10,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.sameerasw.essentials.ui.components.cards.PermissionCard
+import com.sameerasw.essentials.ui.components.containers.RoundedCardContainer
 
 data class PermissionItem(
     val iconRes: Int,
@@ -18,6 +20,8 @@ data class PermissionItem(
     val dependentFeatures: List<String> = emptyList(),
     val actionLabel: String? = null,
     val action: (() -> Unit)? = null,
+    val secondaryActionLabel: String? = null,
+    val secondaryAction: (() -> Unit)? = null,
     val isGranted: Boolean = false
 )
 
@@ -32,15 +36,19 @@ fun PermissionsBottomSheet(
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text(text = "$featureTitle requires following permissions", style = MaterialTheme.typography.titleLarge)
 
-            permissions.forEach { perm ->
-                PermissionCard(
-                    iconRes = perm.iconRes,
-                    title = perm.title,
-                    dependentFeatures = perm.dependentFeatures,
-                    actionLabel = perm.actionLabel ?: "Open Settings",
-                    isGranted = perm.isGranted,
-                    onActionClick = { perm.action?.invoke() }
-                )
+            RoundedCardContainer() {
+                permissions.forEach { perm ->
+                    PermissionCard(
+                        iconRes = perm.iconRes,
+                        title = perm.title,
+                        dependentFeatures = perm.dependentFeatures,
+                        actionLabel = perm.actionLabel ?: "Open Settings",
+                        isGranted = perm.isGranted,
+                        onActionClick = { perm.action?.invoke() },
+                        secondaryActionLabel = perm.secondaryActionLabel,
+                        onSecondaryActionClick = { perm.secondaryAction?.invoke() }
+                    )
+                }
             }
         }
     }

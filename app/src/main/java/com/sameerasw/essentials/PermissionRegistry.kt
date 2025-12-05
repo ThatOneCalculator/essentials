@@ -15,6 +15,8 @@ object PermissionRegistry {
 fun initPermissionRegistry() {
     // Key for accessibility (use unique string)
     PermissionRegistry.register("ACCESSIBILITY", "Screen off widget")
+    // Key for write secure settings
+    PermissionRegistry.register("WRITE_SECURE_SETTINGS", "Statusbar icons")
     // add other registrations here if needed in future
 }
 

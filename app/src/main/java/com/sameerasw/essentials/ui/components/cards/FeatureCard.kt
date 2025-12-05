@@ -1,9 +1,11 @@
-package com.sameerasw.essentials.ui.composables
+package com.sameerasw.essentials.ui.components.cards
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -27,23 +29,52 @@ fun FeatureCard(
     onToggle: (Boolean) -> Unit,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    iconRes: Int? = null,
     hasMoreSettings: Boolean = true,
     isToggleEnabled: Boolean = true,
-    onDisabledToggleClick: (() -> Unit)? = null
+    onDisabledToggleClick: (() -> Unit)? = null,
+    description: String? = null
 ) {
     Card(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceBright
         ),
+        shape = MaterialTheme.shapes.extraSmall,
         modifier = modifier.clickable { onClick() }) {
         Box(modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)) {
 
-            Text(
-                text = title,
-                modifier = Modifier.align(Alignment.CenterStart)
-            )
+            Row(
+                modifier = Modifier.align(Alignment.CenterStart),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                if (iconRes != null) {
+
+                    Spacer(modifier = Modifier.size(1.dp))
+                    Icon(
+                        painter = painterResource(id = iconRes),
+                        contentDescription = title,
+                        modifier = Modifier.size(28.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.size(1.dp))
+                }
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                ) {
+                    Text(text = title)
+                    if (description != null) {
+                        Text(
+                            text = description,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
 
             Row(
                 modifier = Modifier.align(Alignment.CenterEnd),
