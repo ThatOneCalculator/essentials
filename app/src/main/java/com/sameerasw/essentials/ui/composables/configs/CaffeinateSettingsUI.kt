@@ -20,6 +20,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.sameerasw.essentials.viewmodels.CaffeinateViewModel
 import com.sameerasw.essentials.R
+import com.sameerasw.essentials.ui.components.cards.IconToggleItem
 import com.sameerasw.essentials.ui.components.sheets.PermissionItem
 import com.sameerasw.essentials.ui.components.sheets.PermissionsBottomSheet
 import com.sameerasw.essentials.ui.components.containers.RoundedCardContainer
@@ -85,7 +86,7 @@ fun CaffeinateSettingsUI(
             spacing = 2.dp,
             cornerRadius = 24.dp
         ) {
-            SimpleToggleItem(
+            IconToggleItem(
                 title = "Show notification",
                 isChecked = viewModel.showNotification.value,
                 onCheckedChange = { isChecked ->
@@ -94,7 +95,8 @@ fun CaffeinateSettingsUI(
                 enabled = viewModel.postNotificationsGranted.value,
                 onDisabledClick = {
                     showPermissionSheet = true
-                }
+                },
+                iconRes = R.drawable.rounded_notifications_unread_24,
             )
         }
     }

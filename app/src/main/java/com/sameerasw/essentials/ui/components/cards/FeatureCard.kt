@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -47,15 +48,18 @@ fun FeatureCard(
             Row(
                 modifier = Modifier.align(Alignment.CenterStart),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 if (iconRes != null) {
+
+                    Spacer(modifier = Modifier.size(1.dp))
                     Icon(
                         painter = painterResource(id = iconRes),
                         contentDescription = title,
                         modifier = Modifier.size(28.dp),
                         tint = MaterialTheme.colorScheme.primary
                     )
+                    Spacer(modifier = Modifier.size(1.dp))
                 }
                 Column(
                     modifier = Modifier.weight(1f),

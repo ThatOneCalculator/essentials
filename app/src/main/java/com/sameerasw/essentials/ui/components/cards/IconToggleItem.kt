@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -42,12 +43,14 @@ fun IconToggleItem(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+        Spacer(modifier = Modifier.size(2.dp))
         Icon(
             painter = painterResource(id = iconRes),
             contentDescription = title,
             modifier = Modifier.size(24.dp),
             tint = MaterialTheme.colorScheme.primary
         )
+        Spacer(modifier = Modifier.size(2.dp))
 
         if (description != null) {
             Column(modifier = Modifier.weight(1f)) {
