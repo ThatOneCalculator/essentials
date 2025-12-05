@@ -13,6 +13,7 @@ import androidx.lifecycle.ViewModel
 import com.sameerasw.essentials.services.CaffeinateWakeLockService
 import com.sameerasw.essentials.services.ScreenOffAccessibilityService
 import com.sameerasw.essentials.utils.HapticFeedbackType
+import com.sameerasw.essentials.utils.ShizukuUtils
 
 class MainViewModel : ViewModel() {
     val isAccessibilityEnabled = mutableStateOf(false)
@@ -22,6 +23,8 @@ class MainViewModel : ViewModel() {
     val isReadPhoneStateEnabled = mutableStateOf(false)
     val isPostNotificationsEnabled = mutableStateOf(false)
     val isCaffeinateActive = mutableStateOf(false)
+    val isShizukuPermissionGranted = mutableStateOf(false)
+    val isShizukuAvailable = mutableStateOf(false)
     val hapticFeedbackType = mutableStateOf(HapticFeedbackType.SUBTLE)
 
     fun check(context: Context) {
@@ -35,6 +38,8 @@ class MainViewModel : ViewModel() {
             context,
             Manifest.permission.POST_NOTIFICATIONS
         ) == PackageManager.PERMISSION_GRANTED
+        isShizukuAvailable.value = ShizukuUtils.isShizukuAvailable()
+        isShizukuPermissionGranted.value = ShizukuUtils.hasPermission()
         val prefs = context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE)
         isWidgetEnabled.value = prefs.getBoolean("widget_enabled", false)
         isStatusBarIconControlEnabled.value = prefs.getBoolean("status_bar_icon_control_enabled", false)
@@ -107,6 +112,19 @@ class MainViewModel : ViewModel() {
             arrayOf(Manifest.permission.READ_PHONE_STATE),
             1001
         )
+    }
+
+    fun requestShizukuPermission() {
+        ShizukuUtils.requestPermission()
+    }
+
+    fun grantWriteSecureSettingsWithShizuku(context: Context): Boolean {
+        val success = ShizukuUtils.grantWriteSecureSettingsPermission()
+        if (success) {
+            // Refresh the write secure settings check
+            isWriteSecureSettingsEnabled.value = canWriteSecureSettings(context)
+        }
+        return success
     }
 
     fun checkCaffeinateActive(context: Context) {

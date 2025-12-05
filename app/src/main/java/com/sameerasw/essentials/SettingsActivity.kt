@@ -39,15 +39,24 @@ import androidx.core.app.ActivityCompat
 import com.sameerasw.essentials.ui.components.cards.PermissionCard
 import com.sameerasw.essentials.ui.components.dialogs.AboutSection
 import com.sameerasw.essentials.viewmodels.MainViewModel
+import rikka.shizuku.Shizuku
 
 @OptIn(ExperimentalMaterial3Api::class)
 class SettingsActivity : ComponentActivity() {
 
     private val viewModel: MainViewModel by viewModels()
 
+    private val shizukuPermissionResultListener = Shizuku.OnRequestPermissionResultListener { _, grantResult ->
+        if (grantResult == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            viewModel.check(this)
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        // Register Shizuku permission listener
+        Shizuku.addRequestPermissionResultListener(shizukuPermissionResultListener)
         setContent {
             EssentialsTheme {
                 val context = LocalContext.current
@@ -81,10 +90,15 @@ class SettingsActivity : ComponentActivity() {
         viewModel.check(this)
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        Shizuku.removeRequestPermissionResultListener(shizukuPermissionResultListener)
+    }
+
     @Suppress("DEPRECATION")
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == 1001 || requestCode == 1002) {
+        if (requestCode == 1001 || requestCode == 1002 || requestCode == 1003) {
             viewModel.check(this)
         }
     }
@@ -96,6 +110,8 @@ fun SettingsContent(viewModel: MainViewModel, modifier: Modifier = Modifier) {
     val isWriteSecureSettingsEnabled by viewModel.isWriteSecureSettingsEnabled
     val isPostNotificationsEnabled by viewModel.isPostNotificationsEnabled
     val isReadPhoneStateEnabled by viewModel.isReadPhoneStateEnabled
+    val isShizukuPermissionGranted by viewModel.isShizukuPermissionGranted
+    val isShizukuAvailable by viewModel.isShizukuAvailable
     val context = LocalContext.current
 
     Column(
@@ -136,6 +152,25 @@ fun SettingsContent(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                     viewModel.check(context)
                 },
             )
+
+            if (isShizukuAvailable) {
+                PermissionCard(
+                    iconRes = R.drawable.rounded_chevron_right_24,
+                    title = "Shizuku",
+                    dependentFeatures = listOf("Automatic Write Secure Settings Permission"),
+                    actionLabel = if (isShizukuPermissionGranted) "Granted" else "Request Permission",
+                    isGranted = isShizukuPermissionGranted,
+                    onActionClick = {
+                        viewModel.requestShizukuPermission()
+                    },
+                    secondaryActionLabel = if (isShizukuPermissionGranted && !isWriteSecureSettingsEnabled) "Auto-Grant" else null,
+                    onSecondaryActionClick = if (isShizukuPermissionGranted && !isWriteSecureSettingsEnabled) {
+                        {
+                            viewModel.grantWriteSecureSettingsWithShizuku(context)
+                        }
+                    } else null,
+                )
+            }
 
             PermissionCard(
                 iconRes = R.drawable.rounded_android_cell_dual_4_bar_24,

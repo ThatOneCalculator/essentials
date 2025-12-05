@@ -71,10 +71,31 @@ fun PermissionCard(
             }
 
             if (isGranted) {
-                OutlinedButton(onClick = onActionClick, modifier = Modifier.fillMaxWidth()) {
-                    Text(actionLabel)
-                    Spacer(modifier = Modifier.weight(1f))
-                    Icon(painter = painterResource(id = R.drawable.rounded_arrow_forward_24), contentDescription = null)
+                if (secondaryActionLabel != null && onSecondaryActionClick != null) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        OutlinedButton(
+                            onClick = onActionClick,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(actionLabel)
+                        }
+
+                        Button(
+                            onClick = onSecondaryActionClick,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(secondaryActionLabel)
+                        }
+                    }
+                } else {
+                    OutlinedButton(onClick = onActionClick, modifier = Modifier.fillMaxWidth()) {
+                        Text(actionLabel)
+                        Spacer(modifier = Modifier.weight(1f))
+                        Icon(painter = painterResource(id = R.drawable.rounded_arrow_forward_24), contentDescription = null)
+                    }
                 }
             } else {
                 // Show buttons - either single or dual buttons

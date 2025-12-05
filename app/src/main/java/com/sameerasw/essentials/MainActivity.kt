@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import com.sameerasw.essentials.ui.components.ReusableTopAppBar
 import com.sameerasw.essentials.ui.composables.SetupFeatures
 import com.sameerasw.essentials.ui.theme.EssentialsTheme
+import com.sameerasw.essentials.utils.ShizukuUtils
 import com.sameerasw.essentials.viewmodels.MainViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -27,6 +28,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        // Initialize Shizuku
+        ShizukuUtils.initialize()
         // initialize permission registry
         initPermissionRegistry()
         viewModel.check(this)
