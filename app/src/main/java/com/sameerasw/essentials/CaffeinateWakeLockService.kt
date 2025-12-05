@@ -87,6 +87,8 @@ class CaffeinateWakeLockService : Service() {
                 .setContentText("Screen is being kept awake")
                 .setSmallIcon(R.drawable.rounded_coffee_24)
                 .setOngoing(true)
+                .setSilent(true)
+                .setCategory("Caffeinate")
                 .addAction(R.drawable.rounded_stop_circle_24, "Stop", stopPendingIntent)
                 .addAction(R.drawable.rounded_settings_accessibility_24, "Configure", configurePendingIntent)
                 .build()
