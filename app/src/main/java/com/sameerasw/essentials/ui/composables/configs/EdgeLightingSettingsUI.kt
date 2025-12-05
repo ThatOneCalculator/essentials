@@ -92,7 +92,7 @@ fun EdgeLightingSettingsUI(
         AppType.SYSTEM -> selectedApps.filter { it.isSystemApp } // System apps only
     }
 
-    Column(modifier = modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    Column(modifier = modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Button(onClick = { viewModel.triggerEdgeLighting(context) }) {
             Text(text = "Show test overlay")
         }
@@ -102,6 +102,7 @@ fun EdgeLightingSettingsUI(
             text = "App Selection",
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(start = 0.dp, top = 16.dp, bottom = 8.dp),
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
 
