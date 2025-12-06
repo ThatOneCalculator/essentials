@@ -60,7 +60,7 @@ fun IconToggleItem(
                 )
                 Text(
                     text = description,
-                    style = MaterialTheme.typography.labelSmall,
+                    style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
