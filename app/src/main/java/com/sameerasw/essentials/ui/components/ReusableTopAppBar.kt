@@ -22,6 +22,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import com.sameerasw.essentials.R
 import androidx.compose.ui.unit.dp
+import com.sameerasw.essentials.utils.HapticUtil
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -78,7 +79,7 @@ fun ReusableTopAppBar(
                 val view = LocalView.current
                 IconButton(
                     onClick = {
-                        view.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+                        HapticUtil.performVirtualKeyHaptic(view)
                         onBackClick?.invoke()
                     },
                     colors = IconButtonDefaults.iconButtonColors(
@@ -101,7 +102,7 @@ fun ReusableTopAppBar(
                 val view = LocalView.current
                 IconButton(
                     onClick = {
-                        view.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+                        HapticUtil.performVirtualKeyHaptic(view)
                         onSettingsClick?.invoke()
                     },
                     colors = IconButtonDefaults.iconButtonColors(

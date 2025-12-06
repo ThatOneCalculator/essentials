@@ -21,6 +21,7 @@ import com.sameerasw.essentials.ui.components.ReusableTopAppBar
 import com.sameerasw.essentials.ui.composables.SetupFeatures
 import com.sameerasw.essentials.ui.theme.EssentialsTheme
 import com.sameerasw.essentials.utils.ShizukuUtils
+import com.sameerasw.essentials.utils.HapticUtil
 import com.sameerasw.essentials.viewmodels.MainViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -32,6 +33,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         // Initialize Shizuku
         ShizukuUtils.initialize()
+        // Initialize HapticUtil with saved preferences
+        HapticUtil.initialize(this)
         // initialize permission registry
         initPermissionRegistry()
         viewModel.check(this)

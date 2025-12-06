@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.sameerasw.essentials.utils.HapticUtil
 
 @Composable
 fun IconToggleItem(
@@ -80,7 +81,7 @@ fun IconToggleItem(
                 checked = if (enabled) isChecked else false,
                 onCheckedChange = { checked ->
                     if (enabled) {
-                        view.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+                        HapticUtil.performVirtualKeyHaptic(view)
                         onCheckedChange(checked)
                     }
                 },
@@ -89,7 +90,7 @@ fun IconToggleItem(
 
             if (!enabled && onDisabledClick != null) {
                 Box(modifier = Modifier.matchParentSize().clickable {
-                    view.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+                    HapticUtil.performVirtualKeyHaptic(view)
                     onDisabledClick()
                 })
             }

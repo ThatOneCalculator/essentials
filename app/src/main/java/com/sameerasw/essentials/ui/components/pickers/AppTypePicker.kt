@@ -18,6 +18,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import com.sameerasw.essentials.utils.HapticUtil
 
 enum class AppType {
     DOWNLOADED,
@@ -60,7 +61,7 @@ fun AppTypePicker(
                 checked = isSelected,
                 onCheckedChange = { checked ->
                     if (checked) {
-                        view.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+                        HapticUtil.performUIHaptic(view)
                         onTypeSelected(type)
                     }
                 },

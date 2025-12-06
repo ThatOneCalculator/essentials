@@ -18,6 +18,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import com.sameerasw.essentials.utils.HapticUtil
 
 enum class NetworkType {
     NETWORK_5G,
@@ -67,7 +68,7 @@ fun NetworkTypePicker(
             ToggleButton(
                 checked = isSelected,
                 onCheckedChange = { checked ->
-                    view.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+                    HapticUtil.performUIHaptic(view)
                     val newSelection = if (checked) {
                         selectedTypes + type
                     } else {

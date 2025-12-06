@@ -45,6 +45,7 @@ import com.sameerasw.essentials.ui.components.pickers.AppType
 import com.sameerasw.essentials.ui.components.pickers.AppTypePicker
 import com.sameerasw.essentials.utils.AppUtil
 import com.sameerasw.essentials.viewmodels.MainViewModel
+import com.sameerasw.essentials.utils.HapticUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -122,7 +123,7 @@ fun EdgeLightingSettingsUI(
     Column(modifier = modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
 
         Button(onClick = {
-            view.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+            HapticUtil.performVirtualKeyHaptic(view)
             viewModel.triggerEdgeLighting(context)
         }, modifier = Modifier.fillMaxWidth()) {
             Icon(painter = painterResource(id = R.drawable.rounded_play_arrow_24), contentDescription = null)
@@ -147,8 +148,7 @@ fun EdgeLightingSettingsUI(
                 onValueChange = { newValue ->
                     cornerRadiusDp = newValue
                     isSliderActive = true
-                    // Use softer haptic feedback for sliders
-                    view.performHapticFeedback(android.view.HapticFeedbackConstants.SEGMENT_FREQUENT_TICK)
+                    HapticUtil.performUIHaptic(view)
                     // Show preview overlay while dragging
                     viewModel.triggerEdgeLightingWithRadiusAndThickness(context, newValue.toInt(), strokeThicknessDp.toInt())
                 },
@@ -184,8 +184,7 @@ fun EdgeLightingSettingsUI(
                 onValueChange = { newValue ->
                     strokeThicknessDp = newValue
                     isSliderActive = true
-                    // Use softer haptic feedback for sliders
-                    view.performHapticFeedback(android.view.HapticFeedbackConstants.SEGMENT_FREQUENT_TICK)
+                    HapticUtil.performUIHaptic(view)
                     // Show preview overlay while dragging
                     viewModel.triggerEdgeLightingWithRadiusAndThickness(context, cornerRadiusDp.toInt(), newValue.toInt())
                 },
@@ -299,7 +298,7 @@ fun AppToggleItem(
         Switch(
             checked = isChecked,
             onCheckedChange = { checked ->
-                view.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+                HapticUtil.performVirtualKeyHaptic(view)
                 onCheckedChange(checked)
             }
         )

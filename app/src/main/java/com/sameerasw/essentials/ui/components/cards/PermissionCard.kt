@@ -25,6 +25,7 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.sameerasw.essentials.R
+import com.sameerasw.essentials.utils.HapticUtil
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -80,7 +81,7 @@ fun PermissionCard(
                     ) {
                         OutlinedButton(
                             onClick = {
-                                view.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+                                HapticUtil.performVirtualKeyHaptic(view)
                                 onActionClick()
                             },
                             modifier = Modifier.weight(1f)
@@ -90,7 +91,7 @@ fun PermissionCard(
 
                         Button(
                             onClick = {
-                                view.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+                                HapticUtil.performVirtualKeyHaptic(view)
                                 onSecondaryActionClick()
                             },
                             modifier = Modifier.weight(1f)
@@ -100,7 +101,7 @@ fun PermissionCard(
                     }
                 } else {
                     OutlinedButton(onClick = {
-                        view.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+                        HapticUtil.performVirtualKeyHaptic(view)
                         onActionClick()
                     }, modifier = Modifier.fillMaxWidth()) {
                         Text(actionLabel)
@@ -117,7 +118,7 @@ fun PermissionCard(
                     ) {
                         OutlinedButton(
                             onClick = {
-                                view.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+                                HapticUtil.performVirtualKeyHaptic(view)
                                 onActionClick()
                             },
                             modifier = Modifier.weight(1f)
@@ -127,7 +128,7 @@ fun PermissionCard(
 
                         Button(
                             onClick = {
-                                view.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+                                HapticUtil.performVirtualKeyHaptic(view)
                                 onSecondaryActionClick()
                             },
                             modifier = Modifier.weight(1f)
@@ -137,7 +138,7 @@ fun PermissionCard(
                     }
                 } else {
                     Button(onClick = {
-                        view.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+                        HapticUtil.performVirtualKeyHaptic(view)
                         onActionClick()
                     }, modifier = Modifier.fillMaxWidth()) {
                         Text(actionLabel)

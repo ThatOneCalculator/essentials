@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
+import com.sameerasw.essentials.utils.HapticUtil
 
 @Composable
 fun SimpleToggleItem(
@@ -50,7 +51,7 @@ fun SimpleToggleItem(
                 checked = if (enabled) isChecked else false,
                 onCheckedChange = { checked ->
                     if (enabled) {
-                        view.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+                        HapticUtil.performVirtualKeyHaptic(view)
                         onCheckedChange(checked)
                     }
                 },
@@ -59,7 +60,7 @@ fun SimpleToggleItem(
 
             if (!enabled && onDisabledClick != null) {
                 Box(modifier = Modifier.matchParentSize().clickable {
-                    view.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+                    HapticUtil.performVirtualKeyHaptic(view)
                     onDisabledClick()
                 })
             }
