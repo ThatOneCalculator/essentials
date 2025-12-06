@@ -14,7 +14,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
+import com.sameerasw.essentials.utils.HapticUtil
 
 @Composable
 fun SimpleToggleItem(
@@ -25,6 +27,8 @@ fun SimpleToggleItem(
     enabled: Boolean = true,
     onDisabledClick: (() -> Unit)? = null
 ) {
+    val view = LocalView.current
+
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -45,12 +49,20 @@ fun SimpleToggleItem(
         Box {
             Switch(
                 checked = if (enabled) isChecked else false,
-                onCheckedChange = { checked -> if (enabled) onCheckedChange(checked) },
+                onCheckedChange = { checked ->
+                    if (enabled) {
+                        HapticUtil.performVirtualKeyHaptic(view)
+                        onCheckedChange(checked)
+                    }
+                },
                 enabled = enabled
             )
 
             if (!enabled && onDisabledClick != null) {
-                Box(modifier = Modifier.matchParentSize().clickable { onDisabledClick() })
+                Box(modifier = Modifier.matchParentSize().clickable {
+                    HapticUtil.performVirtualKeyHaptic(view)
+                    onDisabledClick()
+                })
             }
         }
     }

@@ -18,9 +18,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.sameerasw.essentials.R
+import com.sameerasw.essentials.utils.HapticUtil
 
 @Composable
 fun FeatureCard(
@@ -35,12 +37,17 @@ fun FeatureCard(
     onDisabledToggleClick: (() -> Unit)? = null,
     description: String? = null
 ) {
+    val view = LocalView.current
+
     Card(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceBright
         ),
         shape = MaterialTheme.shapes.extraSmall,
-        modifier = modifier.clickable { onClick() }) {
+        modifier = modifier.clickable {
+            HapticUtil.performVirtualKeyHaptic(view)
+            onClick()
+        }) {
         Box(modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)) {
@@ -69,7 +76,7 @@ fun FeatureCard(
                     if (description != null) {
                         Text(
                             text = description,
-                            style = MaterialTheme.typography.bodySmall,
+                            style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
@@ -92,13 +99,21 @@ fun FeatureCard(
                 Box {
                     Switch(
                         checked = if (isToggleEnabled) isEnabled else false,
-                        onCheckedChange = { checked -> if (isToggleEnabled) onToggle(checked) },
+                        onCheckedChange = { checked ->
+                            if (isToggleEnabled) {
+                                HapticUtil.performVirtualKeyHaptic(view)
+                                onToggle(checked)
+                            }
+                        },
                         enabled = isToggleEnabled
                     )
 
                     if (!isToggleEnabled && onDisabledToggleClick != null) {
                         // Invisible overlay catches taps even if the child consumes them
-                        Box(modifier = Modifier.matchParentSize().clickable { onDisabledToggleClick() })
+                        Box(modifier = Modifier.matchParentSize().clickable {
+                            HapticUtil.performVirtualKeyHaptic(view)
+                            onDisabledToggleClick()
+                        })
                     }
                 }
             }

@@ -21,6 +21,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -31,7 +32,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
 import com.sameerasw.essentials.R
@@ -42,6 +45,7 @@ import com.sameerasw.essentials.ui.components.pickers.AppType
 import com.sameerasw.essentials.ui.components.pickers.AppTypePicker
 import com.sameerasw.essentials.utils.AppUtil
 import com.sameerasw.essentials.viewmodels.MainViewModel
+import com.sameerasw.essentials.utils.HapticUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -54,6 +58,7 @@ fun EdgeLightingSettingsUI(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val view = LocalView.current
     val isEnabled by viewModel.isEdgeLightingEnabled
 
     // App selection state
@@ -107,14 +112,24 @@ fun EdgeLightingSettingsUI(
     var isSliderActive by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
+    // Cleanup overlay when composable is destroyed (activity paused/closed/destroyed)
+    DisposableEffect(Unit) {
+        onDispose {
+            // Remove any ongoing preview overlay when the composable is disposed
+            viewModel.removePreviewOverlay(context)
+        }
+    }
+
     Column(modifier = modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
 
-        Button(onClick = { viewModel.triggerEdgeLighting(context) }, modifier = Modifier.fillMaxWidth()) {
+        Button(onClick = {
+            HapticUtil.performVirtualKeyHaptic(view)
+            viewModel.triggerEdgeLighting(context)
+        }, modifier = Modifier.fillMaxWidth()) {
             Icon(painter = painterResource(id = R.drawable.rounded_play_arrow_24), contentDescription = null)
             Text("Preview")
         }
 
-        // Corner Roundness Slider Section
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -124,7 +139,7 @@ fun EdgeLightingSettingsUI(
             Text(
                 text = "Corner radius",
                 style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(start = 0.dp, top = 16.dp, bottom = 8.dp),
+                modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp),
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Slider(
@@ -132,6 +147,7 @@ fun EdgeLightingSettingsUI(
                 onValueChange = { newValue ->
                     cornerRadiusDp = newValue
                     isSliderActive = true
+                    HapticUtil.performSliderHaptic(view)
                     // Show preview overlay while dragging
                     viewModel.triggerEdgeLightingWithRadiusAndThickness(context, newValue.toInt(), strokeThicknessDp.toInt())
                 },
@@ -159,7 +175,7 @@ fun EdgeLightingSettingsUI(
             Text(
                 text = "Stroke thickness",
                 style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(start = 0.dp, top = 16.dp, bottom = 8.dp),
+                modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp),
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Slider(
@@ -167,6 +183,7 @@ fun EdgeLightingSettingsUI(
                 onValueChange = { newValue ->
                     strokeThicknessDp = newValue
                     isSliderActive = true
+                    HapticUtil.performSliderHaptic(view)
                     // Show preview overlay while dragging
                     viewModel.triggerEdgeLightingWithRadiusAndThickness(context, cornerRadiusDp.toInt(), newValue.toInt())
                 },
@@ -189,7 +206,7 @@ fun EdgeLightingSettingsUI(
         Text(
             text = "App Selection",
             style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(start = 0.dp, top = 16.dp, bottom = 8.dp),
+            modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp),
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
@@ -242,6 +259,8 @@ fun AppToggleItem(
     onCheckedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val view = LocalView.current
+
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -277,7 +296,10 @@ fun AppToggleItem(
 
         Switch(
             checked = isChecked,
-            onCheckedChange = onCheckedChange
+            onCheckedChange = { checked ->
+                HapticUtil.performVirtualKeyHaptic(view)
+                onCheckedChange(checked)
+            }
         )
     }
 }

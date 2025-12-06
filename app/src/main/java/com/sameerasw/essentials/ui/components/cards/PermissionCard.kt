@@ -21,9 +21,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.sameerasw.essentials.R
+import com.sameerasw.essentials.utils.HapticUtil
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,6 +41,7 @@ fun PermissionCard(
     onSecondaryActionClick: (() -> Unit)? = null
 ) {
     val grantedGreen = Color(0xFF4CAF50)
+    val view = LocalView.current
 
     Card(modifier = modifier.fillMaxWidth(), shape = MaterialTheme.shapes.extraSmall) {
         Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -77,21 +80,30 @@ fun PermissionCard(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         OutlinedButton(
-                            onClick = onActionClick,
+                            onClick = {
+                                HapticUtil.performVirtualKeyHaptic(view)
+                                onActionClick()
+                            },
                             modifier = Modifier.weight(1f)
                         ) {
                             Text(actionLabel)
                         }
 
                         Button(
-                            onClick = onSecondaryActionClick,
+                            onClick = {
+                                HapticUtil.performVirtualKeyHaptic(view)
+                                onSecondaryActionClick()
+                            },
                             modifier = Modifier.weight(1f)
                         ) {
                             Text(secondaryActionLabel)
                         }
                     }
                 } else {
-                    OutlinedButton(onClick = onActionClick, modifier = Modifier.fillMaxWidth()) {
+                    OutlinedButton(onClick = {
+                        HapticUtil.performVirtualKeyHaptic(view)
+                        onActionClick()
+                    }, modifier = Modifier.fillMaxWidth()) {
                         Text(actionLabel)
                         Spacer(modifier = Modifier.weight(1f))
                         Icon(painter = painterResource(id = R.drawable.rounded_arrow_forward_24), contentDescription = null)
@@ -105,21 +117,30 @@ fun PermissionCard(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         OutlinedButton(
-                            onClick = onActionClick,
+                            onClick = {
+                                HapticUtil.performVirtualKeyHaptic(view)
+                                onActionClick()
+                            },
                             modifier = Modifier.weight(1f)
                         ) {
                             Text(actionLabel)
                         }
 
                         Button(
-                            onClick = onSecondaryActionClick,
+                            onClick = {
+                                HapticUtil.performVirtualKeyHaptic(view)
+                                onSecondaryActionClick()
+                            },
                             modifier = Modifier.weight(1f)
                         ) {
                             Text(secondaryActionLabel)
                         }
                     }
                 } else {
-                    Button(onClick = onActionClick, modifier = Modifier.fillMaxWidth()) {
+                    Button(onClick = {
+                        HapticUtil.performVirtualKeyHaptic(view)
+                        onActionClick()
+                    }, modifier = Modifier.fillMaxWidth()) {
                         Text(actionLabel)
                         Spacer(modifier = Modifier.weight(1f))
                         Icon(painter = painterResource(id = R.drawable.rounded_arrow_forward_24), contentDescription = null)

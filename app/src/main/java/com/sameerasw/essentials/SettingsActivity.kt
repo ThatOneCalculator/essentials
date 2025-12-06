@@ -23,7 +23,8 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
@@ -33,12 +34,16 @@ import com.sameerasw.essentials.ui.theme.EssentialsTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import com.sameerasw.essentials.ui.components.cards.PermissionCard
 import com.sameerasw.essentials.ui.components.dialogs.AboutSection
 import com.sameerasw.essentials.viewmodels.MainViewModel
+import com.sameerasw.essentials.utils.HapticUtil
 import rikka.shizuku.Shizuku
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -115,6 +120,7 @@ fun SettingsContent(viewModel: MainViewModel, modifier: Modifier = Modifier) {
     val isOverlayPermissionGranted by viewModel.isOverlayPermissionGranted
     val isNotificationListenerEnabled by viewModel.isNotificationListenerEnabled
     val context = LocalContext.current
+    val isAppHapticsEnabled = remember { mutableStateOf(HapticUtil.loadAppHapticsEnabled(context)) }
 
     Column(
         modifier = modifier
@@ -124,6 +130,36 @@ fun SettingsContent(viewModel: MainViewModel, modifier: Modifier = Modifier) {
         verticalArrangement = Arrangement.spacedBy(4.dp),
         horizontalAlignment = Alignment.Start
     ) {
+        // App Settings Section
+        androidx.compose.material3.Text(
+            text = "App Settings",
+            style = androidx.compose.material3.MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp),
+            color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        RoundedCardContainer {
+            com.sameerasw.essentials.ui.components.cards.IconToggleItem(
+                iconRes = R.drawable.rounded_mobile_vibrate_24,
+                title = "Haptic Feedback",
+                isChecked = isAppHapticsEnabled.value,
+                onCheckedChange = { isChecked ->
+                    isAppHapticsEnabled.value = isChecked
+                    HapticUtil.saveAppHapticsEnabled(context, isChecked)
+                }
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Permissions Section
+        androidx.compose.material3.Text(
+            text = "Permissions",
+            style = androidx.compose.material3.MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp),
+            color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
         RoundedCardContainer {
             PermissionCard(
                 iconRes = R.drawable.rounded_settings_accessibility_24,

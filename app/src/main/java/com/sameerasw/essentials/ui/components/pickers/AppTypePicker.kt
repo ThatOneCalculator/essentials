@@ -11,11 +11,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import com.sameerasw.essentials.utils.HapticUtil
 
 enum class AppType {
     DOWNLOADED,
@@ -35,6 +38,7 @@ fun AppTypePicker(
     onTypeSelected: (AppType) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val view = LocalView.current
     val labels = listOf("Downloaded", "System")
     val types = listOf(AppType.DOWNLOADED, AppType.SYSTEM)
 
@@ -57,6 +61,7 @@ fun AppTypePicker(
                 checked = isSelected,
                 onCheckedChange = { checked ->
                     if (checked) {
+                        HapticUtil.performUIHaptic(view)
                         onTypeSelected(type)
                     }
                 },
