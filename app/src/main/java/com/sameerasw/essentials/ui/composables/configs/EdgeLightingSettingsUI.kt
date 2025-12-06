@@ -130,7 +130,6 @@ fun EdgeLightingSettingsUI(
             Text("Preview")
         }
 
-        // ...existing code...
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -148,7 +147,7 @@ fun EdgeLightingSettingsUI(
                 onValueChange = { newValue ->
                     cornerRadiusDp = newValue
                     isSliderActive = true
-                    HapticUtil.performUIHaptic(view)
+                    HapticUtil.performSliderHaptic(view)
                     // Show preview overlay while dragging
                     viewModel.triggerEdgeLightingWithRadiusAndThickness(context, newValue.toInt(), strokeThicknessDp.toInt())
                 },
@@ -184,7 +183,7 @@ fun EdgeLightingSettingsUI(
                 onValueChange = { newValue ->
                     strokeThicknessDp = newValue
                     isSliderActive = true
-                    HapticUtil.performUIHaptic(view)
+                    HapticUtil.performSliderHaptic(view)
                     // Show preview overlay while dragging
                     viewModel.triggerEdgeLightingWithRadiusAndThickness(context, cornerRadiusDp.toInt(), newValue.toInt())
                 },

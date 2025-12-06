@@ -21,6 +21,12 @@ object HapticUtil {
         view.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP)
     }
 
+
+    fun performSliderHaptic(view: View) {
+        if (!isAppHapticsEnabled.value) return
+        view.performHapticFeedback(android.view.HapticFeedbackConstants.SEGMENT_FREQUENT_TICK)
+    }
+
     /**
      * Perform a virtual key haptic feedback (stronger)
      * Only performs if app haptics are enabled
