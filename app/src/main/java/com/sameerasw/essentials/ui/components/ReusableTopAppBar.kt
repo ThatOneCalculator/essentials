@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import com.sameerasw.essentials.R
 import androidx.compose.ui.unit.dp
 
@@ -76,7 +77,7 @@ fun ReusableTopAppBar(
                 IconButton(
                     onClick = { onBackClick?.invoke() },
                     colors = IconButtonDefaults.iconButtonColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceDim
+                        containerColor = MaterialTheme.colorScheme.surfaceBright
                     ),
                     modifier = Modifier.size(48.dp)
                 ) {
@@ -94,7 +95,7 @@ fun ReusableTopAppBar(
                 IconButton(
                     onClick = { onSettingsClick?.invoke() },
                     colors = IconButtonDefaults.iconButtonColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceDim
+                        containerColor = MaterialTheme.colorScheme.surfaceBright
                     ),
                     modifier = Modifier.size(48.dp)
                 ) {
