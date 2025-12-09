@@ -467,7 +467,7 @@ fun SetupFeatures(
             ) {
                 for (feature in categoryFeatures) {
                     val isEnabled = when (feature.title) {
-                        "Screen off widget" -> isWidgetEnabled
+                        "Screen off widget" -> true // Always enabled since it's a widget
                         "Statusbar icons" -> isStatusBarIconControlEnabled
                         "Caffeinate" -> isCaffeinateActive
                         FEATURE_MAPS_POWER_SAVING -> isMapsPowerSavingEnabled
@@ -477,7 +477,7 @@ fun SetupFeatures(
                     }
 
                     val isToggleEnabled = when (feature.title) {
-                        "Screen off widget" -> isAccessibilityEnabled
+                        "Screen off widget" -> false // No toggle for widget
                         "Statusbar icons" -> isWriteSecureSettingsEnabled
                         "Caffeinate" -> true
                         FEATURE_MAPS_POWER_SAVING -> isShizukuAvailable && isShizukuPermissionGranted && isNotificationListenerEnabled
@@ -503,7 +503,7 @@ fun SetupFeatures(
                         isEnabled = isEnabled,
                         onToggle = { enabled ->
                             when (feature.title) {
-                                "Screen off widget" -> viewModel.setWidgetEnabled(enabled, context)
+                                "Screen off widget" -> {} // No toggle action needed for widget
                                 "Statusbar icons" -> viewModel.setStatusBarIconControlEnabled(enabled, context)
                                 "Caffeinate" -> if (enabled) viewModel.startCaffeinate(context) else viewModel.stopCaffeinate(context)
                                 FEATURE_MAPS_POWER_SAVING -> viewModel.setMapsPowerSavingEnabled(enabled, context)
@@ -515,7 +515,7 @@ fun SetupFeatures(
                         iconRes = feature.iconRes,
                         modifier = Modifier.padding(horizontal = 0.dp, vertical = 0.dp),
                         isToggleEnabled = isToggleEnabled,
-                        showToggle = feature.title != "Sound mode tile", // Hide toggle for Sound mode tile
+                        showToggle = feature.title != "Sound mode tile" && feature.title != "Screen off widget", // Hide toggle for Sound mode tile and Screen off widget
                         hasMoreSettings = feature.title != FEATURE_MAPS_POWER_SAVING,
                         onDisabledToggleClick = {
                             currentFeature = feature.title
