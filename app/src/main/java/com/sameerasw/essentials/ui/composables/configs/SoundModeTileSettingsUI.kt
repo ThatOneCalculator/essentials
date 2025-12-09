@@ -34,6 +34,7 @@ import kotlin.math.min
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.text.style.TextAlign
 
 @Composable
 fun SoundModeTileSettingsUI(
@@ -173,12 +174,13 @@ fun SoundModeTileSettingsUI(
         item {
             ReorderableItem(reorderableLazyListState, key = "separator") { _ ->
                 Card(
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text(
                         text = "Long press to toggle",
+                        textAlign = TextAlign.Center,
                         style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(16.dp),
+                        modifier = Modifier.padding(16.dp).fillMaxWidth(),
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
