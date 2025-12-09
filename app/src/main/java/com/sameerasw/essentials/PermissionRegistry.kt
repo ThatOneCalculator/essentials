@@ -17,6 +17,7 @@ fun initPermissionRegistry() {
     PermissionRegistry.register("ACCESSIBILITY", "Screen off widget")
     // Key for write secure settings
     PermissionRegistry.register("WRITE_SECURE_SETTINGS", "Statusbar icons")
+    PermissionRegistry.register("WRITE_SECURE_SETTINGS", "Sound Mode")
     // Key for Shizuku (maps power saving)
     PermissionRegistry.register("SHIZUKU", "Maps power saving mode")
     // Key for notification listener permission
