@@ -206,11 +206,12 @@ class FeatureSettingsActivity : ComponentActivity() {
                         )
                     }
                 ) { innerPadding ->
+                    val hasScroll = feature != "Sound mode tile"
                     Column(
                         modifier = Modifier
                             .padding(innerPadding)
                             .fillMaxSize()
-                            .verticalScroll(rememberScrollState())
+                            .then(if (hasScroll) Modifier.verticalScroll(rememberScrollState()) else Modifier)
                     ) {
                         when (feature) {
                             "Screen off widget" -> {

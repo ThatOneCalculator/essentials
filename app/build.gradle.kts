@@ -68,4 +68,7 @@ dependencies {
 
     // Gson for JSON serialization
     implementation("com.google.code.gson:gson:2.10.1")
+
+    // Reorderable library
+    implementation("sh.calvin.reorderable:reorderable:3.0.0")
 }
