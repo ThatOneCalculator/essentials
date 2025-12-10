@@ -1,8 +1,12 @@
 package com.sameerasw.essentials.services
 
+import android.graphics.drawable.Icon
+import android.os.Build
 import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
+import androidx.annotation.RequiresApi
 
+@RequiresApi(Build.VERSION_CODES.N)
 abstract class BaseTileService : TileService() {
 
     abstract fun onTileClick()
@@ -12,6 +16,8 @@ abstract class BaseTileService : TileService() {
     abstract fun getTileSubtitle(): String
 
     abstract fun hasFeaturePermission(): Boolean
+
+    open fun getTileIcon(): Icon? = null
 
     override fun onStartListening() {
         super.onStartListening()
@@ -35,9 +41,19 @@ abstract class BaseTileService : TileService() {
             Tile.STATE_UNAVAILABLE
         }
         qsTile.label = getTileLabel()
-        qsTile.subtitle = if (!hasPerm) "Missing permissions" else getTileSubtitle()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            qsTile.subtitle = if (!hasPerm) "Missing permissions" else getTileSubtitle()
+        }
+        val icon = getTileIcon()
+        if (icon != null) {
+            qsTile.icon = icon
+        }
         qsTile.updateTile()
     }
 
     protected abstract fun getTileState(): Int
 }
+
+
+
+
