@@ -1,7 +1,9 @@
 package com.sameerasw.essentials
 
+import android.content.ComponentName
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -20,7 +22,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.sameerasw.essentials.ui.components.ReusableTopAppBar
 import com.sameerasw.essentials.ui.composables.SetupFeatures
 import com.sameerasw.essentials.ui.theme.EssentialsTheme
-import com.sameerasw.essentials.utils.ShizukuUtils
 import com.sameerasw.essentials.utils.HapticUtil
 import com.sameerasw.essentials.viewmodels.MainViewModel
 
@@ -31,8 +32,23 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        // Initialize Shizuku
-        ShizukuUtils.initialize()
+
+        Log.d("MainActivity", "onCreate with action: ${intent?.action}")
+
+        // Check if this is a QS tile long-press intent for the SoundModeTileService
+        if (intent?.action == "android.service.quicksettings.action.QS_TILE_PREFERENCES") {
+            val componentName = intent?.getParcelableExtra<android.content.ComponentName>("android.intent.extra.COMPONENT_NAME")
+            Log.d("MainActivity", "QS_TILE_PREFERENCES received, component: ${componentName?.className}")
+            if (componentName?.className == "com.sameerasw.essentials.services.SoundModeTileService") {
+                Log.d("MainActivity", "Launching volume panel")
+                // Launch the volume settings panel
+                val volumeIntent = Intent("android.settings.panel.action.VOLUME")
+                startActivity(volumeIntent)
+                finish()
+                return
+            }
+        }
+
         // Initialize HapticUtil with saved preferences
         HapticUtil.initialize(this)
         // initialize permission registry
@@ -79,5 +95,24 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         viewModel.check(this)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        Log.d("MainActivity", "onNewIntent with action: ${intent.action}")
+
+        // Check if this is a QS tile long-press intent for the SoundModeTileService
+        if (intent.action == "android.service.quicksettings.action.QS_TILE_PREFERENCES") {
+            val componentName = intent.getParcelableExtra<android.content.ComponentName>("android.intent.extra.COMPONENT_NAME")
+            Log.d("MainActivity", "QS_TILE_PREFERENCES received in onNewIntent, component: ${componentName?.className}")
+            if (componentName?.className == "com.sameerasw.essentials.services.SoundModeTileService") {
+                Log.d("MainActivity", "Launching volume panel from onNewIntent")
+                // Launch the volume settings panel
+                val volumeIntent = Intent("android.settings.panel.action.VOLUME")
+                startActivity(volumeIntent)
+                finish()
+                return
+            }
+        }
     }
 }
