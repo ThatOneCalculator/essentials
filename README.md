@@ -1,5 +1,5 @@
-# essentials
-Essential tools, mods and workarounds for Pixels
+# Essentials
+Essential tools, mods and workarounds for Pixels and other Androids 
 
 # Features
 - [x] Empty widget on Home Screen to lock screen
