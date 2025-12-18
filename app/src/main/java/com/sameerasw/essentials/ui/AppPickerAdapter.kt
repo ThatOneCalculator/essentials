@@ -1,6 +1,7 @@
 package com.sameerasw.essentials.ui
 
 import android.content.pm.ResolveInfo
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -20,22 +21,28 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 
 @Composable
 fun AppPickerItem(
     resolveInfo: ResolveInfo,
-    onClick: () -> Unit,
     modifier: Modifier = Modifier,
     togglePin: (String) -> Unit,
-    pinnedPackages: Set<String>
+    pinnedPackages: Set<String>,
+    demo: Boolean = false,
+    onTapAction: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
     val interactionSource = remember { MutableInteractionSource() }
     val packageName = resolveInfo.activityInfo.packageName
     val isPinned = pinnedPackages.contains(packageName)
+    val haptic = LocalHapticFeedback.current
+
+    Log.d("LinkPicker", "AppPickerItem, demo = $demo")
 
     Row(
         modifier = modifier
@@ -43,8 +50,17 @@ fun AppPickerItem(
             .combinedClickable(
                 interactionSource = interactionSource,
                 indication = null,
-                onClick = onClick,
-                onLongClick = { togglePin(packageName) }
+                onClick = {
+                    if (demo) {
+                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                    } else {
+                        onTapAction?.invoke()
+                    }
+                },
+                onLongClick = {
+                    togglePin(packageName)
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                }
             )
             .background(
                 color = MaterialTheme.colorScheme.surfaceBright,

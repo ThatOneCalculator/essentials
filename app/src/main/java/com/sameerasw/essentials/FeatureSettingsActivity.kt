@@ -30,10 +30,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import com.sameerasw.essentials.ui.components.ReusableTopAppBar
 import com.sameerasw.essentials.ui.theme.EssentialsTheme
 import com.sameerasw.essentials.utils.HapticFeedbackType
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.sameerasw.essentials.ui.LinkPickerScreen
 import com.sameerasw.essentials.ui.composables.configs.StatusBarIconSettingsUI
 import com.sameerasw.essentials.ui.composables.configs.CaffeinateSettingsUI
 import com.sameerasw.essentials.ui.composables.configs.ScreenOffWidgetSettingsUI
@@ -252,12 +254,16 @@ class FeatureSettingsActivity : ComponentActivity() {
                                 SoundModeTileSettingsUI(modifier = Modifier.padding(top = 16.dp))
                             }
                             "Link actions" -> {
-                                // Empty for now
-                                androidx.compose.material3.Text(
-                                    text = "Settings for Link actions will be added here.",
-                                    modifier = Modifier.padding(16.dp),
-                                    style = MaterialTheme.typography.bodyLarge
-                                )
+                                setContent {
+                                    EssentialsTheme {
+                                        LinkPickerScreen(
+                                            uri = "https://sameerasw.com".toUri(),
+                                            onFinish = { finish() },
+                                            modifier = Modifier.fillMaxSize(),
+                                            demo = true
+                                        )
+                                    }
+                                }
                             }
                             else -> {
                                 ScreenOffWidgetSettingsUI(

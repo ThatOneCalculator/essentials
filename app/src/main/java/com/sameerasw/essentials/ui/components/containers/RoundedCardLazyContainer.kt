@@ -26,7 +26,8 @@ fun RoundedCardLazyContainer(
     onFinish: () -> Unit,
     actionType: String = Intent.ACTION_SEND,
     togglePin: (String) -> Unit,
-    pinnedPackages: Set<String>
+    pinnedPackages: Set<String>,
+    demo: Boolean = false
 ) {
     val context = LocalContext.current
 
@@ -40,7 +41,10 @@ fun RoundedCardLazyContainer(
 
             AppPickerItem(
                 resolveInfo = resolveInfo,
-                onClick = {
+                togglePin = togglePin,
+                pinnedPackages = pinnedPackages,
+                demo = demo,
+                onTapAction = {
                     val intent = if (actionType == Intent.ACTION_VIEW) {
                         Intent(Intent.ACTION_VIEW, uri)
                     } else {
@@ -52,9 +56,7 @@ fun RoundedCardLazyContainer(
                     intent.setClassName(resolveInfo.activityInfo.packageName, resolveInfo.activityInfo.name)
                     context.startActivity(intent)
                     onFinish()
-                },
-                togglePin = togglePin,
-                pinnedPackages = pinnedPackages
+                }
             )
         }
     }

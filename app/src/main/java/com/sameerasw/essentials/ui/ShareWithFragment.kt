@@ -22,7 +22,8 @@ fun ShareWithContent(
     onFinish: () -> Unit,
     modifier: Modifier,
     togglePin: (String) -> Unit,
-    pinnedPackages: Set<String>
+    pinnedPackages: Set<String>,
+    demo: Boolean = false
 ) {
     Log.d("LinkPicker", "ShareWithContent: ${resolveInfos.size} apps found")
 
@@ -47,7 +48,8 @@ fun ShareWithContent(
                 onFinish = onFinish,
                 actionType = android.content.Intent.ACTION_SEND,
                 togglePin = togglePin,
-                pinnedPackages = pinnedPackages
+                pinnedPackages = pinnedPackages,
+                demo = demo
             )
         }
     }

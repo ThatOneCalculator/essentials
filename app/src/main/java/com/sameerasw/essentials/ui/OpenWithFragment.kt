@@ -22,7 +22,8 @@ fun OpenWithContent(
     onFinish: () -> Unit,
     modifier: Modifier,
     togglePin: (String) -> Unit,
-    pinnedPackages: Set<String>
+    pinnedPackages: Set<String>,
+    demo: Boolean = false
 ) {
     Log.d("LinkPicker", "OpenWithContent: ${resolveInfos.size} apps found")
 
@@ -46,7 +47,8 @@ fun OpenWithContent(
                 onFinish = onFinish,
                 actionType = android.content.Intent.ACTION_VIEW,
                 togglePin = togglePin,
-                pinnedPackages = pinnedPackages
+                pinnedPackages = pinnedPackages,
+                demo = demo
             )
         }
     }

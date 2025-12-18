@@ -62,10 +62,11 @@ private const val TAG = "LinkPickerScreen"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LinkPickerScreen(uri: Uri, onFinish: () -> Unit, modifier: Modifier = Modifier) {
+fun LinkPickerScreen(uri: Uri, onFinish: () -> Unit, modifier: Modifier = Modifier, demo: Boolean = false) {
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
 
+    Log.d(TAG, "LinkPickerScreen called with demo = $demo")
     Log.d(TAG, "LinkPickerScreen created with URI: $uri")
 
     // Query apps once when composable is created
@@ -206,7 +207,7 @@ fun LinkPickerScreen(uri: Uri, onFinish: () -> Unit, modifier: Modifier = Modifi
                     )
 
                     Text(
-                        text = uri.toString(),
+                        text = if (demo) {"Long press an app to pin/ unpin"} else {uri.toString()},
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurface,
                         maxLines = 3,
@@ -223,10 +224,10 @@ fun LinkPickerScreen(uri: Uri, onFinish: () -> Unit, modifier: Modifier = Modifi
             ) { page ->
                 when (page) {
                     0 -> {
-                        OpenWithContent(openWithApps, uri, onFinish, Modifier, togglePin, pinnedPackages.value)
+                        OpenWithContent(openWithApps, uri, onFinish, Modifier, togglePin, pinnedPackages.value, demo)
                     }
                     1 -> {
-                        ShareWithContent(shareWithApps, uri, onFinish, Modifier, togglePin, pinnedPackages.value)
+                        ShareWithContent(shareWithApps, uri, onFinish, Modifier, togglePin, pinnedPackages.value, demo)
                     }
                 }
             }
