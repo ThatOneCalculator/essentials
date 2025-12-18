@@ -48,6 +48,9 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
 
+    // Android 12+ SplashScreen API with backward compatibility attributes
+    implementation("androidx.core:core-splashscreen:1.0.1")
+
     // Force latest Material3 1.5.0-alpha10 for ToggleButton & ButtonGroup support
     implementation("androidx.compose.material3:material3:1.5.0-alpha10")
 
