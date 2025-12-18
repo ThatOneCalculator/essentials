@@ -1,5 +1,6 @@
-package com.sameerasw.essentials.ui
+package com.sameerasw.essentials.ui.components.linkActions
 
+import android.content.Intent
 import android.content.pm.ResolveInfo
 import android.net.Uri
 import android.util.Log
@@ -16,7 +17,7 @@ import androidx.compose.ui.unit.dp
 import com.sameerasw.essentials.ui.components.containers.RoundedCardLazyContainer
 
 @Composable
-fun ShareWithContent(
+fun OpenWithContent(
     resolveInfos: List<ResolveInfo>,
     uri: Uri,
     onFinish: () -> Unit,
@@ -25,10 +26,9 @@ fun ShareWithContent(
     pinnedPackages: Set<String>,
     demo: Boolean = false
 ) {
-    Log.d("LinkPicker", "ShareWithContent: ${resolveInfos.size} apps found")
+    Log.d("LinkPicker", "OpenWithContent: ${resolveInfos.size} apps found")
 
     Column(modifier = modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-
         if (resolveInfos.isEmpty()) {
             Box(
                 modifier = Modifier
@@ -36,7 +36,7 @@ fun ShareWithContent(
                     .padding(16.dp),
             ) {
                 Text(
-                    text = "No apps found to share with",
+                    text = "No apps found to open this link",
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -46,7 +46,7 @@ fun ShareWithContent(
                 resolveInfos = resolveInfos,
                 uri = uri,
                 onFinish = onFinish,
-                actionType = android.content.Intent.ACTION_SEND,
+                actionType = Intent.ACTION_VIEW,
                 togglePin = togglePin,
                 pinnedPackages = pinnedPackages,
                 demo = demo

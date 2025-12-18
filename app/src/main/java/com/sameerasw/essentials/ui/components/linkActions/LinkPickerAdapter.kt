@@ -1,4 +1,4 @@
-package com.sameerasw.essentials.ui
+package com.sameerasw.essentials.ui.components.linkActions
 
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -11,7 +11,6 @@ import android.widget.Toast
 import android.util.Log
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -57,6 +56,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import android.content.SharedPreferences
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.Alignment
 
 private const val TAG = "LinkPickerScreen"
 
@@ -147,7 +147,7 @@ fun LinkPickerScreen(uri: Uri, onFinish: () -> Unit, modifier: Modifier = Modifi
                                 targetValue = if (selected) 0.dp else 2.dp,
                                 label = "NavIconOffset"
                             )
-                            androidx.compose.material3.Icon(
+                            Icon(
                                 painter = painterResource(if (selected) selectedIcons[index] else unselectedIcons[index]),
                                 contentDescription = item,
                                 modifier = Modifier.offset(y = iconOffset)
@@ -220,7 +220,7 @@ fun LinkPickerScreen(uri: Uri, onFinish: () -> Unit, modifier: Modifier = Modifi
             HorizontalPager(
                 modifier = Modifier.weight(1f),
                 state = pagerState,
-                verticalAlignment = androidx.compose.ui.Alignment.Top
+                verticalAlignment = Alignment.Top
             ) { page ->
                 when (page) {
                     0 -> {
@@ -235,7 +235,7 @@ fun LinkPickerScreen(uri: Uri, onFinish: () -> Unit, modifier: Modifier = Modifi
     }
 }
 
-private fun queryOpenWithApps(context: android.content.Context, uri: Uri): List<ResolveInfo> {
+private fun queryOpenWithApps(context: Context, uri: Uri): List<ResolveInfo> {
     return try {
         val pm = context.packageManager
         val ourPackageName = context.packageName
@@ -286,7 +286,7 @@ private fun queryOpenWithApps(context: android.content.Context, uri: Uri): List<
     }
 }
 
-private fun queryShareWithApps(context: android.content.Context, uri: Uri): List<ResolveInfo> {
+private fun queryShareWithApps(context: Context, uri: Uri): List<ResolveInfo> {
     return try {
         val pm = context.packageManager
         val ourPackageName = context.packageName

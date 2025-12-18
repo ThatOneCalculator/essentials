@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
-import com.sameerasw.essentials.ui.AppPickerItem
+import com.sameerasw.essentials.ui.components.linkActions.AppPickerItem
 
 @Composable
 fun RoundedCardLazyContainer(

@@ -1,4 +1,4 @@
-package com.sameerasw.essentials.ui
+package com.sameerasw.essentials.ui.components.linkActions
 
 import android.content.pm.ResolveInfo
 import android.util.Log
@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,6 +27,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.res.painterResource
+import com.sameerasw.essentials.R
 
 @Composable
 fun AppPickerItem(
@@ -93,8 +96,8 @@ fun AppPickerItem(
         }
 
         if (isPinned) {
-            androidx.compose.material3.Icon(
-                painter = androidx.compose.ui.res.painterResource(id = com.sameerasw.essentials.R.drawable.rounded_bookmark_24),
+            Icon(
+                painter = painterResource(id = R.drawable.rounded_bookmark_24),
                 contentDescription = "Pinned",
                 modifier = Modifier.size(20.dp),
                 tint = MaterialTheme.colorScheme.primary
