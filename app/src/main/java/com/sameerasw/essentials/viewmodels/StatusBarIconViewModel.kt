@@ -37,6 +37,7 @@ class StatusBarIconViewModel : ViewModel() {
     val isVolteVisible = mutableStateOf(true)
     val isCastVisible = mutableStateOf(true)
     val isClockVisible = mutableStateOf(true)
+    val isAirplaneVisible = mutableStateOf(true)
 
     private var updateJob: Job? = null
     private var smartWifiJob: Job? = null
@@ -230,6 +231,13 @@ class StatusBarIconViewModel : ViewModel() {
             blacklistItems.remove("clock")
         }
 
+        // Add or remove airplane_mode from blacklist based on visibility
+        if (!isAirplaneVisible.value && !blacklistItems.contains("airplane_mode")) {
+            blacklistItems.add("airplane_mode")
+        } else if (isAirplaneVisible.value) {
+            blacklistItems.remove("airplane_mode")
+        }
+
         val newBlacklist = blacklistItems.joinToString(",")
 
         try {
@@ -346,6 +354,13 @@ class StatusBarIconViewModel : ViewModel() {
             blacklistItems.add("clock")
         } else if (isClockVisible.value) {
             blacklistItems.remove("clock")
+        }
+
+        // Handle Airplane Mode visibility
+        if (!isAirplaneVisible.value && !blacklistItems.contains("airplane_mode")) {
+            blacklistItems.add("airplane_mode")
+        } else if (isAirplaneVisible.value) {
+            blacklistItems.remove("airplane_mode")
         }
 
         val newBlacklist = blacklistItems.joinToString(",")
@@ -475,6 +490,13 @@ class StatusBarIconViewModel : ViewModel() {
             blacklistItems.remove("clock")
         }
 
+        // Handle Airplane Mode visibility
+        if (!isAirplaneVisible.value && !blacklistItems.contains("airplane_mode")) {
+            blacklistItems.add("airplane_mode")
+        } else if (isAirplaneVisible.value) {
+            blacklistItems.remove("airplane_mode")
+        }
+
         val newBlacklist = blacklistItems.joinToString(",")
 
         try {
@@ -557,6 +579,7 @@ class StatusBarIconViewModel : ViewModel() {
         isVolteVisible.value = prefs.getBoolean("icon_volte_visible", false)
         isCastVisible.value = prefs.getBoolean("icon_cast_visible", false)
         isClockVisible.value = prefs.getBoolean("icon_clock_visible", false)
+        isAirplaneVisible.value = prefs.getBoolean("icon_airplane_mode_visible", false)
     }
 
     private fun loadSmartWiFiPref(context: Context) {
@@ -681,6 +704,14 @@ class StatusBarIconViewModel : ViewModel() {
         isClockVisible.value = visible
         context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
             putBoolean("icon_clock_visible", visible)
+        }
+        updateIconBlacklist(context)
+    }
+
+    fun setAirplaneVisible(visible: Boolean, context: Context) {
+        isAirplaneVisible.value = visible
+        context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
+            putBoolean("icon_airplane_mode_visible", visible)
         }
         updateIconBlacklist(context)
     }

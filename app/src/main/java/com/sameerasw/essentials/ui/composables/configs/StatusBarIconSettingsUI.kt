@@ -220,6 +220,16 @@ fun StatusBarIconSettingsUI(
                 },
                 enabled = isPermissionGranted
             )
+
+            IconToggleItem(
+                iconRes = R.drawable.rounded_flight_24,
+                title = "Airplane",
+                isChecked = viewModel.isAirplaneVisible.value,
+                onCheckedChange = { isChecked ->
+                    viewModel.setAirplaneVisible(isChecked, context)
+                },
+                enabled = isPermissionGranted
+            )
         }
 
         // Smart Visibility Category
