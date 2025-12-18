@@ -4,10 +4,15 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.net.Uri
+import android.content.ClipboardManager
+import android.content.ClipData
+import android.content.Context
+import android.widget.Toast
 import android.util.Log
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -149,7 +154,13 @@ fun LinkPickerScreen(uri: Uri, onFinish: () -> Unit, modifier: Modifier = Modifi
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .clickable {
+                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                        clipboard.setPrimaryClip(ClipData.newPlainText("Link", uri.toString()))
+                        Toast.makeText(context, "Link copied to clipboard", Toast.LENGTH_SHORT).show()
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    },
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceBright
                 ),
