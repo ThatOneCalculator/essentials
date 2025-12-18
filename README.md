@@ -7,6 +7,8 @@ Essential tools, mods and workarounds for Pixels
 - [x] Keep display awake
 - [x] Edge lighting
 - [x] Google maps power saving mode
+- [x] Quick access to media out put switcher
+- [x] Link actions to intersect link opening
 - [ ] Long press volume key while screen off to toggle flashlight
 - [ ] Automatically turn off night light for certain apps
 - [ ] QS tile to toggle privacy mode (hide notification content on lock screen, ...)
