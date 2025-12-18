@@ -13,6 +13,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="moe.shizuku.manager.permission.API_V23" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
 
     <application
         android:name=".EssentialsApp"
@@ -52,6 +53,20 @@
             android:exported="false"
             android:label="Settings"
             android:theme="@style/Theme.Essentials">
+        </activity>
+
+        <activity
+            android:name=".LinkPickerActivity"
+            android:exported="true"
+            android:label="Open Link"
+            android:theme="@style/Theme.Essentials">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="http" />
+                <data android:scheme="https" />
+            </intent-filter>
         </activity>
 
         <service
