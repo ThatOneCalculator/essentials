@@ -1,9 +1,10 @@
 package com.sameerasw.essentials
 
-import android.content.ComponentName
+import android.animation.ObjectAnimator
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.animation.AnticipateInterpolator
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -18,8 +19,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.animation.doOnEnd
 import com.sameerasw.essentials.ui.components.ReusableTopAppBar
 import com.sameerasw.essentials.ui.composables.SetupFeatures
 import com.sameerasw.essentials.ui.theme.EssentialsTheme
@@ -29,12 +30,53 @@ import com.sameerasw.essentials.viewmodels.MainViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 class MainActivity : ComponentActivity() {
     val viewModel: MainViewModel by viewModels()
+    private var isAppReady = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Install the splash screen
-        installSplashScreen()
+        // Install and configure the splash screen
+        val splashScreen = installSplashScreen()
+
+        // Keep splash screen visible while app is loading
+        splashScreen.setKeepOnScreenCondition { !isAppReady }
+
+        // Customize the exit animation - scale up and fade out
+        splashScreen.setOnExitAnimationListener { splashScreenViewProvider ->
+            val splashScreenView = splashScreenViewProvider.view
+            val splashIcon = splashScreenViewProvider.iconView
+
+            // Scale down animation
+            val scaleUp = ObjectAnimator.ofFloat(splashIcon, "scaleX", 1f, 0.5f).apply {
+                interpolator = AnticipateInterpolator()
+                duration = 750
+            }
+
+            val scaleUpY = ObjectAnimator.ofFloat(splashIcon, "scaleY", 1f, 0.5f).apply {
+                interpolator = AnticipateInterpolator()
+                duration = 750
+            }
+
+            // rotate
+            val rotate360 = ObjectAnimator.ofFloat(splashIcon, "rotation", 0f,-90f).apply {
+                interpolator = AnticipateInterpolator()
+                duration = 750
+            }
+
+            // Fade out animation
+            val fadeOut = ObjectAnimator.ofFloat(splashScreenView, "alpha", 1f, 0f).apply {
+                interpolator = AnticipateInterpolator()
+                duration = 750
+            }
+            fadeOut.doOnEnd {
+                splashScreenViewProvider.remove()
+            }
+
+            fadeOut.start()
+            scaleUp.start()
+            scaleUpY.start()
+            rotate360.start()
+        }
 
         enableEdgeToEdge()
 
@@ -92,6 +134,11 @@ class MainActivity : ComponentActivity() {
                         searchRequested = searchRequested,
                         onSearchHandled = { searchRequested = false }
                     )
+                }
+
+                // Mark app as ready after composing (happens very quickly)
+                LaunchedEffect(Unit) {
+                    isAppReady = true
                 }
             }
         }
