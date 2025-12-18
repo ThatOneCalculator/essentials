@@ -13,16 +13,31 @@ object PermissionRegistry {
 
 // Register existing dependencies
 fun initPermissionRegistry() {
-    // Key for accessibility (use unique string)
+    // Accessibility permission
     PermissionRegistry.register("ACCESSIBILITY", "Screen off widget")
-    // Key for write secure settings
+    PermissionRegistry.register("ACCESSIBILITY", "Edge lighting")
+
+    // Write secure settings permission
     PermissionRegistry.register("WRITE_SECURE_SETTINGS", "Statusbar icons")
     PermissionRegistry.register("WRITE_SECURE_SETTINGS", "Sound Mode")
-    // Key for Shizuku (maps power saving)
+
+    // Shizuku permission
     PermissionRegistry.register("SHIZUKU", "Maps power saving mode")
-    // Key for notification listener permission
+    PermissionRegistry.register("SHIZUKU", "Automatic write secure settings")
+
+    // Notification listener permission
     PermissionRegistry.register("NOTIFICATION_LISTENER", "Maps power saving mode")
-    // Key for draw over other apps permission (Edge lighting overlay)
+    PermissionRegistry.register("NOTIFICATION_LISTENER", "Edge lighting")
+
+    // Draw over other apps permission
     PermissionRegistry.register("DRAW_OVER_OTHER_APPS", "Edge lighting")
-    // add other registrations here if needed in future
+
+    // Post notifications permission
+    PermissionRegistry.register("POST_NOTIFICATIONS", "Caffeinate show notification")
+
+    // Read phone state permission
+    PermissionRegistry.register("READ_PHONE_STATE", "Smart data")
+
+    // Default browser permission
+    PermissionRegistry.register("DEFAULT_BROWSER", "Link picker - open with")
 }

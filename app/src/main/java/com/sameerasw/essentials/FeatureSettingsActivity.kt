@@ -30,10 +30,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import com.sameerasw.essentials.ui.components.ReusableTopAppBar
 import com.sameerasw.essentials.ui.theme.EssentialsTheme
 import com.sameerasw.essentials.utils.HapticFeedbackType
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.sameerasw.essentials.ui.components.linkActions.LinkPickerScreen
 import com.sameerasw.essentials.ui.composables.configs.StatusBarIconSettingsUI
 import com.sameerasw.essentials.ui.composables.configs.CaffeinateSettingsUI
 import com.sameerasw.essentials.ui.composables.configs.ScreenOffWidgetSettingsUI
@@ -57,7 +59,8 @@ class FeatureSettingsActivity : ComponentActivity() {
             "Statusbar icons" to "Control statusbar icons visibility",
             "Caffeinate" to "Keep the screen awake",
             "Edge lighting" to "Preview edge lighting effects on new notifications",
-            "Sound mode tile" to "QS tile to toggle sound mode"
+            "Sound mode tile" to "QS tile to toggle sound mode",
+            "Link actions" to "Handle links with multiple apps"
         )
         val description = featureDescriptions[feature] ?: ""
         setContent {
@@ -249,6 +252,18 @@ class FeatureSettingsActivity : ComponentActivity() {
                             }
                             "Sound mode tile" -> {
                                 SoundModeTileSettingsUI(modifier = Modifier.padding(top = 16.dp))
+                            }
+                            "Link actions" -> {
+                                setContent {
+                                    EssentialsTheme {
+                                        LinkPickerScreen(
+                                            uri = "https://sameerasw.com".toUri(),
+                                            onFinish = { finish() },
+                                            modifier = Modifier.fillMaxSize(),
+                                            demo = true
+                                        )
+                                    }
+                                }
                             }
                             else -> {
                                 ScreenOffWidgetSettingsUI(

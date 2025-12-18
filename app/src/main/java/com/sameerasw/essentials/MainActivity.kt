@@ -1,7 +1,10 @@
 package com.sameerasw.essentials
 
+import android.animation.ObjectAnimator
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
+import android.view.animation.AnticipateInterpolator
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -16,23 +19,83 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.animation.doOnEnd
 import com.sameerasw.essentials.ui.components.ReusableTopAppBar
 import com.sameerasw.essentials.ui.composables.SetupFeatures
 import com.sameerasw.essentials.ui.theme.EssentialsTheme
-import com.sameerasw.essentials.utils.ShizukuUtils
 import com.sameerasw.essentials.utils.HapticUtil
 import com.sameerasw.essentials.viewmodels.MainViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 class MainActivity : ComponentActivity() {
     val viewModel: MainViewModel by viewModels()
+    private var isAppReady = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Install and configure the splash screen
+        val splashScreen = installSplashScreen()
+
+        // Keep splash screen visible while app is loading
+        splashScreen.setKeepOnScreenCondition { !isAppReady }
+
+        // Customize the exit animation - scale up and fade out
+        splashScreen.setOnExitAnimationListener { splashScreenViewProvider ->
+            val splashScreenView = splashScreenViewProvider.view
+            val splashIcon = splashScreenViewProvider.iconView
+
+            // Scale down animation
+            val scaleUp = ObjectAnimator.ofFloat(splashIcon, "scaleX", 1f, 0.5f).apply {
+                interpolator = AnticipateInterpolator()
+                duration = 750
+            }
+
+            val scaleUpY = ObjectAnimator.ofFloat(splashIcon, "scaleY", 1f, 0.5f).apply {
+                interpolator = AnticipateInterpolator()
+                duration = 750
+            }
+
+            // rotate
+            val rotate360 = ObjectAnimator.ofFloat(splashIcon, "rotation", 0f,-90f).apply {
+                interpolator = AnticipateInterpolator()
+                duration = 750
+            }
+
+            // Fade out animation
+            val fadeOut = ObjectAnimator.ofFloat(splashScreenView, "alpha", 1f, 0f).apply {
+                interpolator = AnticipateInterpolator()
+                duration = 750
+            }
+            fadeOut.doOnEnd {
+                splashScreenViewProvider.remove()
+            }
+
+            fadeOut.start()
+            scaleUp.start()
+            scaleUpY.start()
+            rotate360.start()
+        }
+
         enableEdgeToEdge()
-        // Initialize Shizuku
-        ShizukuUtils.initialize()
+
+        Log.d("MainActivity", "onCreate with action: ${intent?.action}")
+
+        // Check if this is a QS tile long-press intent for the SoundModeTileService
+        if (intent?.action == "android.service.quicksettings.action.QS_TILE_PREFERENCES") {
+            val componentName = intent?.getParcelableExtra<android.content.ComponentName>("android.intent.extra.COMPONENT_NAME")
+            Log.d("MainActivity", "QS_TILE_PREFERENCES received, component: ${componentName?.className}")
+            if (componentName?.className == "com.sameerasw.essentials.services.SoundModeTileService") {
+                Log.d("MainActivity", "Launching volume panel")
+                // Launch the volume settings panel
+                val volumeIntent = Intent("android.settings.panel.action.VOLUME")
+                startActivity(volumeIntent)
+                finish()
+                return
+            }
+        }
+
         // Initialize HapticUtil with saved preferences
         HapticUtil.initialize(this)
         // initialize permission registry
@@ -72,6 +135,11 @@ class MainActivity : ComponentActivity() {
                         onSearchHandled = { searchRequested = false }
                     )
                 }
+
+                // Mark app as ready after composing (happens very quickly)
+                LaunchedEffect(Unit) {
+                    isAppReady = true
+                }
             }
         }
     }
@@ -79,5 +147,24 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         viewModel.check(this)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        Log.d("MainActivity", "onNewIntent with action: ${intent.action}")
+
+        // Check if this is a QS tile long-press intent for the SoundModeTileService
+        if (intent.action == "android.service.quicksettings.action.QS_TILE_PREFERENCES") {
+            val componentName = intent.getParcelableExtra<android.content.ComponentName>("android.intent.extra.COMPONENT_NAME")
+            Log.d("MainActivity", "QS_TILE_PREFERENCES received in onNewIntent, component: ${componentName?.className}")
+            if (componentName?.className == "com.sameerasw.essentials.services.SoundModeTileService") {
+                Log.d("MainActivity", "Launching volume panel from onNewIntent")
+                // Launch the volume settings panel
+                val volumeIntent = Intent("android.settings.panel.action.VOLUME")
+                startActivity(volumeIntent)
+                finish()
+                return
+            }
+        }
     }
 }

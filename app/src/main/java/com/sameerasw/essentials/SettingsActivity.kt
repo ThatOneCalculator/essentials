@@ -119,6 +119,7 @@ fun SettingsContent(viewModel: MainViewModel, modifier: Modifier = Modifier) {
     val isShizukuAvailable by viewModel.isShizukuAvailable
     val isOverlayPermissionGranted by viewModel.isOverlayPermissionGranted
     val isNotificationListenerEnabled by viewModel.isNotificationListenerEnabled
+    val isDefaultBrowserSet by viewModel.isDefaultBrowserSet
     val context = LocalContext.current
     val isAppHapticsEnabled = remember { mutableStateOf(HapticUtil.loadAppHapticsEnabled(context)) }
 
@@ -195,7 +196,7 @@ fun SettingsContent(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                 PermissionCard(
                     iconRes = R.drawable.rounded_adb_24,
                     title = "Shizuku",
-                    dependentFeatures = listOf("Automatic Write Secure Settings Permission"),
+                    dependentFeatures = PermissionRegistry.getFeatures("SHIZUKU"),
                     actionLabel = if (isShizukuPermissionGranted) "Granted" else "Request Permission",
                     isGranted = isShizukuPermissionGranted,
                     onActionClick = {
@@ -213,7 +214,7 @@ fun SettingsContent(viewModel: MainViewModel, modifier: Modifier = Modifier) {
             PermissionCard(
                 iconRes = R.drawable.rounded_android_cell_dual_4_bar_24,
                 title = "Read Phone State",
-                dependentFeatures = listOf("Smart Data"),
+                dependentFeatures = PermissionRegistry.getFeatures("READ_PHONE_STATE"),
                 actionLabel = if (isReadPhoneStateEnabled) "Granted" else "Grant Permission",
                 isGranted = isReadPhoneStateEnabled,
                 onActionClick = {
@@ -224,7 +225,7 @@ fun SettingsContent(viewModel: MainViewModel, modifier: Modifier = Modifier) {
             PermissionCard(
                 iconRes = R.drawable.rounded_notifications_unread_24,
                 title = "Post Notifications",
-                dependentFeatures = listOf("Caffeinate Show Notification"),
+                dependentFeatures = PermissionRegistry.getFeatures("POST_NOTIFICATIONS"),
                 actionLabel = if (isPostNotificationsEnabled) "Granted" else "Grant Permission",
                 isGranted = isPostNotificationsEnabled,
                 onActionClick = {
@@ -240,7 +241,7 @@ fun SettingsContent(viewModel: MainViewModel, modifier: Modifier = Modifier) {
             PermissionCard(
                 iconRes = R.drawable.rounded_magnify_fullscreen_24,
                 title = "Draw Overlays",
-                dependentFeatures = listOf("Edge Lighting"),
+                dependentFeatures = PermissionRegistry.getFeatures("DRAW_OVER_OTHER_APPS"),
                 actionLabel = if (isOverlayPermissionGranted) "Granted" else "Grant Permission",
                 isGranted = isOverlayPermissionGranted,
                 onActionClick = {
@@ -253,7 +254,7 @@ fun SettingsContent(viewModel: MainViewModel, modifier: Modifier = Modifier) {
             PermissionCard(
                 iconRes = R.drawable.rounded_notification_settings_24,
                 title = "Notification Listener",
-                dependentFeatures = listOf("Edge Lighting"),
+                dependentFeatures = PermissionRegistry.getFeatures("NOTIFICATION_LISTENER"),
                 actionLabel = if (isNotificationListenerEnabled) "Granted" else "Enable listener",
                 isGranted = isNotificationListenerEnabled,
                 onActionClick = {
@@ -261,6 +262,24 @@ fun SettingsContent(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                         flags = Intent.FLAG_ACTIVITY_NEW_TASK
                     }
                     context.startActivity(intent)
+                },
+            )
+
+            PermissionCard(
+                iconRes = R.drawable.rounded_open_in_browser_24,
+                title = "Default Browser",
+                dependentFeatures = PermissionRegistry.getFeatures("DEFAULT_BROWSER"),
+                actionLabel = if (isDefaultBrowserSet) "Granted" else "Set as Default",
+                isGranted = isDefaultBrowserSet,
+                onActionClick = {
+                    val intent = Intent(Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS)
+                    try {
+                        context.startActivity(intent)
+                    } catch (e: Exception) {
+                        // Fallback for older Android versions
+                        val settingsIntent = Intent(Settings.ACTION_SETTINGS)
+                        context.startActivity(settingsIntent)
+                    }
                 },
             )
         }

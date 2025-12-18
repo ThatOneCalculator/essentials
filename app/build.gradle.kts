@@ -14,8 +14,8 @@ android {
         applicationId = "com.sameerasw.essentials"
         minSdk = 23
         targetSdk = 36
-        versionCode = 5
-        versionName = "4.0"
+        versionCode = 6
+        versionName = "5.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -48,12 +48,18 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
 
+    // Android 12+ SplashScreen API with backward compatibility attributes
+    implementation("androidx.core:core-splashscreen:1.0.1")
+
     // Force latest Material3 1.5.0-alpha10 for ToggleButton & ButtonGroup support
     implementation("androidx.compose.material3:material3:1.5.0-alpha10")
 
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
+    implementation(libs.androidx.appcompat)
+    implementation("androidx.activity:activity-compose:1.8.0")
+    implementation("io.coil-kt:coil-compose:2.5.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
