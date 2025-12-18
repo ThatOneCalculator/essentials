@@ -40,6 +40,7 @@ class MainViewModel : ViewModel() {
     val isOverlayPermissionGranted = mutableStateOf(false)
     val isEdgeLightingAccessibilityEnabled = mutableStateOf(false)
     val hapticFeedbackType = mutableStateOf(HapticFeedbackType.SUBTLE)
+    val isDefaultBrowserSet = mutableStateOf(false)
 
     fun check(context: Context) {
         isAccessibilityEnabled.value = isAccessibilityServiceEnabled(context)
@@ -57,6 +58,7 @@ class MainViewModel : ViewModel() {
         isNotificationListenerEnabled.value = hasNotificationListenerPermission(context)
         isOverlayPermissionGranted.value = canDrawOverlays(context)
         isEdgeLightingAccessibilityEnabled.value = isEdgeLightingAccessibilityServiceEnabled(context)
+        isDefaultBrowserSet.value = isDefaultBrowser(context)
         val prefs = context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE)
         isWidgetEnabled.value = prefs.getBoolean("widget_enabled", false)
         isStatusBarIconControlEnabled.value = prefs.getBoolean("status_bar_icon_control_enabled", false)
@@ -284,6 +286,22 @@ class MainViewModel : ViewModel() {
             )
             val serviceName = "${context.packageName}/${ScreenOffAccessibilityService::class.java.name}"
             enabledServices?.contains(serviceName) == true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    private fun isDefaultBrowser(context: Context): Boolean {
+        return try {
+            val pm = context.packageManager
+            val browserIntent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("http://www.example.com"))
+            val resolveInfo = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                pm.resolveActivity(browserIntent, android.content.pm.PackageManager.ResolveInfoFlags.of(android.content.pm.PackageManager.MATCH_DEFAULT_ONLY.toLong()))
+            } else {
+                @Suppress("DEPRECATION")
+                pm.resolveActivity(browserIntent, android.content.pm.PackageManager.MATCH_DEFAULT_ONLY)
+            }
+            resolveInfo?.activityInfo?.packageName == context.packageName
         } catch (e: Exception) {
             false
         }
