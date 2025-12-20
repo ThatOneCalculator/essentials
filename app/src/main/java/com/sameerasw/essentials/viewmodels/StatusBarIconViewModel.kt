@@ -715,4 +715,28 @@ class StatusBarIconViewModel : ViewModel() {
         }
         updateIconBlacklist(context)
     }
+
+    fun resetAllIcons(context: Context) {
+        // Set default visibility states
+        setMobileDataVisible(true, context)
+        setWiFiVisible(true, context)
+        setVpnVisible(true, context)
+        setAlarmClockVisible(false, context)
+        setHotspotVisible(true, context)
+        setBluetoothVisible(true, context)
+        setDataSaverVisible(true, context)
+        setHeadsetVisible(false, context)
+        setRotateVisible(false, context)
+        setVolteVisible(true, context)
+        setCastVisible(true, context)
+        setClockVisible(true, context)
+        setAirplaneVisible(true, context)
+
+        // Turn off both smart toggles
+        setSmartWiFiEnabled(false, context)
+        setSmartDataEnabled(false, context)
+
+        // Update the icon blacklist to reflect all changes
+        updateIconBlacklist(context)
+    }
 }

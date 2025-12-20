@@ -16,6 +16,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.Button
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -341,6 +342,19 @@ fun StatusBarIconSettingsUI(
                     )
                 }
             }
+        }
+
+        // Reset All Icons Button
+        Button(
+            onClick = {
+                viewModel.resetAllIcons(context)
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 16.dp),
+            enabled = isPermissionGranted
+        ) {
+            Text("Reset All Icons")
         }
     }
 }
