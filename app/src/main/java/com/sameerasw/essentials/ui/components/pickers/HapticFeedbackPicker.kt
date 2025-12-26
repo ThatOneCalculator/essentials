@@ -27,19 +27,18 @@ import com.sameerasw.essentials.utils.HapticFeedbackType
 fun HapticFeedbackPicker(
     selectedFeedback: HapticFeedbackType,
     onFeedbackSelected: (HapticFeedbackType) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val labels = listOf("None", "Subtle", "Double", "Click")
-    val types = listOf(
-        HapticFeedbackType.NONE,
-        HapticFeedbackType.SUBTLE,
-        HapticFeedbackType.DOUBLE,
-        HapticFeedbackType.CLICK
+    modifier: Modifier = Modifier,
+    options: List<Pair<String, HapticFeedbackType>> = listOf(
+        "None" to HapticFeedbackType.NONE,
+        "Subtle" to HapticFeedbackType.SUBTLE,
+        "Double" to HapticFeedbackType.DOUBLE,
+        "Click" to HapticFeedbackType.CLICK
     )
+) {
+    val labels = options.map { it.first }
+    val types = options.map { it.second }
 
-    var selectedIndex by remember {
-        mutableIntStateOf(types.indexOf(selectedFeedback))
-    }
+    val selectedIndex = types.indexOf(selectedFeedback).coerceAtLeast(0)
 
     Row(
         modifier = modifier
@@ -47,7 +46,7 @@ fun HapticFeedbackPicker(
                 color = MaterialTheme.colorScheme.surfaceBright,
                 shape = RoundedCornerShape(MaterialTheme.shapes.extraSmall.bottomEnd)
             )
-            .padding(8.dp),
+            .padding(10.dp),
         horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween),
     ) {
         val modifiers = List(labels.size) { Modifier.weight(1f) }
@@ -56,7 +55,6 @@ fun HapticFeedbackPicker(
             ToggleButton(
                 checked = selectedIndex == index,
                 onCheckedChange = {
-                    selectedIndex = index
                     onFeedbackSelected(types[index])
                 },
                 modifier = modifiers[index].semantics { role = Role.RadioButton },

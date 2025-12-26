@@ -41,6 +41,15 @@ class MainViewModel : ViewModel() {
     val isEdgeLightingAccessibilityEnabled = mutableStateOf(false)
     val hapticFeedbackType = mutableStateOf(HapticFeedbackType.SUBTLE)
     val isDefaultBrowserSet = mutableStateOf(false)
+    val onlyShowWhenScreenOff = mutableStateOf(true)
+    val isFlashlightVolumeToggleEnabled = mutableStateOf(false)
+    val flashlightTriggerButton = mutableStateOf("Volume Up")
+    val flashlightHapticType = mutableStateOf(HapticFeedbackType.LONG)
+    val isDynamicNightLightEnabled = mutableStateOf(false)
+    val isSnoozeDebuggingEnabled = mutableStateOf(false)
+    val isSnoozeFileTransferEnabled = mutableStateOf(false)
+    val isSnoozeChargingEnabled = mutableStateOf(false)
+    val isFlashlightAlwaysTurnOffEnabled = mutableStateOf(false)
 
     fun check(context: Context) {
         isAccessibilityEnabled.value = isAccessibilityServiceEnabled(context)
@@ -64,9 +73,23 @@ class MainViewModel : ViewModel() {
         isStatusBarIconControlEnabled.value = prefs.getBoolean("status_bar_icon_control_enabled", false)
         isMapsPowerSavingEnabled.value = prefs.getBoolean("maps_power_saving_enabled", false)
         isEdgeLightingEnabled.value = prefs.getBoolean("edge_lighting_enabled", false)
+        onlyShowWhenScreenOff.value = prefs.getBoolean("edge_lighting_only_screen_off", true)
         MapsState.isEnabled = isMapsPowerSavingEnabled.value
         loadHapticFeedback(context)
         checkCaffeinateActive(context)
+        isFlashlightVolumeToggleEnabled.value = prefs.getBoolean("flashlight_volume_toggle_enabled", false)
+        flashlightTriggerButton.value = prefs.getString("flashlight_trigger_button", "Volume Up") ?: "Volume Up"
+        val hapticName = prefs.getString("flashlight_haptic_type", HapticFeedbackType.LONG.name)
+        flashlightHapticType.value = try {
+            HapticFeedbackType.valueOf(hapticName ?: HapticFeedbackType.LONG.name)
+        } catch (e: Exception) {
+            HapticFeedbackType.LONG
+        }
+        isDynamicNightLightEnabled.value = prefs.getBoolean("dynamic_night_light_enabled", false)
+        isSnoozeDebuggingEnabled.value = prefs.getBoolean("snooze_debugging_enabled", false)
+        isSnoozeFileTransferEnabled.value = prefs.getBoolean("snooze_file_transfer_enabled", false)
+        isSnoozeChargingEnabled.value = prefs.getBoolean("snooze_charging_enabled", false)
+        isFlashlightAlwaysTurnOffEnabled.value = prefs.getBoolean("flashlight_always_turn_off_enabled", false)
     }
 
     fun setWidgetEnabled(enabled: Boolean, context: Context) {
@@ -95,6 +118,41 @@ class MainViewModel : ViewModel() {
         isEdgeLightingEnabled.value = enabled
         context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
             putBoolean("edge_lighting_enabled", enabled)
+        }
+    }
+
+    fun setOnlyShowWhenScreenOff(enabled: Boolean, context: Context) {
+        onlyShowWhenScreenOff.value = enabled
+        context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
+            putBoolean("edge_lighting_only_screen_off", enabled)
+        }
+    }
+
+    fun setFlashlightVolumeToggleEnabled(enabled: Boolean, context: Context) {
+        isFlashlightVolumeToggleEnabled.value = enabled
+        context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
+            putBoolean("flashlight_volume_toggle_enabled", enabled)
+        }
+    }
+
+    fun setFlashlightTriggerButton(button: String, context: Context) {
+        flashlightTriggerButton.value = button
+        context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
+            putString("flashlight_trigger_button", button)
+        }
+    }
+
+    fun setFlashlightHapticType(type: HapticFeedbackType, context: Context) {
+        flashlightHapticType.value = type
+        context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
+            putString("flashlight_haptic_type", type.name)
+        }
+    }
+
+    fun setDynamicNightLightEnabled(enabled: Boolean, context: Context) {
+        isDynamicNightLightEnabled.value = enabled
+        context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
+            putBoolean("dynamic_night_light_enabled", enabled)
         }
     }
 
@@ -372,5 +430,75 @@ class MainViewModel : ViewModel() {
     fun loadEdgeLightingStrokeThickness(context: Context): Int {
         val prefs = context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE)
         return prefs.getInt("edge_lighting_stroke_thickness", 8) // Default to 8 dp
+    }
+
+    // Dynamic Night Light App Selection Methods
+    fun saveDynamicNightLightSelectedApps(context: Context, apps: List<NotificationApp>) {
+        val prefs = context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE)
+        val selections = apps.map { AppSelection(it.packageName, it.isEnabled) }
+        val gson = Gson()
+        val json = gson.toJson(selections)
+        prefs.edit().putString("dynamic_night_light_selected_apps", json).apply()
+    }
+
+    fun loadDynamicNightLightSelectedApps(context: Context): List<AppSelection> {
+        val prefs = context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE)
+        val json = prefs.getString("dynamic_night_light_selected_apps", null)
+        return if (json != null) {
+            val gson = Gson()
+            val type = object : TypeToken<List<AppSelection>>() {}.type
+            try {
+                val selections: List<AppSelection> = gson.fromJson(json, type)
+                selections
+            } catch (e: Exception) {
+                emptyList()
+            }
+        } else {
+            emptyList()
+        }
+    }
+
+    fun updateDynamicNightLightAppEnabled(context: Context, packageName: String, enabled: Boolean) {
+        val currentSelections = loadDynamicNightLightSelectedApps(context).toMutableList()
+        val selectionIndex = currentSelections.indexOfFirst { it.packageName == packageName }
+        if (selectionIndex != -1) {
+            currentSelections[selectionIndex] = currentSelections[selectionIndex].copy(isEnabled = enabled)
+        } else {
+            currentSelections.add(AppSelection(packageName, enabled))
+        }
+        val gson = Gson()
+        val json = gson.toJson(currentSelections)
+        context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE)
+            .edit()
+            .putString("dynamic_night_light_selected_apps", json)
+            .apply()
+    }
+
+    fun setSnoozeDebuggingEnabled(enabled: Boolean, context: Context) {
+        isSnoozeDebuggingEnabled.value = enabled
+        context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
+            putBoolean("snooze_debugging_enabled", enabled)
+        }
+    }
+
+    fun setSnoozeFileTransferEnabled(enabled: Boolean, context: Context) {
+        isSnoozeFileTransferEnabled.value = enabled
+        context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
+            putBoolean("snooze_file_transfer_enabled", enabled)
+        }
+    }
+
+    fun setSnoozeChargingEnabled(enabled: Boolean, context: Context) {
+        isSnoozeChargingEnabled.value = enabled
+        context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
+            putBoolean("snooze_charging_enabled", enabled)
+        }
+    }
+
+    fun setFlashlightAlwaysTurnOffEnabled(enabled: Boolean, context: Context) {
+        isFlashlightAlwaysTurnOffEnabled.value = enabled
+        context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
+            putBoolean("flashlight_always_turn_off_enabled", enabled)
+        }
     }
 }

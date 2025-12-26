@@ -78,6 +78,8 @@ fun SetupFeatures(
     val isEdgeLightingEnabled by viewModel.isEdgeLightingEnabled
     val isOverlayPermissionGranted by viewModel.isOverlayPermissionGranted
     val isEdgeLightingAccessibilityEnabled by viewModel.isEdgeLightingAccessibilityEnabled
+    val isFlashlightVolumeToggleEnabled by viewModel.isFlashlightVolumeToggleEnabled
+    val isDynamicNightLightEnabled by viewModel.isDynamicNightLightEnabled
     val context = LocalContext.current
 
     fun buildMapsPowerSavingPermissionItems(): List<PermissionItem> {
@@ -246,6 +248,59 @@ fun SetupFeatures(
                         )
                     }
                 }
+                "Flashlight toggle" -> {
+                    if (!isAccessibilityEnabled) {
+                        missing.add(
+                            PermissionItem(
+                                iconRes = R.drawable.rounded_settings_accessibility_24,
+                                title = "Accessibility Service",
+                                description = "Required to intercept volume button presses when the screen is off",
+                                dependentFeatures = PermissionRegistry.getFeatures("ACCESSIBILITY"),
+                                actionLabel = "Enable in Settings",
+                                action = {
+                                    val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+                                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                    context.startActivity(intent)
+                                },
+                                isGranted = isAccessibilityEnabled
+                            )
+                        )
+                    }
+                }
+                "Dynamic night light" -> {
+                    if (!isAccessibilityEnabled) {
+                        missing.add(
+                            PermissionItem(
+                                iconRes = R.drawable.rounded_settings_accessibility_24,
+                                title = "Accessibility Service",
+                                description = "Needed to monitor foreground applications.",
+                                dependentFeatures = PermissionRegistry.getFeatures("ACCESSIBILITY"),
+                                actionLabel = "Enable Service",
+                                action = {
+                                    val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+                                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                    context.startActivity(intent)
+                                },
+                                isGranted = isAccessibilityEnabled
+                            )
+                        )
+                    }
+                    if (!isWriteSecureSettingsEnabled) {
+                        missing.add(
+                            PermissionItem(
+                                iconRes = R.drawable.rounded_security_24,
+                                title = "Write Secure Settings",
+                                description = "Needed to toggle Night Light. Grant via ADB or root.",
+                                dependentFeatures = PermissionRegistry.getFeatures("WRITE_SECURE_SETTINGS"),
+                                actionLabel = "How to grant",
+                                action = {
+                                    // Maybe show a dialog or link to instructions
+                                },
+                                isGranted = isWriteSecureSettingsEnabled
+                            )
+                        )
+                    }
+                }
             }
 
             if (missing.isEmpty()) {
@@ -290,43 +345,93 @@ fun SetupFeatures(
                 )
             )
             FEATURE_MAPS_POWER_SAVING -> buildMapsPowerSavingPermissionItems()
-            "Edge lighting" -> listOf(
-                PermissionItem(
-                    iconRes = R.drawable.rounded_magnify_fullscreen_24,
-                    title = "Overlay Permission",
-                    description = "Required to display the edge lighting overlay on the screen",
-                    dependentFeatures = PermissionRegistry.getFeatures("DRAW_OVERLAYS"),
-                    actionLabel = "Grant Permission",
-                    action = {
-                        val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:${context.packageName}"))
-                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                        context.startActivity(intent)
-                    },
-                    isGranted = isOverlayPermissionGranted
-                ),
-                PermissionItem(
-                    iconRes = R.drawable.rounded_settings_accessibility_24,
-                    title = "Accessibility Service",
-                    description = "Required to trigger edge lighting on new notifications",
-                    dependentFeatures = PermissionRegistry.getFeatures("ACCESSIBILITY"),
-                    actionLabel = "Enable in Settings",
-                    action = {
-                        val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                        context.startActivity(intent)
-                    },
-                    isGranted = isEdgeLightingAccessibilityEnabled
-                ),
-                PermissionItem(
-                    iconRes = R.drawable.rounded_notifications_unread_24,
-                    title = "Notification Listener",
-                    description = "Required to detect new notifications",
-                    dependentFeatures = PermissionRegistry.getFeatures("NOTIFICATION_LISTENER"),
-                    actionLabel = if (isNotificationListenerEnabled) "Permission granted" else "Grant listener",
-                    action = { viewModel.requestNotificationListenerPermission(context) },
-                    isGranted = isNotificationListenerEnabled
+                "Edge lighting" -> listOf(
+                    PermissionItem(
+                        iconRes = R.drawable.rounded_magnify_fullscreen_24,
+                        title = "Overlay Permission",
+                        description = "Required to display the edge lighting overlay on the screen",
+                        dependentFeatures = PermissionRegistry.getFeatures("DRAW_OVERLAYS"),
+                        actionLabel = "Grant Permission",
+                        action = {
+                            val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:${context.packageName}"))
+                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                            context.startActivity(intent)
+                        },
+                        isGranted = isOverlayPermissionGranted
+                    ),
+                    PermissionItem(
+                        iconRes = R.drawable.rounded_settings_accessibility_24,
+                        title = "Accessibility Service",
+                        description = "Required to trigger edge lighting on new notifications",
+                        dependentFeatures = PermissionRegistry.getFeatures("ACCESSIBILITY"),
+                        actionLabel = "Enable in Settings",
+                        action = {
+                            val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                            context.startActivity(intent)
+                        },
+                        isGranted = isEdgeLightingAccessibilityEnabled
+                    ),
+                    PermissionItem(
+                        iconRes = R.drawable.rounded_notifications_unread_24,
+                        title = "Notification Listener",
+                        description = "Required to detect new notifications",
+                        dependentFeatures = PermissionRegistry.getFeatures("NOTIFICATION_LISTENER"),
+                        actionLabel = if (isNotificationListenerEnabled) "Permission granted" else "Grant listener",
+                        action = { viewModel.requestNotificationListenerPermission(context) },
+                        isGranted = isNotificationListenerEnabled
+                    )
                 )
-            )
+                "Flashlight toggle" -> listOf(
+                    PermissionItem(
+                        iconRes = R.drawable.rounded_settings_accessibility_24,
+                        title = "Accessibility Service",
+                        description = "Required to intercept volume button presses when the screen is off",
+                        dependentFeatures = PermissionRegistry.getFeatures("ACCESSIBILITY"),
+                        actionLabel = "Enable in Settings",
+                        action = {
+                            val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                            context.startActivity(intent)
+                        },
+                        isGranted = isAccessibilityEnabled
+                    )
+                )
+                "Snooze system notifications" -> listOf(
+                    PermissionItem(
+                        iconRes = R.drawable.rounded_snooze_24,
+                        title = "Notification Listener",
+                        description = "Required to detect and snooze notifications",
+                        dependentFeatures = PermissionRegistry.getFeatures("NOTIFICATION_LISTENER"),
+                        actionLabel = if (isNotificationListenerEnabled) "Permission granted" else "Grant listener",
+                        action = { viewModel.requestNotificationListenerPermission(context) },
+                        isGranted = isNotificationListenerEnabled
+                    )
+                )
+                "Dynamic night light" -> listOf(
+                    PermissionItem(
+                        iconRes = R.drawable.rounded_settings_accessibility_24,
+                        title = "Accessibility Service",
+                        description = "Needed to monitor foreground applications.",
+                        dependentFeatures = PermissionRegistry.getFeatures("ACCESSIBILITY"),
+                        actionLabel = "Enable Service",
+                        action = {
+                            val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                            context.startActivity(intent)
+                        },
+                        isGranted = isAccessibilityEnabled
+                    ),
+                    PermissionItem(
+                        iconRes = R.drawable.rounded_security_24,
+                        title = "Write Secure Settings",
+                        description = "Needed to toggle Night Light. Grant via ADB or root.",
+                        dependentFeatures = PermissionRegistry.getFeatures("WRITE_SECURE_SETTINGS"),
+                        actionLabel = "How to grant",
+                        action = { /* instructions */ },
+                        isGranted = isWriteSecureSettingsEnabled
+                    )
+                )
             else -> emptyList()
         }
 
@@ -373,6 +478,30 @@ fun SetupFeatures(
                 R.drawable.rounded_link_24,
                 "Tools",
                 "Handle links with multiple apps"
+            ),
+            FeatureItem(
+                "Snooze system notifications",
+                R.drawable.rounded_snooze_24,
+                "Tools",
+                "Snooze persistent notifications"
+            ),
+            FeatureItem(
+                "Quick Settings Tiles",
+                R.drawable.rounded_tile_small_24,
+                "System",
+                "View all"
+            ),
+            FeatureItem(
+                "Flashlight toggle",
+                R.drawable.rounded_flashlight_on_24,
+                "Tools",
+                "Toggle flashlight while screen off"
+            ),
+            FeatureItem(
+                "Dynamic night light",
+                R.drawable.rounded_nightlight_24,
+                "Visuals",
+                "Toggle night light based on app"
             )
         )
     }
@@ -479,6 +608,8 @@ fun SetupFeatures(
                         FEATURE_MAPS_POWER_SAVING -> isMapsPowerSavingEnabled
                         "Edge lighting" -> isEdgeLightingEnabled
                         "Sound mode tile" -> true // Always enabled since it's a tile
+                        "Flashlight toggle" -> isFlashlightVolumeToggleEnabled
+                        "Dynamic night light" -> isDynamicNightLightEnabled
                         else -> false
                     }
 
@@ -489,6 +620,9 @@ fun SetupFeatures(
                         FEATURE_MAPS_POWER_SAVING -> isShizukuAvailable && isShizukuPermissionGranted && isNotificationListenerEnabled
                         "Edge lighting" -> isOverlayPermissionGranted && isEdgeLightingAccessibilityEnabled && isNotificationListenerEnabled
                         "Sound mode tile" -> false // No toggle for QS tile
+                        "Flashlight toggle" -> isAccessibilityEnabled
+                        "Snooze system notifications" -> isNotificationListenerEnabled
+                        "Dynamic night light" -> isAccessibilityEnabled && isWriteSecureSettingsEnabled
                         else -> false
                     }
 
@@ -515,13 +649,16 @@ fun SetupFeatures(
                                 FEATURE_MAPS_POWER_SAVING -> viewModel.setMapsPowerSavingEnabled(enabled, context)
                                 "Edge lighting" -> viewModel.setEdgeLightingEnabled(enabled, context)
                                 "Sound mode tile" -> {} // No toggle action needed for tile
+                                "Flashlight toggle" -> viewModel.setFlashlightVolumeToggleEnabled(enabled, context)
+                                "Dynamic night light" -> viewModel.setDynamicNightLightEnabled(enabled, context)
+                                else -> {}
                             }
                         },
                         onClick = featureOnClick,
                         iconRes = feature.iconRes,
                         modifier = Modifier.padding(horizontal = 0.dp, vertical = 0.dp),
                         isToggleEnabled = isToggleEnabled,
-                        showToggle = feature.title != "Sound mode tile" && feature.title != "Screen off widget" && feature.title != "Link actions", // Hide toggle for Sound mode tile, Screen off widget, and Link actions
+                        showToggle = feature.title != "Sound mode tile" && feature.title != "Screen off widget" && feature.title != "Link actions" && feature.title != "Snooze system notifications" && feature.title != "Quick Settings Tiles", // Hide toggle for Sound mode tile, Screen off widget, Link actions, Snooze notifications, and QS Tiles
                         hasMoreSettings = feature.title != FEATURE_MAPS_POWER_SAVING,
                         onDisabledToggleClick = {
                             currentFeature = feature.title

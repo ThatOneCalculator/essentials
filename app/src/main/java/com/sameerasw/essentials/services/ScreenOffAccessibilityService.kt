@@ -8,11 +8,23 @@ import android.os.VibratorManager
 import android.view.accessibility.AccessibilityEvent
 import com.sameerasw.essentials.utils.HapticFeedbackType
 import com.sameerasw.essentials.utils.performHapticFeedback
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.IntentFilter
 import android.os.Handler
 import android.os.Looper
 import android.view.WindowManager
 import android.view.View
 import com.sameerasw.essentials.utils.OverlayHelper
+import android.util.Log
+import android.view.KeyEvent
+import android.hardware.camera2.CameraManager
+import android.hardware.camera2.CameraCharacteristics
+import android.os.PowerManager
+import android.provider.Settings
+import com.google.gson.Gson
+import com.sameerasw.essentials.domain.model.AppSelection
+import com.google.gson.reflect.TypeToken
 
 class ScreenOffAccessibilityService : AccessibilityService() {
 
@@ -22,9 +34,128 @@ class ScreenOffAccessibilityService : AccessibilityService() {
     private var cornerRadiusDp: Int = OverlayHelper.CORNER_RADIUS_DP
     private var strokeThicknessDp: Int = OverlayHelper.STROKE_DP
     private var isPreview: Boolean = false
+    private var screenReceiver: BroadcastReceiver? = null
+    
+    private var isTorchOn = false
+    private val torchCallback = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        object : CameraManager.TorchCallback() {
+            override fun onTorchModeChanged(cameraId: String, enabled: Boolean) {
+                super.onTorchModeChanged(cameraId, enabled)
+                isTorchOn = enabled
+            }
+        }
+    } else null
+
+    private val longPressRunnable = Runnable {
+        toggleFlashlight()
+    }
+    private val LONG_PRESS_TIMEOUT = 500L
+    
+    private var wasNightLightOnBeforeAutoToggle = false
+    private var isNightLightAutoToggledOff = false
+    private var lastForegroundPackage: String? = null
+
+    override fun onCreate() {
+        super.onCreate()
+        screenReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                if (intent?.action == Intent.ACTION_SCREEN_ON) {
+                    val prefs = getSharedPreferences("essentials_prefs", MODE_PRIVATE)
+                    val onlyShowWhenScreenOff = prefs.getBoolean("edge_lighting_only_screen_off", true)
+                    if (onlyShowWhenScreenOff && !isPreview) {
+                        removeOverlay()
+                    }
+                }
+            }
+        }
+        val filter = IntentFilter(Intent.ACTION_SCREEN_ON)
+        registerReceiver(screenReceiver, filter)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val cameraManager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
+            torchCallback?.let { cameraManager.registerTorchCallback(it, handler) }
+        }
+    }
+
+    override fun onServiceConnected() {
+        super.onServiceConnected()
+        // Ensure flags are set to filter key events
+        serviceInfo = serviceInfo.apply {
+            flags = flags or android.accessibilityservice.AccessibilityServiceInfo.FLAG_REQUEST_FILTER_KEY_EVENTS
+        }
+    }
+
+    override fun onDestroy() {
+        try { unregisterReceiver(screenReceiver) } catch (_: Exception) {}
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val cameraManager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
+            torchCallback?.let { cameraManager.unregisterTorchCallback(it) }
+        }
+        removeOverlay()
+        super.onDestroy()
+    }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
-        // Not used for this feature
+        if (event?.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
+            val packageName = event.packageName?.toString() ?: return
+            if (packageName == lastForegroundPackage) return
+            lastForegroundPackage = packageName
+            
+            checkHighlightNightLight(packageName)
+        }
+    }
+
+    private fun checkHighlightNightLight(packageName: String) {
+        val prefs = getSharedPreferences("essentials_prefs", MODE_PRIVATE)
+        val isEnabled = prefs.getBoolean("dynamic_night_light_enabled", false)
+        if (!isEnabled) return
+
+        val json = prefs.getString("dynamic_night_light_selected_apps", null)
+        val selectedApps: List<AppSelection> = if (json != null) {
+            try {
+                Gson().fromJson(json, object : TypeToken<List<AppSelection>>() {}.type)
+            } catch (e: Exception) {
+                emptyList()
+            }
+        } else {
+            emptyList()
+        }
+
+        val isAppSelected = selectedApps.find { it.packageName == packageName }?.isEnabled ?: false
+        
+        if (isAppSelected) {
+            // App is selected, turn off night light if it's currently on
+            if (isNightLightEnabled()) {
+                Log.d("NightLight", "Turning off night light for $packageName")
+                wasNightLightOnBeforeAutoToggle = true
+                isNightLightAutoToggledOff = true
+                setNightLightEnabled(false)
+            }
+        } else {
+            // App is NOT selected, restore night light if we previously turned it off
+            if (isNightLightAutoToggledOff) {
+                Log.d("NightLight", "Restoring night light (was turned off for previous app)")
+                setNightLightEnabled(true)
+                isNightLightAutoToggledOff = false
+                wasNightLightOnBeforeAutoToggle = false
+            }
+        }
+    }
+
+    private fun isNightLightEnabled(): Boolean {
+        return try {
+            Settings.Secure.getInt(contentResolver, "night_display_activated", 0) == 1
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    private fun setNightLightEnabled(enabled: Boolean) {
+        try {
+            Settings.Secure.putInt(contentResolver, "night_display_activated", if (enabled) 1 else 0)
+        } catch (e: Exception) {
+            Log.w("NightLight", "Failed to set night light: ${e.message}. Ensure WRITE_SECURE_SETTINGS is granted.")
+        }
     }
 
     override fun onInterrupt() {
@@ -58,7 +189,7 @@ class ScreenOffAccessibilityService : AccessibilityService() {
         return super.onStartCommand(intent, flags, startId)
     }
 
-    private fun triggerHapticFeedback() {
+    private fun triggerHapticFeedback(specificType: HapticFeedbackType? = null) {
         try {
             val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 getSystemService(VibratorManager::class.java)?.defaultVibrator
@@ -69,7 +200,7 @@ class ScreenOffAccessibilityService : AccessibilityService() {
 
             if (vibrator != null) {
                 val prefs = getSharedPreferences("essentials_prefs", MODE_PRIVATE)
-                val typeName = prefs.getString("haptic_feedback_type", HapticFeedbackType.NONE.name)
+                val typeName = specificType?.name ?: prefs.getString("haptic_feedback_type", HapticFeedbackType.NONE.name)
                 val feedbackType = try {
                     HapticFeedbackType.valueOf(typeName ?: HapticFeedbackType.NONE.name)
                 } catch (e: Exception) {
@@ -110,6 +241,23 @@ class ScreenOffAccessibilityService : AccessibilityService() {
                     // For preview mode, just fade in and keep visible
                     OverlayHelper.fadeInOverlay(overlay)
                 } else {
+                    // If only show when screen off is enabled, check before pulsing
+                    val prefs = getSharedPreferences("essentials_prefs", MODE_PRIVATE)
+                    val onlyShowWhenScreenOff = prefs.getBoolean("edge_lighting_only_screen_off", true)
+                    if (onlyShowWhenScreenOff) {
+                        val powerManager = getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
+                        val isScreenOn = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+                            powerManager.isInteractive
+                        } else {
+                            @Suppress("DEPRECATION")
+                            powerManager.isScreenOn
+                        }
+                        if (isScreenOn) {
+                            removeOverlay()
+                            return
+                        }
+                    }
+
                     // Normal mode: pulse the overlay
                     OverlayHelper.pulseOverlay(overlay) {
                         // When pulsing completes, remove the overlay
@@ -131,6 +279,94 @@ class ScreenOffAccessibilityService : AccessibilityService() {
             }
         }
         overlayViews.clear()
+    }
+
+    override fun onKeyEvent(event: KeyEvent): Boolean {
+        val prefs = getSharedPreferences("essentials_prefs", MODE_PRIVATE)
+        val triggerButton = prefs.getString("flashlight_trigger_button", "Volume Up")
+        val targetKeyCode = if (triggerButton == "Volume Down") KeyEvent.KEYCODE_VOLUME_DOWN else KeyEvent.KEYCODE_VOLUME_UP
+
+        if (event.keyCode == targetKeyCode) {
+            val isEnabled = prefs.getBoolean("flashlight_volume_toggle_enabled", false)
+            if (!isEnabled) return super.onKeyEvent(event)
+
+            val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+            val isScreenOn = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+                powerManager.isInteractive
+            } else {
+                @Suppress("DEPRECATION")
+                powerManager.isScreenOn
+            }
+
+            // Log event for debugging
+            Log.d("Flashlight", "KeyEvent: action=${event.action}, screenOn=$isScreenOn")
+
+            val isAlwaysTurnOffEnabled = prefs.getBoolean("flashlight_always_turn_off_enabled", false)
+
+            // Only intercept if screen is off OR (always turn off is enabled AND torch is currently on)
+            // This allows turning it OFF while screen is on, but prevents turning it ON while screen is on (unless screen is off of course)
+            val shouldIntercept = !isScreenOn || (isAlwaysTurnOffEnabled && isTorchOn)
+
+            if (shouldIntercept) {
+                if (event.action == KeyEvent.ACTION_DOWN) {
+                    if (event.repeatCount == 0) {
+                        Log.d("Flashlight", "Long press timer started")
+                        handler.postDelayed(longPressRunnable, LONG_PRESS_TIMEOUT)
+                    }
+                    return true // Consume event
+                } else if (event.action == KeyEvent.ACTION_UP) {
+                    Log.d("Flashlight", "Long press timer removed")
+                    handler.removeCallbacks(longPressRunnable)
+                    return true // Consume event
+                }
+            }
+        }
+        return super.onKeyEvent(event)
+    }
+
+    private fun toggleFlashlight() {
+        val prefs = getSharedPreferences("essentials_prefs", MODE_PRIVATE)
+        val hapticName = prefs.getString("flashlight_haptic_type", HapticFeedbackType.LONG.name)
+        val hapticType = try {
+            HapticFeedbackType.valueOf(hapticName ?: HapticFeedbackType.LONG.name)
+        } catch (e: Exception) {
+            HapticFeedbackType.LONG
+        }
+
+        Log.d("Flashlight", "Toggling flashlight, current state: $isTorchOn, haptic: $hapticType")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            try {
+                val cameraManager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
+                for (id in cameraManager.cameraIdList) {
+                    val chars = cameraManager.getCameraCharacteristics(id)
+                    val flashAvailable = chars.get(CameraCharacteristics.FLASH_INFO_AVAILABLE) ?: false
+                    val lensFacing = chars.get(CameraCharacteristics.LENS_FACING)
+                    
+                    // Prefer back camera with flash
+                    if (flashAvailable && lensFacing == CameraCharacteristics.LENS_FACING_BACK) {
+                        Log.d("Flashlight", "Setting torch mode for camera $id to ${!isTorchOn}")
+                        cameraManager.setTorchMode(id, !isTorchOn)
+                        triggerHapticFeedback(hapticType)
+                        return
+                    }
+                }
+                
+                // Fallback: use first camera with flash if no back camera found with flash
+                for (id in cameraManager.cameraIdList) {
+                    val chars = cameraManager.getCameraCharacteristics(id)
+                    if (chars.get(CameraCharacteristics.FLASH_INFO_AVAILABLE) == true) {
+                        Log.d("Flashlight", "Fallback: Setting torch mode for camera $id to ${!isTorchOn}")
+                        cameraManager.setTorchMode(id, !isTorchOn)
+                        triggerHapticFeedback(hapticType)
+                        return
+                    }
+                }
+                
+                Log.w("Flashlight", "No camera with flash found")
+            } catch (e: Exception) {
+                Log.e("Flashlight", "Error toggling flashlight", e)
+            }
+        }
     }
 
 }

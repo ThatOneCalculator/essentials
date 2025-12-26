@@ -54,36 +54,57 @@ import com.sameerasw.essentials.ui.components.ReusableTopAppBar
 import com.sameerasw.essentials.R
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Button
+import androidx.compose.material3.rememberModalBottomSheetState
 import android.content.SharedPreferences
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 
 private const val TAG = "LinkPickerScreen"
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LinkPickerScreen(uri: Uri, onFinish: () -> Unit, modifier: Modifier = Modifier, demo: Boolean = false) {
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
 
+    // Mutable state for the current URI
+    var currentUri by remember { mutableStateOf(uri) }
+    var showEditSheet by remember { mutableStateOf(false) }
+    var editingText by remember { mutableStateOf(currentUri.toString()) }
+    
+    // Search state
+    var searchQuery by remember { mutableStateOf("") }
+    
+    // App lists
+    var baseOpenWithApps by remember { mutableStateOf<List<ResolvedAppInfo>>(emptyList()) }
+    var baseShareWithApps by remember { mutableStateOf<List<ResolvedAppInfo>>(emptyList()) }
+    var isLoadingApps by remember { mutableStateOf(true) }
+
     Log.d(TAG, "LinkPickerScreen called with demo = $demo")
-    Log.d(TAG, "LinkPickerScreen created with URI: $uri")
+    Log.d(TAG, "LinkPickerScreen created with URI: $currentUri")
 
-    // Query apps once when composable is created
-    val baseOpenWithApps = remember {
-        queryOpenWithApps(context, uri).also {
-            Log.d(TAG, "Open with apps: ${it.size}")
-            it.forEach { app ->
-                Log.d(TAG, "  - ${app.activityInfo.loadLabel(context.packageManager)} (${app.activityInfo.packageName})")
-            }
-        }
-    }
-
-    val baseShareWithApps = remember {
-        queryShareWithApps(context, uri).also {
-            Log.d(TAG, "Share with apps: ${it.size}")
-            it.forEach { app ->
-                Log.d(TAG, "  - ${app.activityInfo.loadLabel(context.packageManager)} (${app.activityInfo.packageName})")
+    // Query apps whenever currentUri changes
+    LaunchedEffect(currentUri) {
+        isLoadingApps = true
+        withContext(Dispatchers.IO) {
+            val open = queryOpenWithApps(context, currentUri)
+            val share = queryShareWithApps(context, currentUri)
+            withContext(Dispatchers.Main) {
+                baseOpenWithApps = open
+                baseShareWithApps = share
+                isLoadingApps = false
             }
         }
     }
@@ -91,13 +112,17 @@ fun LinkPickerScreen(uri: Uri, onFinish: () -> Unit, modifier: Modifier = Modifi
     // Pinned packages state
     val pinnedPackages = remember { mutableStateOf(getPinnedPackages(context)) }
 
-    // Sorted apps: pinned first, then unpinned, both alphabetical
-    val openWithApps = remember(baseOpenWithApps, pinnedPackages.value) {
-        baseOpenWithApps.sortedWith(compareBy<ResolveInfo> { !pinnedPackages.value.contains(it.activityInfo.packageName) }.thenBy { it.loadLabel(context.packageManager).toString().lowercase() })
+    // Sorted and filtered apps
+    val openWithApps = remember(baseOpenWithApps, pinnedPackages.value, searchQuery) {
+        baseOpenWithApps
+            .filter { searchQuery.isEmpty() || it.label.contains(searchQuery, ignoreCase = true) }
+            .sortedWith(compareBy<ResolvedAppInfo> { !pinnedPackages.value.contains(it.resolveInfo.activityInfo.packageName) })
     }
 
-    val shareWithApps = remember(baseShareWithApps, pinnedPackages.value) {
-        baseShareWithApps.sortedWith(compareBy<ResolveInfo> { !pinnedPackages.value.contains(it.activityInfo.packageName) }.thenBy { it.loadLabel(context.packageManager).toString().lowercase() })
+    val shareWithApps = remember(baseShareWithApps, pinnedPackages.value, searchQuery) {
+        baseShareWithApps
+            .filter { searchQuery.isEmpty() || it.label.contains(searchQuery, ignoreCase = true) }
+            .sortedWith(compareBy<ResolvedAppInfo> { !pinnedPackages.value.contains(it.resolveInfo.activityInfo.packageName) })
     }
 
     // toggle pin
@@ -180,62 +205,196 @@ fun LinkPickerScreen(uri: Uri, onFinish: () -> Unit, modifier: Modifier = Modifi
         }
 
         Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
-            // Link display container
-            Card(
+            // Link display and Edit action
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-                    .clickable {
-                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                        clipboard.setPrimaryClip(ClipData.newPlainText("Link", uri.toString()))
-                        Toast.makeText(context, "Link copied to clipboard", Toast.LENGTH_SHORT).show()
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    },
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceBright
-                ),
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                // Link display container
+                Card(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable {
+                            val clipboard =
+                                context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                            clipboard.setPrimaryClip(
+                                ClipData.newPlainText(
+                                    "Link",
+                                    currentUri.toString()
+                                )
+                            )
+                            Toast
+                                .makeText(context, "Link copied to clipboard", Toast.LENGTH_SHORT)
+                                .show()
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        },
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceBright
+                    ),
                 ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.rounded_link_24),
-                        contentDescription = "Link Icon",
-                        modifier = Modifier.size(24.dp),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.rounded_link_24),
+                            contentDescription = "Link Icon",
+                            modifier = Modifier.size(24.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
 
-                    Text(
-                        text = if (demo) {"Long press an app to pin/ unpin"} else {uri.toString()},
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        maxLines = 3,
-                        overflow = TextOverflow.Ellipsis
-                    )
+                        Text(
+                            text = if (demo) {
+                                "Long press an app to pin/ unpin"
+                            } else {
+                                currentUri.toString()
+                            },
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+
+                // Edit Button Container
+                Card(
+                    modifier = Modifier
+                        .size(56.dp)
+                        .clickable {
+                            editingText = currentUri.toString()
+                            showEditSheet = true
+                        },
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceBright
+                    ),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.rounded_edit_24),
+                            contentDescription = "Edit Link",
+                            modifier = Modifier.size(24.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
             }
 
-            // HorizontalPager fills remaining space
-            HorizontalPager(
-                modifier = Modifier.weight(1f),
-                state = pagerState,
-                verticalAlignment = Alignment.Top
-            ) { page ->
-                when (page) {
-                    0 -> {
-                        OpenWithContent(openWithApps, uri, onFinish, Modifier, togglePin, pinnedPackages.value, demo)
-                    }
-                    1 -> {
-                        ShareWithContent(shareWithApps, uri, onFinish, Modifier, togglePin, pinnedPackages.value, demo)
+            // Search Bar
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                placeholder = { Text("Search apps") },
+                leadingIcon = { 
+                    Icon(
+                        painter = painterResource(id = R.drawable.rounded_search_24),
+                        contentDescription = "Search"
+                    ) 
+                },
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp)
+            )
+
+            if (isLoadingApps) {
+                Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                    androidx.compose.material3.CircularProgressIndicator()
+                }
+            } else {
+                // HorizontalPager fills remaining space
+                HorizontalPager(
+                    modifier = Modifier.weight(1f),
+                    state = pagerState,
+                    verticalAlignment = Alignment.Top
+                ) { page ->
+                    when (page) {
+                        0 -> {
+                            OpenWithContent(openWithApps, currentUri, onFinish, Modifier, togglePin, pinnedPackages.value, demo)
+                        }
+                        1 -> {
+                            ShareWithContent(shareWithApps, currentUri, onFinish, Modifier, togglePin, pinnedPackages.value, demo)
+                        }
                     }
                 }
             }
         }
     }
+
+    if (showEditSheet) {
+        val focusRequester = remember { FocusRequester() }
+
+        LaunchedEffect(Unit) {
+            delay(300) // Wait for sheet animation
+            focusRequester.requestFocus()
+        }
+
+        ModalBottomSheet(
+            onDismissRequest = { showEditSheet = false },
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Edit Link",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+
+                    FilledIconButton(
+                        onClick = {
+                            try {
+                                currentUri = Uri.parse(editingText)
+                                showEditSheet = false
+                            } catch (e: Exception) {
+                                Toast.makeText(context, "Invalid URI", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.rounded_save_24),
+                            contentDescription = "Save changes",
+                            modifier = Modifier.size(24.dp),
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
+                }
+
+                OutlinedTextField(
+                    value = editingText,
+                    onValueChange = { editingText = it },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(focusRequester),
+                    label = { Text("URL") },
+                    maxLines = 5,
+                    shape = RoundedCornerShape(12.dp)
+                )
+            }
+        }
+    }
 }
 
-private fun queryOpenWithApps(context: Context, uri: Uri): List<ResolveInfo> {
+private fun queryOpenWithApps(context: Context, uri: Uri): List<ResolvedAppInfo> {
     return try {
         val pm = context.packageManager
         val ourPackageName = context.packageName
@@ -269,24 +428,26 @@ private fun queryOpenWithApps(context: Context, uri: Uri): List<ResolveInfo> {
 
         Log.d(TAG, "Apps after filtering: ${filtered.size}")
 
-        // Sort by label
+        // Map to ResolvedAppInfo and sort
         val collator = Collator.getInstance(Locale.getDefault())
-        val sorted = filtered.sortedWith { o1, o2 ->
+        val resolvedList = filtered.map { 
+            ResolvedAppInfo(it, it.loadLabel(pm).toString()) 
+        }.sortedWith { o1, o2 ->
             collator.compare(
-                o1.activityInfo.loadLabel(pm).toString().lowercase(Locale.getDefault()),
-                o2.activityInfo.loadLabel(pm).toString().lowercase(Locale.getDefault())
+                o1.label.lowercase(Locale.getDefault()),
+                o2.label.lowercase(Locale.getDefault())
             )
         }
 
-        Log.d(TAG, "Final open with apps: ${sorted.size}")
-        sorted
+        Log.d(TAG, "Final open with apps: ${resolvedList.size}")
+        resolvedList
     } catch (e: Exception) {
         Log.e(TAG, "Error querying open with apps", e)
         emptyList()
     }
 }
 
-private fun queryShareWithApps(context: Context, uri: Uri): List<ResolveInfo> {
+private fun queryShareWithApps(context: Context, uri: Uri): List<ResolvedAppInfo> {
     return try {
         val pm = context.packageManager
         val ourPackageName = context.packageName
@@ -322,17 +483,19 @@ private fun queryShareWithApps(context: Context, uri: Uri): List<ResolveInfo> {
 
         Log.d(TAG, "Share apps after filtering: ${filtered.size}")
 
-        // Sort by label
+        // Map to ResolvedAppInfo and sort
         val collator = Collator.getInstance(Locale.getDefault())
-        val sorted = filtered.sortedWith { o1, o2 ->
+        val resolvedList = filtered.map { 
+            ResolvedAppInfo(it, it.loadLabel(pm).toString()) 
+        }.sortedWith { o1, o2 ->
             collator.compare(
-                o1.activityInfo.loadLabel(pm).toString().lowercase(Locale.getDefault()),
-                o2.activityInfo.loadLabel(pm).toString().lowercase(Locale.getDefault())
+                o1.label.lowercase(Locale.getDefault()),
+                o2.label.lowercase(Locale.getDefault())
             )
         }
 
-        Log.d(TAG, "Final share with apps: ${sorted.size}")
-        sorted
+        Log.d(TAG, "Final share with apps: ${resolvedList.size}")
+        resolvedList
     } catch (e: Exception) {
         Log.e(TAG, "Error querying share with apps", e)
         emptyList()

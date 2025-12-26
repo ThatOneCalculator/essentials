@@ -41,6 +41,10 @@ import com.sameerasw.essentials.ui.composables.configs.CaffeinateSettingsUI
 import com.sameerasw.essentials.ui.composables.configs.ScreenOffWidgetSettingsUI
 import com.sameerasw.essentials.ui.composables.configs.EdgeLightingSettingsUI
 import com.sameerasw.essentials.ui.composables.configs.SoundModeTileSettingsUI
+import com.sameerasw.essentials.ui.composables.configs.QuickSettingsTilesSettingsUI
+import com.sameerasw.essentials.ui.composables.configs.FlashlightSettingsUI
+import com.sameerasw.essentials.ui.composables.configs.DynamicNightLightSettingsUI
+import com.sameerasw.essentials.ui.composables.configs.SnoozeNotificationsSettingsUI
 import com.sameerasw.essentials.viewmodels.CaffeinateViewModel
 import com.sameerasw.essentials.viewmodels.MainViewModel
 import com.sameerasw.essentials.viewmodels.StatusBarIconViewModel
@@ -60,7 +64,11 @@ class FeatureSettingsActivity : ComponentActivity() {
             "Caffeinate" to "Keep the screen awake",
             "Edge lighting" to "Preview edge lighting effects on new notifications",
             "Sound mode tile" to "QS tile to toggle sound mode",
-            "Link actions" to "Handle links with multiple apps"
+            "Link actions" to "Handle links with multiple apps",
+            "Flashlight toggle" to "Toggle flashlight while screen off",
+            "Dynamic night light" to "Toggle based on current app",
+            "Snooze system notifications" to "Automatically snooze persistent notifications",
+            "Quick Settings Tiles" to "All available QS tiles"
         )
         val description = featureDescriptions[feature] ?: ""
         setContent {
@@ -105,6 +113,9 @@ class FeatureSettingsActivity : ComponentActivity() {
                         "Screen off widget" -> !isAccessibilityEnabled
                         "Statusbar icons" -> !isWriteSecureSettingsEnabled
                         "Edge lighting" -> !isOverlayPermissionGranted || !isEdgeLightingAccessibilityEnabled || !isNotificationListenerEnabled
+                        "Flashlight toggle" -> !isAccessibilityEnabled
+                        "Dynamic night light" -> !isAccessibilityEnabled || !isWriteSecureSettingsEnabled
+                        "Snooze system notifications" -> !isNotificationListenerEnabled
                         else -> false
                     }
                     showPermissionSheet = hasMissingPermissions
@@ -182,6 +193,65 @@ class FeatureSettingsActivity : ComponentActivity() {
                                 isGranted = isNotificationListenerEnabled
                             )
                         )
+                        "Flashlight toggle" -> listOf(
+                            PermissionItem(
+                                iconRes = R.drawable.rounded_settings_accessibility_24,
+                                title = "Accessibility Service",
+                                description = "Required to intercept volume button presses when the screen is off",
+                                dependentFeatures = PermissionRegistry.getFeatures("ACCESSIBILITY"),
+                                actionLabel = "Enable in Settings",
+                                action = {
+                                    val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+                                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                    context.startActivity(intent)
+                                },
+                                isGranted = isAccessibilityEnabled
+                            )
+                        )
+                        "Dynamic night light" -> listOf(
+                            PermissionItem(
+                                iconRes = R.drawable.rounded_settings_accessibility_24,
+                                title = "Accessibility Service",
+                                description = "Needed to monitor foreground applications.",
+                                dependentFeatures = PermissionRegistry.getFeatures("ACCESSIBILITY"),
+                                actionLabel = "Enable Service",
+                                action = {
+                                    val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+                                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                    context.startActivity(intent)
+                                },
+                                isGranted = isAccessibilityEnabled
+                            ),
+                            PermissionItem(
+                                iconRes = R.drawable.rounded_security_24,
+                                title = "Write Secure Settings",
+                                description = "Needed to toggle Night Light. Grant via ADB or root.",
+                                dependentFeatures = PermissionRegistry.getFeatures("WRITE_SECURE_SETTINGS"),
+                                actionLabel = "Copy ADB",
+                                action = {
+                                    val adbCommand = "adb shell pm grant com.sameerasw.essentials android.permission.WRITE_SECURE_SETTINGS"
+                                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                    val clip = ClipData.newPlainText("adb_command", adbCommand)
+                                    clipboard.setPrimaryClip(clip)
+                                },
+                                secondaryActionLabel = "Check",
+                                secondaryAction = {
+                                    viewModel.isWriteSecureSettingsEnabled.value = viewModel.canWriteSecureSettings(context)
+                                },
+                                isGranted = isWriteSecureSettingsEnabled
+                            )
+                        )
+                        "Snooze system notifications" -> listOf(
+                            PermissionItem(
+                                iconRes = R.drawable.rounded_snooze_24,
+                                title = "Notification Listener",
+                                description = "Required to detect and snooze notifications",
+                                dependentFeatures = PermissionRegistry.getFeatures("NOTIFICATION_LISTENER"),
+                                actionLabel = if (isNotificationListenerEnabled) "Permission granted" else "Grant listener",
+                                action = { viewModel.requestNotificationListenerPermission(context) },
+                                isGranted = isNotificationListenerEnabled
+                            )
+                        )
                         else -> emptyList()
                     }
 
@@ -252,6 +322,29 @@ class FeatureSettingsActivity : ComponentActivity() {
                             }
                             "Sound mode tile" -> {
                                 SoundModeTileSettingsUI(modifier = Modifier.padding(top = 16.dp))
+                            }
+                            "Flashlight toggle" -> {
+                                FlashlightSettingsUI(
+                                    viewModel = viewModel,
+                                    modifier = Modifier.padding(top = 16.dp)
+                                )
+                            }
+                            "Dynamic night light" -> {
+                                DynamicNightLightSettingsUI(
+                                    viewModel = viewModel,
+                                    modifier = Modifier.padding(top = 16.dp)
+                                )
+                            }
+                            "Snooze system notifications" -> {
+                                SnoozeNotificationsSettingsUI(
+                                    viewModel = viewModel,
+                                    modifier = Modifier.padding(top = 16.dp)
+                                )
+                            }
+                            "Quick Settings Tiles" -> {
+                                QuickSettingsTilesSettingsUI(
+                                    modifier = Modifier.padding(top = 16.dp)
+                                )
                             }
                             "Link actions" -> {
                                 setContent {
