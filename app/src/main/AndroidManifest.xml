@@ -153,6 +153,61 @@
                 <action android:name="android.service.quicksettings.action.QS_TILE" />
             </intent-filter>
         </service>
+
+        <service
+            android:name=".services.UiBlurTileService"
+            android:exported="true"
+            android:icon="@drawable/rounded_blur_on_24"
+            android:label="UI Blur"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".services.BubblesTileService"
+            android:exported="true"
+            android:icon="@drawable/rounded_bubble_24"
+            android:label="Bubbles"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".services.PrivateNotificationsTileService"
+            android:exported="true"
+            android:icon="@drawable/rounded_notifications_off_24"
+            android:label="Sensitive Content"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".services.TapToWakeTileService"
+            android:exported="true"
+            android:icon="@drawable/rounded_touch_app_24"
+            android:label="Tap to Wake"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".services.AlwaysOnDisplayTileService"
+            android:exported="true"
+            android:icon="@drawable/rounded_mobile_text_2_24"
+            android:label="AOD"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
         <service
             android:name=".services.EdgeLightingService"
             android:exported="false"
