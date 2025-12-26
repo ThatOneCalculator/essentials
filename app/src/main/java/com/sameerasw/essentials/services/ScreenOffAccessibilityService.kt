@@ -301,8 +301,13 @@ class ScreenOffAccessibilityService : AccessibilityService() {
             // Log event for debugging
             Log.d("Flashlight", "KeyEvent: action=${event.action}, screenOn=$isScreenOn")
 
-            // Only intercept if screen is off
-            if (!isScreenOn) {
+            val isAlwaysTurnOffEnabled = prefs.getBoolean("flashlight_always_turn_off_enabled", false)
+
+            // Only intercept if screen is off OR (always turn off is enabled AND torch is currently on)
+            // This allows turning it OFF while screen is on, but prevents turning it ON while screen is on (unless screen is off of course)
+            val shouldIntercept = !isScreenOn || (isAlwaysTurnOffEnabled && isTorchOn)
+
+            if (shouldIntercept) {
                 if (event.action == KeyEvent.ACTION_DOWN) {
                     if (event.repeatCount == 0) {
                         Log.d("Flashlight", "Long press timer started")

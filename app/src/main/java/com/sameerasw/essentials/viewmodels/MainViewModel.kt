@@ -49,6 +49,7 @@ class MainViewModel : ViewModel() {
     val isSnoozeDebuggingEnabled = mutableStateOf(false)
     val isSnoozeFileTransferEnabled = mutableStateOf(false)
     val isSnoozeChargingEnabled = mutableStateOf(false)
+    val isFlashlightAlwaysTurnOffEnabled = mutableStateOf(false)
 
     fun check(context: Context) {
         isAccessibilityEnabled.value = isAccessibilityServiceEnabled(context)
@@ -88,6 +89,7 @@ class MainViewModel : ViewModel() {
         isSnoozeDebuggingEnabled.value = prefs.getBoolean("snooze_debugging_enabled", false)
         isSnoozeFileTransferEnabled.value = prefs.getBoolean("snooze_file_transfer_enabled", false)
         isSnoozeChargingEnabled.value = prefs.getBoolean("snooze_charging_enabled", false)
+        isFlashlightAlwaysTurnOffEnabled.value = prefs.getBoolean("flashlight_always_turn_off_enabled", false)
     }
 
     fun setWidgetEnabled(enabled: Boolean, context: Context) {
@@ -490,6 +492,13 @@ class MainViewModel : ViewModel() {
         isSnoozeChargingEnabled.value = enabled
         context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
             putBoolean("snooze_charging_enabled", enabled)
+        }
+    }
+
+    fun setFlashlightAlwaysTurnOffEnabled(enabled: Boolean, context: Context) {
+        isFlashlightAlwaysTurnOffEnabled.value = enabled
+        context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
+            putBoolean("flashlight_always_turn_off_enabled", enabled)
         }
     }
 }

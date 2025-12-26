@@ -15,6 +15,10 @@ import com.sameerasw.essentials.viewmodels.MainViewModel
 import com.sameerasw.essentials.ui.components.pickers.HapticFeedbackPicker
 import com.sameerasw.essentials.ui.components.pickers.SegmentedPicker
 import com.sameerasw.essentials.utils.HapticFeedbackType
+import com.sameerasw.essentials.ui.components.cards.IconToggleItem
+import com.sameerasw.essentials.utils.HapticUtil
+import androidx.compose.ui.platform.LocalView
+import com.sameerasw.essentials.R
 
 @Composable
 fun FlashlightSettingsUI(
@@ -67,6 +71,23 @@ fun FlashlightSettingsUI(
                     "Tick" to HapticFeedbackType.TICK,
                     "Long" to HapticFeedbackType.LONG
                 )
+            )
+        }
+
+        val view = LocalView.current
+        RoundedCardContainer(
+            modifier = Modifier,
+            spacing = 0.dp
+        ) {
+            IconToggleItem(
+                iconRes = R.drawable.rounded_flashlight_on_24,
+                title = "Always turn off flashlight",
+                description = "Even while display is on",
+                isChecked = viewModel.isFlashlightAlwaysTurnOffEnabled.value,
+                onCheckedChange = { checked ->
+                    HapticUtil.performVirtualKeyHaptic(view)
+                    viewModel.setFlashlightAlwaysTurnOffEnabled(checked, context)
+                }
             )
         }
 
