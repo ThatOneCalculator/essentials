@@ -13,6 +13,47 @@ import com.sameerasw.essentials.services.ScreenOffAccessibilityService
 class NotificationListener : NotificationListenerService() {
 
     override fun onNotificationPosted(sbn: StatusBarNotification) {
+        val prefs = applicationContext.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE)
+
+        // Handle Snooze System Notifications
+        try {
+            val packageName = sbn.packageName
+            val isSystem = packageName == "android" || packageName == "com.android.systemui"
+
+            if (isSystem) {
+                val extras = sbn.notification.extras
+                val title = extras.getString(Notification.EXTRA_TITLE) ?: ""
+                val text = extras.getString(Notification.EXTRA_TEXT) ?: ""
+                val content = "$title $text"
+
+                // 1. Debugging
+                if (prefs.getBoolean("snooze_debugging_enabled", false)) {
+                    val debugRegex = Regex("(?i).*(usb|wireless)\\s*debugging\\s*connected.*")
+                    if (debugRegex.containsMatchIn(content)) {
+                        snoozeNotification(sbn.key, 24 * 60 * 60 * 1000L) // Snooze for 24 hours
+                    }
+                }
+
+                // 2. File Transfer
+                if (prefs.getBoolean("snooze_file_transfer_enabled", false)) {
+                    val fileTransferRegex = Regex("(?i).*usb\\s*file\\s*transfer.*")
+                    if (fileTransferRegex.containsMatchIn(content)) {
+                         snoozeNotification(sbn.key, 24 * 60 * 60 * 1000L)
+                    }
+                }
+
+                // 3. Charging
+                if (prefs.getBoolean("snooze_charging_enabled", false)) {
+                    val chargingRegex = Regex("(?i).*charging\\s*this\\s*device.*")
+                    if (chargingRegex.containsMatchIn(content)) {
+                         snoozeNotification(sbn.key, 24 * 60 * 60 * 1000L)
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            // Safe to ignore
+        }
+
         // trigger edge lighting for any newly posted notification if feature enabled
         try {
             val prefs = applicationContext.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE)

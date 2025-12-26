@@ -46,6 +46,9 @@ class MainViewModel : ViewModel() {
     val flashlightTriggerButton = mutableStateOf("Volume Up")
     val flashlightHapticType = mutableStateOf(HapticFeedbackType.LONG)
     val isDynamicNightLightEnabled = mutableStateOf(false)
+    val isSnoozeDebuggingEnabled = mutableStateOf(false)
+    val isSnoozeFileTransferEnabled = mutableStateOf(false)
+    val isSnoozeChargingEnabled = mutableStateOf(false)
 
     fun check(context: Context) {
         isAccessibilityEnabled.value = isAccessibilityServiceEnabled(context)
@@ -82,6 +85,9 @@ class MainViewModel : ViewModel() {
             HapticFeedbackType.LONG
         }
         isDynamicNightLightEnabled.value = prefs.getBoolean("dynamic_night_light_enabled", false)
+        isSnoozeDebuggingEnabled.value = prefs.getBoolean("snooze_debugging_enabled", false)
+        isSnoozeFileTransferEnabled.value = prefs.getBoolean("snooze_file_transfer_enabled", false)
+        isSnoozeChargingEnabled.value = prefs.getBoolean("snooze_charging_enabled", false)
     }
 
     fun setWidgetEnabled(enabled: Boolean, context: Context) {
@@ -464,5 +470,26 @@ class MainViewModel : ViewModel() {
             .edit()
             .putString("dynamic_night_light_selected_apps", json)
             .apply()
+    }
+
+    fun setSnoozeDebuggingEnabled(enabled: Boolean, context: Context) {
+        isSnoozeDebuggingEnabled.value = enabled
+        context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
+            putBoolean("snooze_debugging_enabled", enabled)
+        }
+    }
+
+    fun setSnoozeFileTransferEnabled(enabled: Boolean, context: Context) {
+        isSnoozeFileTransferEnabled.value = enabled
+        context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
+            putBoolean("snooze_file_transfer_enabled", enabled)
+        }
+    }
+
+    fun setSnoozeChargingEnabled(enabled: Boolean, context: Context) {
+        isSnoozeChargingEnabled.value = enabled
+        context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
+            putBoolean("snooze_charging_enabled", enabled)
+        }
     }
 }

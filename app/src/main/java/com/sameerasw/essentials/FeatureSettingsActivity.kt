@@ -43,6 +43,7 @@ import com.sameerasw.essentials.ui.composables.configs.EdgeLightingSettingsUI
 import com.sameerasw.essentials.ui.composables.configs.SoundModeTileSettingsUI
 import com.sameerasw.essentials.ui.composables.configs.FlashlightSettingsUI
 import com.sameerasw.essentials.ui.composables.configs.DynamicNightLightSettingsUI
+import com.sameerasw.essentials.ui.composables.configs.SnoozeNotificationsSettingsUI
 import com.sameerasw.essentials.viewmodels.CaffeinateViewModel
 import com.sameerasw.essentials.viewmodels.MainViewModel
 import com.sameerasw.essentials.viewmodels.StatusBarIconViewModel
@@ -64,7 +65,8 @@ class FeatureSettingsActivity : ComponentActivity() {
             "Sound mode tile" to "QS tile to toggle sound mode",
             "Link actions" to "Handle links with multiple apps",
             "Flashlight toggle" to "Toggle flashlight while screen off",
-            "Dynamic night light" to "Toggle based on current app"
+            "Dynamic night light" to "Toggle based on current app",
+            "Snooze system notifications" to "Automatically snooze persistent notifications"
         )
         val description = featureDescriptions[feature] ?: ""
         setContent {
@@ -111,6 +113,7 @@ class FeatureSettingsActivity : ComponentActivity() {
                         "Edge lighting" -> !isOverlayPermissionGranted || !isEdgeLightingAccessibilityEnabled || !isNotificationListenerEnabled
                         "Flashlight toggle" -> !isAccessibilityEnabled
                         "Dynamic night light" -> !isAccessibilityEnabled || !isWriteSecureSettingsEnabled
+                        "Snooze system notifications" -> !isNotificationListenerEnabled
                         else -> false
                     }
                     showPermissionSheet = hasMissingPermissions
@@ -236,6 +239,17 @@ class FeatureSettingsActivity : ComponentActivity() {
                                 isGranted = isWriteSecureSettingsEnabled
                             )
                         )
+                        "Snooze system notifications" -> listOf(
+                            PermissionItem(
+                                iconRes = R.drawable.rounded_snooze_24,
+                                title = "Notification Listener",
+                                description = "Required to detect and snooze notifications",
+                                dependentFeatures = PermissionRegistry.getFeatures("NOTIFICATION_LISTENER"),
+                                actionLabel = if (isNotificationListenerEnabled) "Permission granted" else "Grant listener",
+                                action = { viewModel.requestNotificationListenerPermission(context) },
+                                isGranted = isNotificationListenerEnabled
+                            )
+                        )
                         else -> emptyList()
                     }
 
@@ -315,6 +329,12 @@ class FeatureSettingsActivity : ComponentActivity() {
                             }
                             "Dynamic night light" -> {
                                 DynamicNightLightSettingsUI(
+                                    viewModel = viewModel,
+                                    modifier = Modifier.padding(top = 16.dp)
+                                )
+                            }
+                            "Snooze system notifications" -> {
+                                SnoozeNotificationsSettingsUI(
                                     viewModel = viewModel,
                                     modifier = Modifier.padding(top = 16.dp)
                                 )

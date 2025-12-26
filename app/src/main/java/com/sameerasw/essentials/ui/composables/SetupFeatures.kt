@@ -397,6 +397,17 @@ fun SetupFeatures(
                         isGranted = isAccessibilityEnabled
                     )
                 )
+                "Snooze system notifications" -> listOf(
+                    PermissionItem(
+                        iconRes = R.drawable.rounded_snooze_24,
+                        title = "Notification Listener",
+                        description = "Required to detect and snooze notifications",
+                        dependentFeatures = PermissionRegistry.getFeatures("NOTIFICATION_LISTENER"),
+                        actionLabel = if (isNotificationListenerEnabled) "Permission granted" else "Grant listener",
+                        action = { viewModel.requestNotificationListenerPermission(context) },
+                        isGranted = isNotificationListenerEnabled
+                    )
+                )
                 "Dynamic night light" -> listOf(
                     PermissionItem(
                         iconRes = R.drawable.rounded_settings_accessibility_24,
@@ -467,6 +478,12 @@ fun SetupFeatures(
                 R.drawable.rounded_link_24,
                 "Tools",
                 "Handle links with multiple apps"
+            ),
+            FeatureItem(
+                "Snooze system notifications",
+                R.drawable.rounded_snooze_24,
+                "Tools",
+                "Snooze persistent notifications"
             ),
             FeatureItem(
                 "Flashlight toggle",
@@ -598,6 +615,7 @@ fun SetupFeatures(
                         "Edge lighting" -> isOverlayPermissionGranted && isEdgeLightingAccessibilityEnabled && isNotificationListenerEnabled
                         "Sound mode tile" -> false // No toggle for QS tile
                         "Flashlight toggle" -> isAccessibilityEnabled
+                        "Snooze system notifications" -> isNotificationListenerEnabled
                         "Dynamic night light" -> isAccessibilityEnabled && isWriteSecureSettingsEnabled
                         else -> false
                     }
@@ -634,7 +652,7 @@ fun SetupFeatures(
                         iconRes = feature.iconRes,
                         modifier = Modifier.padding(horizontal = 0.dp, vertical = 0.dp),
                         isToggleEnabled = isToggleEnabled,
-                        showToggle = feature.title != "Sound mode tile" && feature.title != "Screen off widget" && feature.title != "Link actions", // Hide toggle for Sound mode tile, Screen off widget, and Link actions
+                        showToggle = feature.title != "Sound mode tile" && feature.title != "Screen off widget" && feature.title != "Link actions" && feature.title != "Snooze system notifications", // Hide toggle for Sound mode tile, Screen off widget, Link actions, and Snooze notifications
                         hasMoreSettings = feature.title != FEATURE_MAPS_POWER_SAVING,
                         onDisabledToggleClick = {
                             currentFeature = feature.title
