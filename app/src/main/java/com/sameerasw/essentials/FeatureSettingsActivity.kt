@@ -62,7 +62,7 @@ class FeatureSettingsActivity : ComponentActivity() {
             "Edge lighting" to "Preview edge lighting effects on new notifications",
             "Sound mode tile" to "QS tile to toggle sound mode",
             "Link actions" to "Handle links with multiple apps",
-            "Flashlight toggle" to "Toggle flashlight when screen off"
+            "Flashlight toggle" to "Toggle flashlight while screen off"
         )
         val description = featureDescriptions[feature] ?: ""
         setContent {
