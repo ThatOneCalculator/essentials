@@ -17,10 +17,12 @@ fun initPermissionRegistry() {
     PermissionRegistry.register("ACCESSIBILITY", "Screen off widget")
     PermissionRegistry.register("ACCESSIBILITY", "Edge lighting")
     PermissionRegistry.register("ACCESSIBILITY", "Flashlight toggle")
+    PermissionRegistry.register("ACCESSIBILITY", "Dynamic night light")
 
     // Write secure settings permission
     PermissionRegistry.register("WRITE_SECURE_SETTINGS", "Statusbar icons")
     PermissionRegistry.register("WRITE_SECURE_SETTINGS", "Sound Mode")
+    PermissionRegistry.register("WRITE_SECURE_SETTINGS", "Dynamic night light")
 
     // Shizuku permission
     PermissionRegistry.register("SHIZUKU", "Maps power saving mode")

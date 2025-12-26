@@ -45,6 +45,7 @@ class MainViewModel : ViewModel() {
     val isFlashlightVolumeToggleEnabled = mutableStateOf(false)
     val flashlightTriggerButton = mutableStateOf("Volume Up")
     val flashlightHapticType = mutableStateOf(HapticFeedbackType.LONG)
+    val isDynamicNightLightEnabled = mutableStateOf(false)
 
     fun check(context: Context) {
         isAccessibilityEnabled.value = isAccessibilityServiceEnabled(context)
@@ -80,6 +81,7 @@ class MainViewModel : ViewModel() {
         } catch (e: Exception) {
             HapticFeedbackType.LONG
         }
+        isDynamicNightLightEnabled.value = prefs.getBoolean("dynamic_night_light_enabled", false)
     }
 
     fun setWidgetEnabled(enabled: Boolean, context: Context) {
@@ -136,6 +138,13 @@ class MainViewModel : ViewModel() {
         flashlightHapticType.value = type
         context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
             putString("flashlight_haptic_type", type.name)
+        }
+    }
+
+    fun setDynamicNightLightEnabled(enabled: Boolean, context: Context) {
+        isDynamicNightLightEnabled.value = enabled
+        context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
+            putBoolean("dynamic_night_light_enabled", enabled)
         }
     }
 
@@ -413,5 +422,47 @@ class MainViewModel : ViewModel() {
     fun loadEdgeLightingStrokeThickness(context: Context): Int {
         val prefs = context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE)
         return prefs.getInt("edge_lighting_stroke_thickness", 8) // Default to 8 dp
+    }
+
+    // Dynamic Night Light App Selection Methods
+    fun saveDynamicNightLightSelectedApps(context: Context, apps: List<NotificationApp>) {
+        val prefs = context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE)
+        val selections = apps.map { AppSelection(it.packageName, it.isEnabled) }
+        val gson = Gson()
+        val json = gson.toJson(selections)
+        prefs.edit().putString("dynamic_night_light_selected_apps", json).apply()
+    }
+
+    fun loadDynamicNightLightSelectedApps(context: Context): List<AppSelection> {
+        val prefs = context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE)
+        val json = prefs.getString("dynamic_night_light_selected_apps", null)
+        return if (json != null) {
+            val gson = Gson()
+            val type = object : TypeToken<List<AppSelection>>() {}.type
+            try {
+                val selections: List<AppSelection> = gson.fromJson(json, type)
+                selections
+            } catch (e: Exception) {
+                emptyList()
+            }
+        } else {
+            emptyList()
+        }
+    }
+
+    fun updateDynamicNightLightAppEnabled(context: Context, packageName: String, enabled: Boolean) {
+        val currentSelections = loadDynamicNightLightSelectedApps(context).toMutableList()
+        val selectionIndex = currentSelections.indexOfFirst { it.packageName == packageName }
+        if (selectionIndex != -1) {
+            currentSelections[selectionIndex] = currentSelections[selectionIndex].copy(isEnabled = enabled)
+        } else {
+            currentSelections.add(AppSelection(packageName, enabled))
+        }
+        val gson = Gson()
+        val json = gson.toJson(currentSelections)
+        context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE)
+            .edit()
+            .putString("dynamic_night_light_selected_apps", json)
+            .apply()
     }
 }

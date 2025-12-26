@@ -79,6 +79,7 @@ fun SetupFeatures(
     val isOverlayPermissionGranted by viewModel.isOverlayPermissionGranted
     val isEdgeLightingAccessibilityEnabled by viewModel.isEdgeLightingAccessibilityEnabled
     val isFlashlightVolumeToggleEnabled by viewModel.isFlashlightVolumeToggleEnabled
+    val isDynamicNightLightEnabled by viewModel.isDynamicNightLightEnabled
     val context = LocalContext.current
 
     fun buildMapsPowerSavingPermissionItems(): List<PermissionItem> {
@@ -266,6 +267,40 @@ fun SetupFeatures(
                         )
                     }
                 }
+                "Dynamic night light" -> {
+                    if (!isAccessibilityEnabled) {
+                        missing.add(
+                            PermissionItem(
+                                iconRes = R.drawable.rounded_settings_accessibility_24,
+                                title = "Accessibility Service",
+                                description = "Needed to monitor foreground applications.",
+                                dependentFeatures = PermissionRegistry.getFeatures("ACCESSIBILITY"),
+                                actionLabel = "Enable Service",
+                                action = {
+                                    val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+                                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                    context.startActivity(intent)
+                                },
+                                isGranted = isAccessibilityEnabled
+                            )
+                        )
+                    }
+                    if (!isWriteSecureSettingsEnabled) {
+                        missing.add(
+                            PermissionItem(
+                                iconRes = R.drawable.rounded_security_24,
+                                title = "Write Secure Settings",
+                                description = "Needed to toggle Night Light. Grant via ADB or root.",
+                                dependentFeatures = PermissionRegistry.getFeatures("WRITE_SECURE_SETTINGS"),
+                                actionLabel = "How to grant",
+                                action = {
+                                    // Maybe show a dialog or link to instructions
+                                },
+                                isGranted = isWriteSecureSettingsEnabled
+                            )
+                        )
+                    }
+                }
             }
 
             if (missing.isEmpty()) {
@@ -362,6 +397,30 @@ fun SetupFeatures(
                         isGranted = isAccessibilityEnabled
                     )
                 )
+                "Dynamic night light" -> listOf(
+                    PermissionItem(
+                        iconRes = R.drawable.rounded_settings_accessibility_24,
+                        title = "Accessibility Service",
+                        description = "Needed to monitor foreground applications.",
+                        dependentFeatures = PermissionRegistry.getFeatures("ACCESSIBILITY"),
+                        actionLabel = "Enable Service",
+                        action = {
+                            val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                            context.startActivity(intent)
+                        },
+                        isGranted = isAccessibilityEnabled
+                    ),
+                    PermissionItem(
+                        iconRes = R.drawable.rounded_security_24,
+                        title = "Write Secure Settings",
+                        description = "Needed to toggle Night Light. Grant via ADB or root.",
+                        dependentFeatures = PermissionRegistry.getFeatures("WRITE_SECURE_SETTINGS"),
+                        actionLabel = "How to grant",
+                        action = { /* instructions */ },
+                        isGranted = isWriteSecureSettingsEnabled
+                    )
+                )
             else -> emptyList()
         }
 
@@ -414,6 +473,12 @@ fun SetupFeatures(
                 R.drawable.rounded_flashlight_on_24,
                 "Tools",
                 "Toggle flashlight when screen off"
+            ),
+            FeatureItem(
+                "Dynamic night light",
+                R.drawable.rounded_nightlight_24,
+                "Visuals",
+                "Toggle night light based on foreground app"
             )
         )
     }
@@ -521,6 +586,7 @@ fun SetupFeatures(
                         "Edge lighting" -> isEdgeLightingEnabled
                         "Sound mode tile" -> true // Always enabled since it's a tile
                         "Flashlight toggle" -> isFlashlightVolumeToggleEnabled
+                        "Dynamic night light" -> isDynamicNightLightEnabled
                         else -> false
                     }
 
@@ -532,6 +598,7 @@ fun SetupFeatures(
                         "Edge lighting" -> isOverlayPermissionGranted && isEdgeLightingAccessibilityEnabled && isNotificationListenerEnabled
                         "Sound mode tile" -> false // No toggle for QS tile
                         "Flashlight toggle" -> isAccessibilityEnabled
+                        "Dynamic night light" -> isAccessibilityEnabled && isWriteSecureSettingsEnabled
                         else -> false
                     }
 
@@ -559,6 +626,8 @@ fun SetupFeatures(
                                 "Edge lighting" -> viewModel.setEdgeLightingEnabled(enabled, context)
                                 "Sound mode tile" -> {} // No toggle action needed for tile
                                 "Flashlight toggle" -> viewModel.setFlashlightVolumeToggleEnabled(enabled, context)
+                                "Dynamic night light" -> viewModel.setDynamicNightLightEnabled(enabled, context)
+                                else -> {}
                             }
                         },
                         onClick = featureOnClick,

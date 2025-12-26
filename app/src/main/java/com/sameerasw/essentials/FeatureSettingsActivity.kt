@@ -42,6 +42,7 @@ import com.sameerasw.essentials.ui.composables.configs.ScreenOffWidgetSettingsUI
 import com.sameerasw.essentials.ui.composables.configs.EdgeLightingSettingsUI
 import com.sameerasw.essentials.ui.composables.configs.SoundModeTileSettingsUI
 import com.sameerasw.essentials.ui.composables.configs.FlashlightSettingsUI
+import com.sameerasw.essentials.ui.composables.configs.DynamicNightLightSettingsUI
 import com.sameerasw.essentials.viewmodels.CaffeinateViewModel
 import com.sameerasw.essentials.viewmodels.MainViewModel
 import com.sameerasw.essentials.viewmodels.StatusBarIconViewModel
@@ -62,7 +63,8 @@ class FeatureSettingsActivity : ComponentActivity() {
             "Edge lighting" to "Preview edge lighting effects on new notifications",
             "Sound mode tile" to "QS tile to toggle sound mode",
             "Link actions" to "Handle links with multiple apps",
-            "Flashlight toggle" to "Toggle flashlight while screen off"
+            "Flashlight toggle" to "Toggle flashlight while screen off",
+            "Dynamic night light" to "Toggle based on current app"
         )
         val description = featureDescriptions[feature] ?: ""
         setContent {
@@ -273,6 +275,12 @@ class FeatureSettingsActivity : ComponentActivity() {
                             }
                             "Flashlight toggle" -> {
                                 FlashlightSettingsUI(
+                                    viewModel = viewModel,
+                                    modifier = Modifier.padding(top = 16.dp)
+                                )
+                            }
+                            "Dynamic night light" -> {
+                                DynamicNightLightSettingsUI(
                                     viewModel = viewModel,
                                     modifier = Modifier.padding(top = 16.dp)
                                 )

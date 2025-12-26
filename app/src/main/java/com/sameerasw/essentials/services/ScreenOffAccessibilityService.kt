@@ -21,6 +21,10 @@ import android.view.KeyEvent
 import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CameraCharacteristics
 import android.os.PowerManager
+import android.provider.Settings
+import com.google.gson.Gson
+import com.sameerasw.essentials.domain.model.AppSelection
+import com.google.gson.reflect.TypeToken
 
 class ScreenOffAccessibilityService : AccessibilityService() {
 
@@ -46,6 +50,11 @@ class ScreenOffAccessibilityService : AccessibilityService() {
         toggleFlashlight()
     }
     private val LONG_PRESS_TIMEOUT = 500L
+    
+    private var wasNightLightOnBeforeAutoToggle = false
+    private var isNightLightAutoToggledOff = false
+    private var lastForegroundPackage: String? = null
+
     override fun onCreate() {
         super.onCreate()
         screenReceiver = object : BroadcastReceiver() {
@@ -87,7 +96,66 @@ class ScreenOffAccessibilityService : AccessibilityService() {
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
-        // Not used for this feature
+        if (event?.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
+            val packageName = event.packageName?.toString() ?: return
+            if (packageName == lastForegroundPackage) return
+            lastForegroundPackage = packageName
+            
+            checkHighlightNightLight(packageName)
+        }
+    }
+
+    private fun checkHighlightNightLight(packageName: String) {
+        val prefs = getSharedPreferences("essentials_prefs", MODE_PRIVATE)
+        val isEnabled = prefs.getBoolean("dynamic_night_light_enabled", false)
+        if (!isEnabled) return
+
+        val json = prefs.getString("dynamic_night_light_selected_apps", null)
+        val selectedApps: List<AppSelection> = if (json != null) {
+            try {
+                Gson().fromJson(json, object : TypeToken<List<AppSelection>>() {}.type)
+            } catch (e: Exception) {
+                emptyList()
+            }
+        } else {
+            emptyList()
+        }
+
+        val isAppSelected = selectedApps.find { it.packageName == packageName }?.isEnabled ?: false
+        
+        if (isAppSelected) {
+            // App is selected, turn off night light if it's currently on
+            if (isNightLightEnabled()) {
+                Log.d("NightLight", "Turning off night light for $packageName")
+                wasNightLightOnBeforeAutoToggle = true
+                isNightLightAutoToggledOff = true
+                setNightLightEnabled(false)
+            }
+        } else {
+            // App is NOT selected, restore night light if we previously turned it off
+            if (isNightLightAutoToggledOff) {
+                Log.d("NightLight", "Restoring night light (was turned off for previous app)")
+                setNightLightEnabled(true)
+                isNightLightAutoToggledOff = false
+                wasNightLightOnBeforeAutoToggle = false
+            }
+        }
+    }
+
+    private fun isNightLightEnabled(): Boolean {
+        return try {
+            Settings.Secure.getInt(contentResolver, "night_display_activated", 0) == 1
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    private fun setNightLightEnabled(enabled: Boolean) {
+        try {
+            Settings.Secure.putInt(contentResolver, "night_display_activated", if (enabled) 1 else 0)
+        } catch (e: Exception) {
+            Log.w("NightLight", "Failed to set night light: ${e.message}. Ensure WRITE_SECURE_SETTINGS is granted.")
+        }
     }
 
     override fun onInterrupt() {
