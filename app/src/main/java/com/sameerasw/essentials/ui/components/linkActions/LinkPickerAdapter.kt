@@ -54,9 +54,21 @@ import com.sameerasw.essentials.ui.components.ReusableTopAppBar
 import com.sameerasw.essentials.R
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Button
+import androidx.compose.material3.rememberModalBottomSheetState
 import android.content.SharedPreferences
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import kotlinx.coroutines.delay
 
 private const val TAG = "LinkPickerScreen"
 
@@ -66,25 +78,24 @@ fun LinkPickerScreen(uri: Uri, onFinish: () -> Unit, modifier: Modifier = Modifi
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
 
-    Log.d(TAG, "LinkPickerScreen called with demo = $demo")
-    Log.d(TAG, "LinkPickerScreen created with URI: $uri")
+    // Mutable state for the current URI
+    var currentUri by remember { mutableStateOf(uri) }
+    var showEditSheet by remember { mutableStateOf(false) }
+    var editingText by remember { mutableStateOf(currentUri.toString()) }
 
-    // Query apps once when composable is created
-    val baseOpenWithApps = remember {
-        queryOpenWithApps(context, uri).also {
+    Log.d(TAG, "LinkPickerScreen called with demo = $demo")
+    Log.d(TAG, "LinkPickerScreen created with URI: $currentUri")
+
+    // Query apps whenever currentUri changes
+    val baseOpenWithApps = remember(currentUri) {
+        queryOpenWithApps(context, currentUri).also {
             Log.d(TAG, "Open with apps: ${it.size}")
-            it.forEach { app ->
-                Log.d(TAG, "  - ${app.activityInfo.loadLabel(context.packageManager)} (${app.activityInfo.packageName})")
-            }
         }
     }
 
-    val baseShareWithApps = remember {
-        queryShareWithApps(context, uri).also {
+    val baseShareWithApps = remember(currentUri) {
+        queryShareWithApps(context, currentUri).also {
             Log.d(TAG, "Share with apps: ${it.size}")
-            it.forEach { app ->
-                Log.d(TAG, "  - ${app.activityInfo.loadLabel(context.packageManager)} (${app.activityInfo.packageName})")
-            }
         }
     }
 
@@ -180,39 +191,86 @@ fun LinkPickerScreen(uri: Uri, onFinish: () -> Unit, modifier: Modifier = Modifi
         }
 
         Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
-            // Link display container
-            Card(
+            // Link display and Edit action
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-                    .clickable {
-                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                        clipboard.setPrimaryClip(ClipData.newPlainText("Link", uri.toString()))
-                        Toast.makeText(context, "Link copied to clipboard", Toast.LENGTH_SHORT).show()
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    },
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceBright
-                ),
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                // Link display container
+                Card(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable {
+                            val clipboard =
+                                context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                            clipboard.setPrimaryClip(
+                                ClipData.newPlainText(
+                                    "Link",
+                                    currentUri.toString()
+                                )
+                            )
+                            Toast
+                                .makeText(context, "Link copied to clipboard", Toast.LENGTH_SHORT)
+                                .show()
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        },
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceBright
+                    ),
                 ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.rounded_link_24),
-                        contentDescription = "Link Icon",
-                        modifier = Modifier.size(24.dp),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.rounded_link_24),
+                            contentDescription = "Link Icon",
+                            modifier = Modifier.size(24.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
 
-                    Text(
-                        text = if (demo) {"Long press an app to pin/ unpin"} else {uri.toString()},
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        maxLines = 3,
-                        overflow = TextOverflow.Ellipsis
-                    )
+                        Text(
+                            text = if (demo) {
+                                "Long press an app to pin/ unpin"
+                            } else {
+                                currentUri.toString()
+                            },
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+
+                // Edit Button Container
+                Card(
+                    modifier = Modifier
+                        .size(56.dp)
+                        .clickable {
+                            editingText = currentUri.toString()
+                            showEditSheet = true
+                        },
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceBright
+                    ),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.rounded_edit_24),
+                            contentDescription = "Edit Link",
+                            modifier = Modifier.size(24.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
             }
 
@@ -224,12 +282,75 @@ fun LinkPickerScreen(uri: Uri, onFinish: () -> Unit, modifier: Modifier = Modifi
             ) { page ->
                 when (page) {
                     0 -> {
-                        OpenWithContent(openWithApps, uri, onFinish, Modifier, togglePin, pinnedPackages.value, demo)
+                        OpenWithContent(openWithApps, currentUri, onFinish, Modifier, togglePin, pinnedPackages.value, demo)
                     }
                     1 -> {
-                        ShareWithContent(shareWithApps, uri, onFinish, Modifier, togglePin, pinnedPackages.value, demo)
+                        ShareWithContent(shareWithApps, currentUri, onFinish, Modifier, togglePin, pinnedPackages.value, demo)
                     }
                 }
+            }
+        }
+    }
+
+    if (showEditSheet) {
+        val focusRequester = remember { FocusRequester() }
+
+        LaunchedEffect(Unit) {
+            delay(300) // Wait for sheet animation
+            focusRequester.requestFocus()
+        }
+
+        ModalBottomSheet(
+            onDismissRequest = { showEditSheet = false },
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Edit Link",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+
+                    FilledIconButton(
+                        onClick = {
+                            try {
+                                currentUri = Uri.parse(editingText)
+                                showEditSheet = false
+                            } catch (e: Exception) {
+                                Toast.makeText(context, "Invalid URI", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.rounded_save_24),
+                            contentDescription = "Save changes",
+                            modifier = Modifier.size(24.dp),
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
+                }
+
+                OutlinedTextField(
+                    value = editingText,
+                    onValueChange = { editingText = it },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(focusRequester),
+                    label = { Text("URL") },
+                    maxLines = 5,
+                    shape = RoundedCornerShape(12.dp)
+                )
             }
         }
     }
