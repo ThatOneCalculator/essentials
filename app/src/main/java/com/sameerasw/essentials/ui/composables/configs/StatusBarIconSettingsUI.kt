@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.sameerasw.essentials.R
+import com.sameerasw.essentials.domain.StatusBarIconRegistry
 import com.sameerasw.essentials.viewmodels.StatusBarIconViewModel
 import com.sameerasw.essentials.ui.components.pickers.NetworkTypePicker
 import com.sameerasw.essentials.ui.components.sheets.PermissionItem
@@ -45,8 +46,6 @@ fun StatusBarIconSettingsUI(
 ) {
     val context = LocalContext.current
     val isPermissionGranted = viewModel.isWriteSecureSettingsEnabled.value
-    val isMobileDataVisible = viewModel.isMobileDataVisible.value
-    val isWiFiVisible = viewModel.isWiFiVisible.value
 
     var showPermissionSheet by remember { mutableStateOf(false) }
 
@@ -83,161 +82,58 @@ fun StatusBarIconSettingsUI(
         )
     }
 
+    // Categorized icons
+    val categories = listOf(
+        StatusBarIconRegistry.CAT_CONNECTIVITY,
+        StatusBarIconRegistry.CAT_PHONE_NETWORK,
+        StatusBarIconRegistry.CAT_AUDIO_MEDIA,
+        StatusBarIconRegistry.CAT_SYSTEM_STATUS,
+        StatusBarIconRegistry.CAT_OEM_SPECIFIC
+    )
+
     Column(
         modifier = modifier
             .fillMaxWidth()
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        // Icon Visibility Category
-        Text(
-            text = "Icon Visibility",
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp),
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+        // Iterate through categories
+        categories.forEach { categoryName ->
+            val iconsInCat = StatusBarIconRegistry.ALL_ICONS.filter { it.category == categoryName }
+            if (iconsInCat.isNotEmpty()) {
+                Text(
+                    text = categoryName,
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(start = 16.dp, top = 24.dp, bottom = 8.dp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
 
-        RoundedCardContainer(
-            modifier = Modifier,
-            spacing = 2.dp,
-            cornerRadius = 24.dp
-        ) {
-            IconToggleItem(
-                iconRes = R.drawable.rounded_android_cell_dual_4_bar_24,
-                title = "Mobile Data",
-                isChecked = isMobileDataVisible,
-                onCheckedChange = { isChecked ->
-                    viewModel.setMobileDataVisible(isChecked, context)
-                },
-                enabled = isPermissionGranted
-            )
-
-            IconToggleItem(
-                iconRes = R.drawable.rounded_android_wifi_3_bar_24,
-                title = "WiFi",
-                isChecked = isWiFiVisible,
-                onCheckedChange = { isChecked ->
-                    viewModel.setWiFiVisible(isChecked, context)
-                },
-                enabled = isPermissionGranted
-            )
-
-            IconToggleItem(
-                iconRes = R.drawable.rounded_vpn_key_24,
-                title = "VPN",
-                isChecked = viewModel.isVpnVisible.value,
-                onCheckedChange = { isChecked ->
-                    viewModel.setVpnVisible(isChecked, context)
-                },
-                enabled = isPermissionGranted
-            )
-
-            IconToggleItem(
-                iconRes = R.drawable.rounded_alarm_24,
-                title = "Alarm Clock",
-                isChecked = viewModel.isAlarmClockVisible.value,
-                onCheckedChange = { isChecked ->
-                    viewModel.setAlarmClockVisible(isChecked, context)
-                },
-                enabled = isPermissionGranted
-            )
-
-            IconToggleItem(
-                iconRes = R.drawable.rounded_wifi_tethering_24,
-                title = "Hotspot",
-                isChecked = viewModel.isHotspotVisible.value,
-                onCheckedChange = { isChecked ->
-                    viewModel.setHotspotVisible(isChecked, context)
-                },
-                enabled = isPermissionGranted
-            )
-
-            IconToggleItem(
-                iconRes = R.drawable.rounded_bluetooth_24,
-                title = "Bluetooth",
-                isChecked = viewModel.isBluetoothVisible.value,
-                onCheckedChange = { isChecked ->
-                    viewModel.setBluetoothVisible(isChecked, context)
-                },
-                enabled = isPermissionGranted
-            )
-
-            IconToggleItem(
-                iconRes = R.drawable.rounded_data_saver_on_24,
-                title = "Data saver",
-                isChecked = viewModel.isDataSaverVisible.value,
-                onCheckedChange = { isChecked ->
-                    viewModel.setDataSaverVisible(isChecked, context)
-                },
-                enabled = isPermissionGranted
-            )
-
-            IconToggleItem(
-                iconRes = R.drawable.rounded_headset_mic_24,
-                title = "Headset",
-                isChecked = viewModel.isHeadsetVisible.value,
-                onCheckedChange = { isChecked ->
-                    viewModel.setHeadsetVisible(isChecked, context)
-                },
-                enabled = isPermissionGranted
-            )
-
-            IconToggleItem(
-                iconRes = R.drawable.rounded_mobile_rotate_24,
-                title = "Rotate",
-                isChecked = viewModel.isRotateVisible.value,
-                onCheckedChange = { isChecked ->
-                    viewModel.setRotateVisible(isChecked, context)
-                },
-                enabled = isPermissionGranted
-            )
-
-            IconToggleItem(
-                iconRes = R.drawable.rounded_wifi_calling_bar_3_24,
-                title = "voLTE/ voNR/ voWiFi",
-                isChecked = viewModel.isVolteVisible.value,
-                onCheckedChange = { isChecked ->
-                    viewModel.setVolteVisible(isChecked, context)
-                },
-                enabled = isPermissionGranted
-            )
-
-            IconToggleItem(
-                iconRes = R.drawable.rounded_cast_24,
-                title = "Cast",
-                isChecked = viewModel.isCastVisible.value,
-                onCheckedChange = { isChecked ->
-                    viewModel.setCastVisible(isChecked, context)
-                },
-                enabled = isPermissionGranted
-            )
-
-            IconToggleItem(
-                iconRes = R.drawable.rounded_nest_clock_farsight_analog_24,
-                title = "Clock",
-                isChecked = viewModel.isClockVisible.value,
-                onCheckedChange = { isChecked ->
-                    viewModel.setClockVisible(isChecked, context)
-                },
-                enabled = isPermissionGranted
-            )
-
-            IconToggleItem(
-                iconRes = R.drawable.rounded_flight_24,
-                title = "Airplane",
-                isChecked = viewModel.isAirplaneVisible.value,
-                onCheckedChange = { isChecked ->
-                    viewModel.setAirplaneVisible(isChecked, context)
-                },
-                enabled = isPermissionGranted
-            )
+                RoundedCardContainer(
+                    modifier = Modifier,
+                    spacing = 2.dp,
+                    cornerRadius = 24.dp
+                ) {
+                    iconsInCat.forEach { icon ->
+                        val isChecked = viewModel.getIconVisibility(icon.id)?.value ?: icon.defaultVisible
+                        IconToggleItem(
+                            iconRes = icon.iconRes ?: R.drawable.rounded_info_24,
+                            title = icon.displayName,
+                            isChecked = isChecked,
+                            onCheckedChange = { checked ->
+                                viewModel.setIconVisibility(icon.id, checked, context)
+                            },
+                            enabled = isPermissionGranted
+                        )
+                    }
+                }
+            }
         }
 
         // Smart Visibility Category
         Text(
             text = "Smart Visibility",
             style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp),
+            modifier = Modifier.padding(start = 16.dp, top = 24.dp, bottom = 8.dp),
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
@@ -356,5 +252,7 @@ fun StatusBarIconSettingsUI(
         ) {
             Text("Reset All Icons")
         }
+
+        Text("Please note that the implementation of these options may depend on the OEM and some may not be functional at all.")
     }
 }
