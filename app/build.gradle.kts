@@ -38,6 +38,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -71,6 +72,9 @@ dependencies {
     // Shizuku
     implementation(libs.shizuku.api)
     implementation(libs.shizuku.provider)
+
+    // Hidden API Bypass
+    implementation(libs.hiddenapibypass)
 
     // Gson for JSON serialization
     implementation("com.google.code.gson:gson:2.10.1")

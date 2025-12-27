@@ -68,7 +68,8 @@ class FeatureSettingsActivity : ComponentActivity() {
             "Flashlight toggle" to "Toggle flashlight while screen off",
             "Dynamic night light" to "Toggle based on current app",
             "Snooze system notifications" to "Automatically snooze persistent notifications",
-            "Quick Settings Tiles" to "All available QS tiles"
+            "Quick Settings Tiles" to "All available QS tiles",
+            "Pixel IMS" to "Force enable IMS for Pixels"
         )
         val description = featureDescriptions[feature] ?: ""
         setContent {
@@ -330,11 +331,11 @@ class FeatureSettingsActivity : ComponentActivity() {
                                 )
                             }
                             "Dynamic night light" -> {
-                                DynamicNightLightSettingsUI(
-                                    viewModel = viewModel,
-                                    modifier = Modifier.padding(top = 16.dp)
-                                )
-                            }
+                    com.sameerasw.essentials.ui.composables.configs.DynamicNightLightSettingsUI(viewModel = viewModel)
+                }
+                "Pixel IMS" -> {
+                    com.sameerasw.essentials.ui.composables.configs.PixelImsSettingsUI(viewModel = viewModel)
+                }
                             "Snooze system notifications" -> {
                                 SnoozeNotificationsSettingsUI(
                                     viewModel = viewModel,

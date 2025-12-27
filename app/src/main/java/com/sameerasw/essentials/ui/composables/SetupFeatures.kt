@@ -78,8 +78,9 @@ fun SetupFeatures(
     val isEdgeLightingEnabled by viewModel.isEdgeLightingEnabled
     val isOverlayPermissionGranted by viewModel.isOverlayPermissionGranted
     val isEdgeLightingAccessibilityEnabled by viewModel.isEdgeLightingAccessibilityEnabled
-    val isFlashlightVolumeToggleEnabled by viewModel.isFlashlightVolumeToggleEnabled
-    val isDynamicNightLightEnabled by viewModel.isDynamicNightLightEnabled
+    val isFlashlightVolumeToggleEnabled = viewModel.isFlashlightVolumeToggleEnabled.value
+    val isDynamicNightLightEnabled = viewModel.isDynamicNightLightEnabled.value
+    val isPixelImsEnabled = viewModel.isPixelImsEnabled.value
     val context = LocalContext.current
 
     fun buildMapsPowerSavingPermissionItems(): List<PermissionItem> {
@@ -301,6 +302,37 @@ fun SetupFeatures(
                         )
                     }
                 }
+                "Pixel IMS" -> {
+                    if (!isShizukuAvailable) {
+                        missing.add(
+                            PermissionItem(
+                                iconRes = R.drawable.rounded_adb_24,
+                                title = "Shizuku",
+                                description = "Required for Pixel IMS. Install Shizuku from the Play Store.",
+                                dependentFeatures = PermissionRegistry.getFeatures("SHIZUKU"),
+                                actionLabel = "Install Shizuku",
+                                action = {
+                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=moe.shizuku.privileged.api"))
+                                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                    context.startActivity(intent)
+                                },
+                                isGranted = isShizukuAvailable
+                            )
+                        )
+                    } else if (!isShizukuPermissionGranted) {
+                        missing.add(
+                            PermissionItem(
+                                iconRes = R.drawable.rounded_adb_24,
+                                title = "Shizuku permission",
+                                description = "Required to override carrier configurations.",
+                                dependentFeatures = PermissionRegistry.getFeatures("SHIZUKU"),
+                                actionLabel = "Grant permission",
+                                action = { viewModel.requestShizukuPermission() },
+                                isGranted = isShizukuPermissionGranted
+                            )
+                        )
+                    }
+                }
             }
 
             if (missing.isEmpty()) {
@@ -432,6 +464,7 @@ fun SetupFeatures(
                         isGranted = isWriteSecureSettingsEnabled
                     )
                 )
+                "Pixel IMS" -> buildMapsPowerSavingPermissionItems() // Reusing the same Shizuku logic
             else -> emptyList()
         }
 
@@ -502,6 +535,12 @@ fun SetupFeatures(
                 R.drawable.rounded_nightlight_24,
                 "Visuals",
                 "Toggle night light based on app"
+            ),
+            FeatureItem(
+                "Pixel IMS",
+                R.drawable.rounded_wifi_calling_bar_3_24,
+                "System",
+                "Force enable IMS services on Pixels"
             )
         )
     }
@@ -610,6 +649,7 @@ fun SetupFeatures(
                         "Sound mode tile" -> true // Always enabled since it's a tile
                         "Flashlight toggle" -> isFlashlightVolumeToggleEnabled
                         "Dynamic night light" -> isDynamicNightLightEnabled
+                        "Pixel IMS" -> isPixelImsEnabled
                         else -> false
                     }
 
@@ -623,6 +663,7 @@ fun SetupFeatures(
                         "Flashlight toggle" -> isAccessibilityEnabled
                         "Snooze system notifications" -> isNotificationListenerEnabled
                         "Dynamic night light" -> isAccessibilityEnabled && isWriteSecureSettingsEnabled
+                        "Pixel IMS" -> isShizukuAvailable && isShizukuPermissionGranted
                         else -> false
                     }
 
@@ -651,6 +692,7 @@ fun SetupFeatures(
                                 "Sound mode tile" -> {} // No toggle action needed for tile
                                 "Flashlight toggle" -> viewModel.setFlashlightVolumeToggleEnabled(enabled, context)
                                 "Dynamic night light" -> viewModel.setDynamicNightLightEnabled(enabled, context)
+                                "Pixel IMS" -> viewModel.setPixelImsEnabled(enabled, context)
                                 else -> {}
                             }
                         },
@@ -658,7 +700,7 @@ fun SetupFeatures(
                         iconRes = feature.iconRes,
                         modifier = Modifier.padding(horizontal = 0.dp, vertical = 0.dp),
                         isToggleEnabled = isToggleEnabled,
-                        showToggle = feature.title != "Sound mode tile" && feature.title != "Screen off widget" && feature.title != "Link actions" && feature.title != "Snooze system notifications" && feature.title != "Quick Settings Tiles", // Hide toggle for Sound mode tile, Screen off widget, Link actions, Snooze notifications, and QS Tiles
+                        showToggle = feature.title != "Sound mode tile" && feature.title != "Screen off widget" && feature.title != "Link actions" && feature.title != "Snooze system notifications" && feature.title != "Quick Settings Tiles" && feature.title != "Pixel IMS", // Hide toggle for Sound mode tile, Screen off widget, Link actions, Snooze notifications, QS Tiles, and Pixel IMS
                         hasMoreSettings = feature.title != FEATURE_MAPS_POWER_SAVING,
                         onDisabledToggleClick = {
                             currentFeature = feature.title

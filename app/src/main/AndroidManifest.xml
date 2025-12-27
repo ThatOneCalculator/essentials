@@ -17,6 +17,15 @@
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
 
+    <instrumentation
+        android:name=".services.PixelImsInstrumentation"
+        android:targetPackage="${applicationId}" />
+
+    <overlay
+        android:requiredSystemPropertyName="ro.boot.vbmeta.device_state"
+        android:requiredSystemPropertyValue="locked"
+        android:targetPackage="${applicationId}" />
+
     <application
         android:name=".EssentialsApp"
         android:allowBackup="true"
@@ -214,7 +223,7 @@
             android:foregroundServiceType="specialUse" />
 
         <provider
-            android:name="rikka.shizuku.ShizukuProvider"
+            android:name=".services.PixelImsProvider"
             android:authorities="${applicationId}.shizuku"
             android:multiprocess="false"
             android:enabled="true"
