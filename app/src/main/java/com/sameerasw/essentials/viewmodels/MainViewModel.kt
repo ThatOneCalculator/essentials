@@ -42,14 +42,18 @@ class MainViewModel : ViewModel() {
     val hapticFeedbackType = mutableStateOf(HapticFeedbackType.SUBTLE)
     val isDefaultBrowserSet = mutableStateOf(false)
     val onlyShowWhenScreenOff = mutableStateOf(true)
-    val isFlashlightVolumeToggleEnabled = mutableStateOf(false)
-    val flashlightTriggerButton = mutableStateOf("Volume Up")
-    val flashlightHapticType = mutableStateOf(HapticFeedbackType.LONG)
+    val isButtonRemapEnabled = mutableStateOf(false)
+    val volumeUpActionOff = mutableStateOf("None")
+    val volumeDownActionOff = mutableStateOf("None")
+    val volumeUpActionOn = mutableStateOf("None")
+    val volumeDownActionOn = mutableStateOf("None")
+    val remapHapticType = mutableStateOf(HapticFeedbackType.DOUBLE)
     val isDynamicNightLightEnabled = mutableStateOf(false)
     val isSnoozeDebuggingEnabled = mutableStateOf(false)
     val isSnoozeFileTransferEnabled = mutableStateOf(false)
     val isSnoozeChargingEnabled = mutableStateOf(false)
     val isFlashlightAlwaysTurnOffEnabled = mutableStateOf(false)
+    val isPixelImsEnabled = mutableStateOf(false)
 
     fun check(context: Context) {
         isAccessibilityEnabled.value = isAccessibilityServiceEnabled(context)
@@ -77,19 +81,38 @@ class MainViewModel : ViewModel() {
         MapsState.isEnabled = isMapsPowerSavingEnabled.value
         loadHapticFeedback(context)
         checkCaffeinateActive(context)
-        isFlashlightVolumeToggleEnabled.value = prefs.getBoolean("flashlight_volume_toggle_enabled", false)
-        flashlightTriggerButton.value = prefs.getString("flashlight_trigger_button", "Volume Up") ?: "Volume Up"
-        val hapticName = prefs.getString("flashlight_haptic_type", HapticFeedbackType.LONG.name)
-        flashlightHapticType.value = try {
-            HapticFeedbackType.valueOf(hapticName ?: HapticFeedbackType.LONG.name)
+        
+        // Button Remap & Migration
+        isButtonRemapEnabled.value = prefs.getBoolean("button_remap_enabled", 
+            prefs.getBoolean("flashlight_volume_toggle_enabled", false))
+            
+        val oldTrigger = prefs.getString("flashlight_trigger_button", "Volume Up")
+        volumeUpActionOff.value = prefs.getString("button_remap_vol_up_action_off", 
+            prefs.getString("button_remap_vol_up_action", // Migration from previous version
+            if (oldTrigger == "Volume Up" && prefs.contains("flashlight_volume_toggle_enabled")) "Toggle flashlight" else "None")) ?: "None"
+        
+        volumeDownActionOff.value = prefs.getString("button_remap_vol_down_action_off", 
+            prefs.getString("button_remap_vol_down_action", // Migration from previous version
+            if (oldTrigger == "Volume Down" && prefs.contains("flashlight_volume_toggle_enabled")) "Toggle flashlight" else "None")) ?: "None"
+            
+        volumeUpActionOn.value = prefs.getString("button_remap_vol_up_action_on", "None") ?: "None"
+        volumeDownActionOn.value = prefs.getString("button_remap_vol_down_action_on", "None") ?: "None"
+            
+        val hapticName = prefs.getString("button_remap_haptic_type", 
+            prefs.getString("flashlight_haptic_type", HapticFeedbackType.DOUBLE.name))
+        remapHapticType.value = try {
+            val type = HapticFeedbackType.valueOf(hapticName ?: HapticFeedbackType.DOUBLE.name)
+            if (type.name == "LONG") HapticFeedbackType.DOUBLE else type
         } catch (e: Exception) {
-            HapticFeedbackType.LONG
+            HapticFeedbackType.DOUBLE
         }
+        
         isDynamicNightLightEnabled.value = prefs.getBoolean("dynamic_night_light_enabled", false)
         isSnoozeDebuggingEnabled.value = prefs.getBoolean("snooze_debugging_enabled", false)
         isSnoozeFileTransferEnabled.value = prefs.getBoolean("snooze_file_transfer_enabled", false)
         isSnoozeChargingEnabled.value = prefs.getBoolean("snooze_charging_enabled", false)
         isFlashlightAlwaysTurnOffEnabled.value = prefs.getBoolean("flashlight_always_turn_off_enabled", false)
+        isPixelImsEnabled.value = prefs.getBoolean("pixel_ims_enabled", false)
     }
 
     fun setWidgetEnabled(enabled: Boolean, context: Context) {
@@ -128,24 +151,45 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    fun setFlashlightVolumeToggleEnabled(enabled: Boolean, context: Context) {
-        isFlashlightVolumeToggleEnabled.value = enabled
+    fun setButtonRemapEnabled(enabled: Boolean, context: Context) {
+        isButtonRemapEnabled.value = enabled
         context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
-            putBoolean("flashlight_volume_toggle_enabled", enabled)
+            putBoolean("button_remap_enabled", enabled)
         }
     }
 
-    fun setFlashlightTriggerButton(button: String, context: Context) {
-        flashlightTriggerButton.value = button
+    fun setVolumeUpActionOff(action: String, context: Context) {
+        volumeUpActionOff.value = action
         context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
-            putString("flashlight_trigger_button", button)
+            putString("button_remap_vol_up_action_off", action)
         }
     }
 
-    fun setFlashlightHapticType(type: HapticFeedbackType, context: Context) {
-        flashlightHapticType.value = type
+    fun setVolumeDownActionOff(action: String, context: Context) {
+        volumeDownActionOff.value = action
         context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
-            putString("flashlight_haptic_type", type.name)
+            putString("button_remap_vol_down_action_off", action)
+        }
+    }
+
+    fun setVolumeUpActionOn(action: String, context: Context) {
+        volumeUpActionOn.value = action
+        context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
+            putString("button_remap_vol_up_action_on", action)
+        }
+    }
+
+    fun setVolumeDownActionOn(action: String, context: Context) {
+        volumeDownActionOn.value = action
+        context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
+            putString("button_remap_vol_down_action_on", action)
+        }
+    }
+
+    fun setRemapHapticType(type: HapticFeedbackType, context: Context) {
+        remapHapticType.value = type
+        context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
+            putString("button_remap_haptic_type", type.name)
         }
     }
 
@@ -499,6 +543,13 @@ class MainViewModel : ViewModel() {
         isFlashlightAlwaysTurnOffEnabled.value = enabled
         context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
             putBoolean("flashlight_always_turn_off_enabled", enabled)
+        }
+    }
+
+    fun setPixelImsEnabled(enabled: Boolean, context: Context) {
+        isPixelImsEnabled.value = enabled
+        context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
+            putBoolean("pixel_ims_enabled", enabled)
         }
     }
 }

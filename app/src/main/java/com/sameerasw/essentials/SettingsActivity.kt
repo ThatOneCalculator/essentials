@@ -11,8 +11,34 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.clickable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.material3.Icon
+import androidx.compose.ui.res.painterResource
+import androidx.compose.runtime.getValue
+import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.Row
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
+import com.sameerasw.essentials.ui.components.ReusableTopAppBar
+import com.sameerasw.essentials.ui.components.containers.RoundedCardContainer
+import com.sameerasw.essentials.ui.theme.EssentialsTheme
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -23,22 +49,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
-import com.sameerasw.essentials.ui.components.ReusableTopAppBar
-import com.sameerasw.essentials.ui.components.containers.RoundedCardContainer
-import com.sameerasw.essentials.ui.theme.EssentialsTheme
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import com.sameerasw.essentials.ui.components.cards.PermissionCard
 import com.sameerasw.essentials.ui.components.dialogs.AboutSection
@@ -57,6 +67,7 @@ class SettingsActivity : ComponentActivity() {
         }
     }
 
+    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -122,6 +133,7 @@ fun SettingsContent(viewModel: MainViewModel, modifier: Modifier = Modifier) {
     val isDefaultBrowserSet by viewModel.isDefaultBrowserSet
     val context = LocalContext.current
     val isAppHapticsEnabled = remember { mutableStateOf(HapticUtil.loadAppHapticsEnabled(context)) }
+    var isPermissionsExpanded by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier
@@ -154,134 +166,153 @@ fun SettingsContent(viewModel: MainViewModel, modifier: Modifier = Modifier) {
         Spacer(modifier = Modifier.height(16.dp))
 
         // Permissions Section
-        androidx.compose.material3.Text(
-            text = "Permissions",
-            style = androidx.compose.material3.MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp),
-            color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant
-        )
-
-        RoundedCardContainer {
-            PermissionCard(
-                iconRes = R.drawable.rounded_settings_accessibility_24,
-                title = "Accessibility",
-                dependentFeatures = PermissionRegistry.getFeatures("ACCESSIBILITY"),
-                actionLabel = if (isAccessibilityEnabled) "Granted" else "Grant Permission",
-                isGranted = isAccessibilityEnabled,
-                onActionClick = {
-                    val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-                    context.startActivity(intent)
-                },
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { isPermissionsExpanded = !isPermissionsExpanded }
+                .padding(start = 16.dp, top = 16.dp, bottom = 8.dp, end = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = "Permissions",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-
-            PermissionCard(
-                iconRes = R.drawable.rounded_security_24,
-                title = "Write Secure Settings",
-                dependentFeatures = PermissionRegistry.getFeatures("WRITE_SECURE_SETTINGS"),
-                actionLabel = if (isWriteSecureSettingsEnabled) "Granted" else "Copy ADB Command",
-                isGranted = isWriteSecureSettingsEnabled,
-                onActionClick = {
-                    val adbCommand = "adb shell pm grant com.sameerasw.essentials android.permission.WRITE_SECURE_SETTINGS"
-                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                    val clip = ClipData.newPlainText("adb_command", adbCommand)
-                    clipboard.setPrimaryClip(clip)
-                },
-                secondaryActionLabel = "Check",
-                onSecondaryActionClick = {
-                    viewModel.check(context)
-                },
+            Icon(
+                painter = painterResource(id = if (isPermissionsExpanded) R.drawable.rounded_keyboard_arrow_up_24 else R.drawable.rounded_keyboard_arrow_down_24),
+                contentDescription = if (isPermissionsExpanded) "Collapse" else "Expand",
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
+        }
 
-            if (isShizukuAvailable) {
+        AnimatedVisibility(
+            visible = isPermissionsExpanded,
+            enter = expandVertically() + fadeIn(),
+            exit = shrinkVertically() + fadeOut()
+        ) {
+            RoundedCardContainer {
                 PermissionCard(
-                    iconRes = R.drawable.rounded_adb_24,
-                    title = "Shizuku",
-                    dependentFeatures = PermissionRegistry.getFeatures("SHIZUKU"),
-                    actionLabel = if (isShizukuPermissionGranted) "Granted" else "Request Permission",
-                    isGranted = isShizukuPermissionGranted,
+                    iconRes = R.drawable.rounded_settings_accessibility_24,
+                    title = "Accessibility",
+                    dependentFeatures = PermissionRegistry.getFeatures("ACCESSIBILITY"),
+                    actionLabel = if (isAccessibilityEnabled) "Granted" else "Grant Permission",
+                    isGranted = isAccessibilityEnabled,
                     onActionClick = {
-                        viewModel.requestShizukuPermission()
+                        val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+                        context.startActivity(intent)
                     },
-                    secondaryActionLabel = if (isShizukuPermissionGranted && !isWriteSecureSettingsEnabled) "Auto-Grant" else null,
-                    onSecondaryActionClick = if (isShizukuPermissionGranted && !isWriteSecureSettingsEnabled) {
-                        {
-                            viewModel.grantWriteSecureSettingsWithShizuku(context)
+                )
+
+                PermissionCard(
+                    iconRes = R.drawable.rounded_security_24,
+                    title = "Write Secure Settings",
+                    dependentFeatures = PermissionRegistry.getFeatures("WRITE_SECURE_SETTINGS"),
+                    actionLabel = if (isWriteSecureSettingsEnabled) "Granted" else "Copy ADB Command",
+                    isGranted = isWriteSecureSettingsEnabled,
+                    onActionClick = {
+                        val adbCommand = "adb shell pm grant com.sameerasw.essentials android.permission.WRITE_SECURE_SETTINGS"
+                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                        val clip = ClipData.newPlainText("adb_command", adbCommand)
+                        clipboard.setPrimaryClip(clip)
+                    },
+                    secondaryActionLabel = "Check",
+                    onSecondaryActionClick = {
+                        viewModel.check(context)
+                    },
+                )
+
+                if (isShizukuAvailable) {
+                    PermissionCard(
+                        iconRes = R.drawable.rounded_adb_24,
+                        title = "Shizuku",
+                        dependentFeatures = PermissionRegistry.getFeatures("SHIZUKU"),
+                        actionLabel = if (isShizukuPermissionGranted) "Granted" else "Request Permission",
+                        isGranted = isShizukuPermissionGranted,
+                        onActionClick = {
+                            viewModel.requestShizukuPermission()
+                        },
+                        secondaryActionLabel = if (isShizukuPermissionGranted && !isWriteSecureSettingsEnabled) "Auto-Grant" else null,
+                        onSecondaryActionClick = if (isShizukuPermissionGranted && !isWriteSecureSettingsEnabled) {
+                            {
+                                viewModel.grantWriteSecureSettingsWithShizuku(context)
+                            }
+                        } else null,
+                    )
+                }
+
+                PermissionCard(
+                    iconRes = R.drawable.rounded_android_cell_dual_4_bar_24,
+                    title = "Read Phone State",
+                    dependentFeatures = PermissionRegistry.getFeatures("READ_PHONE_STATE"),
+                    actionLabel = if (isReadPhoneStateEnabled) "Granted" else "Grant Permission",
+                    isGranted = isReadPhoneStateEnabled,
+                    onActionClick = {
+                        viewModel.requestReadPhoneStatePermission(context as ComponentActivity)
+                    },
+                )
+
+                PermissionCard(
+                    iconRes = R.drawable.rounded_notifications_unread_24,
+                    title = "Post Notifications",
+                    dependentFeatures = PermissionRegistry.getFeatures("POST_NOTIFICATIONS"),
+                    actionLabel = if (isPostNotificationsEnabled) "Granted" else "Grant Permission",
+                    isGranted = isPostNotificationsEnabled,
+                    onActionClick = {
+                        // Request permission
+                        ActivityCompat.requestPermissions(
+                            context as ComponentActivity,
+                            arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                            1002
+                        )
+                    },
+                )
+
+                PermissionCard(
+                    iconRes = R.drawable.rounded_magnify_fullscreen_24,
+                    title = "Draw Overlays",
+                    dependentFeatures = PermissionRegistry.getFeatures("DRAW_OVER_OTHER_APPS"),
+                    actionLabel = if (isOverlayPermissionGranted) "Granted" else "Grant Permission",
+                    isGranted = isOverlayPermissionGranted,
+                    onActionClick = {
+                        val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, android.net.Uri.parse("package:${context.packageName}"))
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                        context.startActivity(intent)
+                    },
+                )
+
+                PermissionCard(
+                    iconRes = R.drawable.rounded_notification_settings_24,
+                    title = "Notification Listener",
+                    dependentFeatures = PermissionRegistry.getFeatures("NOTIFICATION_LISTENER"),
+                    actionLabel = if (isNotificationListenerEnabled) "Granted" else "Enable listener",
+                    isGranted = isNotificationListenerEnabled,
+                    onActionClick = {
+                        val intent = Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS).apply {
+                            flags = Intent.FLAG_ACTIVITY_NEW_TASK
                         }
-                    } else null,
+                        context.startActivity(intent)
+                    },
+                )
+
+                PermissionCard(
+                    iconRes = R.drawable.rounded_open_in_browser_24,
+                    title = "Default Browser",
+                    dependentFeatures = PermissionRegistry.getFeatures("DEFAULT_BROWSER"),
+                    actionLabel = if (isDefaultBrowserSet) "Granted" else "Set as Default",
+                    isGranted = isDefaultBrowserSet,
+                    onActionClick = {
+                        val intent = Intent(Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS)
+                        try {
+                            context.startActivity(intent)
+                        } catch (e: Exception) {
+                            // Fallback for older Android versions
+                            val settingsIntent = Intent(Settings.ACTION_SETTINGS)
+                            context.startActivity(settingsIntent)
+                        }
+                    },
                 )
             }
-
-            PermissionCard(
-                iconRes = R.drawable.rounded_android_cell_dual_4_bar_24,
-                title = "Read Phone State",
-                dependentFeatures = PermissionRegistry.getFeatures("READ_PHONE_STATE"),
-                actionLabel = if (isReadPhoneStateEnabled) "Granted" else "Grant Permission",
-                isGranted = isReadPhoneStateEnabled,
-                onActionClick = {
-                    viewModel.requestReadPhoneStatePermission(context as ComponentActivity)
-                },
-            )
-
-            PermissionCard(
-                iconRes = R.drawable.rounded_notifications_unread_24,
-                title = "Post Notifications",
-                dependentFeatures = PermissionRegistry.getFeatures("POST_NOTIFICATIONS"),
-                actionLabel = if (isPostNotificationsEnabled) "Granted" else "Grant Permission",
-                isGranted = isPostNotificationsEnabled,
-                onActionClick = {
-                    // Request permission
-                    ActivityCompat.requestPermissions(
-                        context as ComponentActivity,
-                        arrayOf(Manifest.permission.POST_NOTIFICATIONS),
-                        1002
-                    )
-                },
-            )
-
-            PermissionCard(
-                iconRes = R.drawable.rounded_magnify_fullscreen_24,
-                title = "Draw Overlays",
-                dependentFeatures = PermissionRegistry.getFeatures("DRAW_OVER_OTHER_APPS"),
-                actionLabel = if (isOverlayPermissionGranted) "Granted" else "Grant Permission",
-                isGranted = isOverlayPermissionGranted,
-                onActionClick = {
-                    val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, android.net.Uri.parse("package:${context.packageName}"))
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                    context.startActivity(intent)
-                },
-            )
-
-            PermissionCard(
-                iconRes = R.drawable.rounded_notification_settings_24,
-                title = "Notification Listener",
-                dependentFeatures = PermissionRegistry.getFeatures("NOTIFICATION_LISTENER"),
-                actionLabel = if (isNotificationListenerEnabled) "Granted" else "Enable listener",
-                isGranted = isNotificationListenerEnabled,
-                onActionClick = {
-                    val intent = Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS).apply {
-                        flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                    }
-                    context.startActivity(intent)
-                },
-            )
-
-            PermissionCard(
-                iconRes = R.drawable.rounded_open_in_browser_24,
-                title = "Default Browser",
-                dependentFeatures = PermissionRegistry.getFeatures("DEFAULT_BROWSER"),
-                actionLabel = if (isDefaultBrowserSet) "Granted" else "Set as Default",
-                isGranted = isDefaultBrowserSet,
-                onActionClick = {
-                    val intent = Intent(Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS)
-                    try {
-                        context.startActivity(intent)
-                    } catch (e: Exception) {
-                        // Fallback for older Android versions
-                        val settingsIntent = Intent(Settings.ACTION_SETTINGS)
-                        context.startActivity(settingsIntent)
-                    }
-                },
-            )
         }
 
         Spacer(modifier = Modifier.height(16.dp))

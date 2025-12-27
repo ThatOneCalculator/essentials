@@ -14,8 +14,8 @@ android {
         applicationId = "com.sameerasw.essentials"
         minSdk = 23
         targetSdk = 36
-        versionCode = 8
-        versionName = "6.0"
+        versionCode = 9
+        versionName = "7.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -38,6 +38,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -60,6 +61,7 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation("androidx.activity:activity-compose:1.8.0")
     implementation("io.coil-kt:coil-compose:2.5.0")
+    implementation(libs.androidx.compose.foundation.layout)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -71,6 +73,9 @@ dependencies {
     // Shizuku
     implementation(libs.shizuku.api)
     implementation(libs.shizuku.provider)
+
+    // Hidden API Bypass
+    implementation(libs.hiddenapibypass)
 
     // Gson for JSON serialization
     implementation("com.google.code.gson:gson:2.10.1")

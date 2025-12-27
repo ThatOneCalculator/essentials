@@ -25,6 +25,7 @@ import android.provider.Settings
 import com.google.gson.Gson
 import com.sameerasw.essentials.domain.model.AppSelection
 import com.google.gson.reflect.TypeToken
+import android.media.AudioManager
 
 class ScreenOffAccessibilityService : AccessibilityService() {
 
@@ -46,14 +47,24 @@ class ScreenOffAccessibilityService : AccessibilityService() {
         }
     } else null
 
+    private var lastPressedKeyCode: Int = -1
+    private var lastPendingAction: String? = null
+    private var isLongPressTriggered: Boolean = false
     private val longPressRunnable = Runnable {
-        toggleFlashlight()
+        isLongPressTriggered = true
+        lastPendingAction?.let { handleLongPress(it) }
     }
     private val LONG_PRESS_TIMEOUT = 500L
     
     private var wasNightLightOnBeforeAutoToggle = false
     private var isNightLightAutoToggledOff = false
     private var lastForegroundPackage: String? = null
+    private var pendingNLRunnable: Runnable? = null
+    private val NL_DEBOUNCE_DELAY = 500L
+
+    private val IGNORED_SYSTEM_PACKAGES = listOf(
+        "android",
+    )
 
     override fun onCreate() {
         super.onCreate()
@@ -106,6 +117,23 @@ class ScreenOffAccessibilityService : AccessibilityService() {
     }
 
     private fun checkHighlightNightLight(packageName: String) {
+        // Cancel any pending NL toggle
+        pendingNLRunnable?.let { handler.removeCallbacks(it) }
+
+        // Skip processing for system packages to avoid transient NL restoration
+        if (IGNORED_SYSTEM_PACKAGES.contains(packageName)) {
+            Log.d("NightLight", "Ignoring system package $packageName")
+            return
+        }
+
+        val runnable = Runnable {
+            processNightLightChange(packageName)
+        }
+        pendingNLRunnable = runnable
+        handler.postDelayed(runnable, NL_DEBOUNCE_DELAY)
+    }
+
+    private fun processNightLightChange(packageName: String) {
         val prefs = getSharedPreferences("essentials_prefs", MODE_PRIVATE)
         val isEnabled = prefs.getBoolean("dynamic_night_light_enabled", false)
         if (!isEnabled) return
@@ -122,22 +150,26 @@ class ScreenOffAccessibilityService : AccessibilityService() {
         }
 
         val isAppSelected = selectedApps.find { it.packageName == packageName }?.isEnabled ?: false
-        
+        val isNLCurrentlyOn = isNightLightEnabled()
+
         if (isAppSelected) {
-            // App is selected, turn off night light if it's currently on
-            if (isNightLightEnabled()) {
+            // App is selected. If NL is on, turn it off and record that we did so.
+            if (isNLCurrentlyOn) {
                 Log.d("NightLight", "Turning off night light for $packageName")
                 wasNightLightOnBeforeAutoToggle = true
                 isNightLightAutoToggledOff = true
                 setNightLightEnabled(false)
             }
         } else {
-            // App is NOT selected, restore night light if we previously turned it off
-            if (isNightLightAutoToggledOff) {
+            // App is NOT selected. 
+            // Only restore NL if it was auto-toggled off AND it was ON before that.
+            if (isNightLightAutoToggledOff && wasNightLightOnBeforeAutoToggle) {
                 Log.d("NightLight", "Restoring night light (was turned off for previous app)")
                 setNightLightEnabled(true)
                 isNightLightAutoToggledOff = false
                 wasNightLightOnBeforeAutoToggle = false
+            } else if (isNightLightAutoToggledOff) {
+                isNightLightAutoToggledOff = false
             }
         }
     }
@@ -200,11 +232,12 @@ class ScreenOffAccessibilityService : AccessibilityService() {
 
             if (vibrator != null) {
                 val prefs = getSharedPreferences("essentials_prefs", MODE_PRIVATE)
-                val typeName = specificType?.name ?: prefs.getString("haptic_feedback_type", HapticFeedbackType.NONE.name)
+                val typeName = specificType?.name ?: prefs.getString("button_remap_haptic_type", HapticFeedbackType.DOUBLE.name)
                 val feedbackType = try {
-                    HapticFeedbackType.valueOf(typeName ?: HapticFeedbackType.NONE.name)
+                    val type = HapticFeedbackType.valueOf(typeName ?: HapticFeedbackType.DOUBLE.name)
+                    if (type.name == "LONG") HapticFeedbackType.DOUBLE else type
                 } catch (e: Exception) {
-                    HapticFeedbackType.NONE
+                    HapticFeedbackType.DOUBLE
                 }
 
                 performHapticFeedback(vibrator, feedbackType)
@@ -282,58 +315,117 @@ class ScreenOffAccessibilityService : AccessibilityService() {
     }
 
     override fun onKeyEvent(event: KeyEvent): Boolean {
+        if (event.keyCode != KeyEvent.KEYCODE_VOLUME_UP && event.keyCode != KeyEvent.KEYCODE_VOLUME_DOWN) {
+            return super.onKeyEvent(event)
+        }
+
         val prefs = getSharedPreferences("essentials_prefs", MODE_PRIVATE)
-        val triggerButton = prefs.getString("flashlight_trigger_button", "Volume Up")
-        val targetKeyCode = if (triggerButton == "Volume Down") KeyEvent.KEYCODE_VOLUME_DOWN else KeyEvent.KEYCODE_VOLUME_UP
+        val isEnabled = prefs.getBoolean("button_remap_enabled", false)
+        if (!isEnabled) return super.onKeyEvent(event)
 
-        if (event.keyCode == targetKeyCode) {
-            val isEnabled = prefs.getBoolean("flashlight_volume_toggle_enabled", false)
-            if (!isEnabled) return super.onKeyEvent(event)
+        val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+        val isScreenOn = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+            powerManager.isInteractive
+        } else {
+            @Suppress("DEPRECATION")
+            powerManager.isScreenOn
+        }
 
-            val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
-            val isScreenOn = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
-                powerManager.isInteractive
-            } else {
-                @Suppress("DEPRECATION")
-                powerManager.isScreenOn
-            }
+        val actionKeySuffix = if (isScreenOn) "_on" else "_off"
+        val actionKey = if (event.keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+            "button_remap_vol_up_action$actionKeySuffix"
+        } else {
+            "button_remap_vol_down_action$actionKeySuffix"
+        }
+        
+        val action = prefs.getString(actionKey, "None") ?: "None"
+        if (action == "None") return super.onKeyEvent(event)
 
-            // Log event for debugging
-            Log.d("Flashlight", "KeyEvent: action=${event.action}, screenOn=$isScreenOn")
+        val isAlwaysTurnOffEnabled = prefs.getBoolean("flashlight_always_turn_off_enabled", false)
+        
+        // Intercept if screen is off, OR if an action is assigned to this button while screen is on.
+        // Special case for flashlight: allow turning OFF while screen is on if enabled and torch is already ON.
+        val isFlashlightAction = action == "Toggle flashlight"
+        val shouldIntercept = !isScreenOn || (isScreenOn && action != "None") || (isFlashlightAction && isAlwaysTurnOffEnabled && isTorchOn)
 
-            val isAlwaysTurnOffEnabled = prefs.getBoolean("flashlight_always_turn_off_enabled", false)
-
-            // Only intercept if screen is off OR (always turn off is enabled AND torch is currently on)
-            // This allows turning it OFF while screen is on, but prevents turning it ON while screen is on (unless screen is off of course)
-            val shouldIntercept = !isScreenOn || (isAlwaysTurnOffEnabled && isTorchOn)
-
-            if (shouldIntercept) {
-                if (event.action == KeyEvent.ACTION_DOWN) {
-                    if (event.repeatCount == 0) {
-                        Log.d("Flashlight", "Long press timer started")
-                        handler.postDelayed(longPressRunnable, LONG_PRESS_TIMEOUT)
-                    }
-                    return true // Consume event
-                } else if (event.action == KeyEvent.ACTION_UP) {
-                    Log.d("Flashlight", "Long press timer removed")
-                    handler.removeCallbacks(longPressRunnable)
-                    return true // Consume event
+        if (shouldIntercept) {
+            if (event.action == KeyEvent.ACTION_DOWN) {
+                if (event.repeatCount == 0) {
+                    lastPressedKeyCode = event.keyCode
+                    lastPendingAction = action
+                    isLongPressTriggered = false
+                    handler.postDelayed(longPressRunnable, LONG_PRESS_TIMEOUT)
                 }
+                return true // Consume event
+            } else if (event.action == KeyEvent.ACTION_UP) {
+                handler.removeCallbacks(longPressRunnable)
+                if (!isLongPressTriggered) {
+                    // It was a short press, re-simulate the volume button behavior
+                    val am = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                    val direction = if (event.keyCode == KeyEvent.KEYCODE_VOLUME_UP) AudioManager.ADJUST_RAISE else AudioManager.ADJUST_LOWER
+                    am.adjustStreamVolume(AudioManager.STREAM_MUSIC, direction, AudioManager.FLAG_SHOW_UI)
+                }
+                return true // Consume event
             }
         }
+        
         return super.onKeyEvent(event)
     }
 
-    private fun toggleFlashlight() {
-        val prefs = getSharedPreferences("essentials_prefs", MODE_PRIVATE)
-        val hapticName = prefs.getString("flashlight_haptic_type", HapticFeedbackType.LONG.name)
-        val hapticType = try {
-            HapticFeedbackType.valueOf(hapticName ?: HapticFeedbackType.LONG.name)
-        } catch (e: Exception) {
-            HapticFeedbackType.LONG
+    private fun handleLongPress(action: String) {
+        when (action) {
+            "Toggle flashlight" -> toggleFlashlight()
+            "Media play/pause" -> sendMediaKey(KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE)
+            "Media next" -> sendMediaKey(KeyEvent.KEYCODE_MEDIA_NEXT)
+            "Media previous" -> sendMediaKey(KeyEvent.KEYCODE_MEDIA_PREVIOUS)
+            "Toggle vibrate" -> toggleRingerMode(AudioManager.RINGER_MODE_VIBRATE)
+            "Toggle mute" -> toggleRingerMode(AudioManager.RINGER_MODE_SILENT)
+            "AI assistant" -> launchAssistant()
+            "Take screenshot" -> takeScreenshot()
         }
+    }
 
-        Log.d("Flashlight", "Toggling flashlight, current state: $isTorchOn, haptic: $hapticType")
+    private fun takeScreenshot() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            performGlobalAction(GLOBAL_ACTION_TAKE_SCREENSHOT)
+            triggerHapticFeedback()
+        } else {
+            Log.w("ButtonRemap", "Take screenshot is only supported on Android 9+")
+        }
+    }
+
+    private fun sendMediaKey(keyCode: Int) {
+        val am = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        am.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, keyCode))
+        am.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_UP, keyCode))
+        triggerHapticFeedback()
+    }
+
+    private fun toggleRingerMode(targetMode: Int) {
+        val am = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        val currentMode = am.ringerMode
+        if (currentMode == targetMode) {
+            am.ringerMode = AudioManager.RINGER_MODE_NORMAL
+        } else {
+            am.ringerMode = targetMode
+        }
+        triggerHapticFeedback()
+    }
+
+    private fun launchAssistant() {
+        try {
+            val intent = Intent(Intent.ACTION_VOICE_COMMAND).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            startActivity(intent)
+            triggerHapticFeedback()
+        } catch (e: Exception) {
+            Log.e("ButtonRemap", "Failed to launch assistant", e)
+        }
+    }
+
+    private fun toggleFlashlight() {
+        Log.d("Flashlight", "Toggling flashlight, current state: $isTorchOn")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             try {
                 val cameraManager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
@@ -346,7 +438,7 @@ class ScreenOffAccessibilityService : AccessibilityService() {
                     if (flashAvailable && lensFacing == CameraCharacteristics.LENS_FACING_BACK) {
                         Log.d("Flashlight", "Setting torch mode for camera $id to ${!isTorchOn}")
                         cameraManager.setTorchMode(id, !isTorchOn)
-                        triggerHapticFeedback(hapticType)
+                        triggerHapticFeedback()
                         return
                     }
                 }
@@ -357,7 +449,7 @@ class ScreenOffAccessibilityService : AccessibilityService() {
                     if (chars.get(CameraCharacteristics.FLASH_INFO_AVAILABLE) == true) {
                         Log.d("Flashlight", "Fallback: Setting torch mode for camera $id to ${!isTorchOn}")
                         cameraManager.setTorchMode(id, !isTorchOn)
-                        triggerHapticFeedback(hapticType)
+                        triggerHapticFeedback()
                         return
                     }
                 }
