@@ -42,7 +42,8 @@ fun ButtonRemapSettingsUI(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    var selectedTab by remember { mutableStateOf(0) }
+    var selectedScreenTab by remember { mutableStateOf(0) } // 0: Off, 1: On
+    var selectedButtonTab by remember { mutableStateOf(0) } // 0: Up, 1: Down
     var showFlashlightOptions by remember { mutableStateOf(false) }
 
     Column(
@@ -56,7 +57,6 @@ fun ButtonRemapSettingsUI(
             IconToggleItem(
                 iconRes = R.drawable.rounded_switch_access_3_24,
                 title = "Enable Button Remap",
-                description = "Remap volume buttons when screen is off",
                 isChecked = viewModel.isButtonRemapEnabled.value,
                 onCheckedChange = { viewModel.setButtonRemapEnabled(it, context) }
             )
@@ -88,94 +88,111 @@ fun ButtonRemapSettingsUI(
                 }
 
                 Text(
-                    text = "Buttons",
+                    text = "Remaps",
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(start = 16.dp),
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
-                // Tab Picker
+                // Button Picker & Actions
                 RoundedCardContainer(spacing = 2.dp) {
                     SegmentedPicker(
+                        items = listOf("Screen Off", "Screen On"),
+                        selectedItem = if (selectedScreenTab == 0) "Screen Off" else "Screen On",
+                        onItemSelected = { selectedScreenTab = if (it == "Screen Off") 0 else 1 },
+                        labelProvider = { it }
+                    )
+                    SegmentedPicker(
                         items = listOf("Volume Up", "Volume Down"),
-                        selectedItem = if (selectedTab == 0) "Volume Up" else "Volume Down",
-                        onItemSelected = { selectedTab = if (it == "Volume Up") 0 else 1 },
+                        selectedItem = if (selectedButtonTab == 0) "Volume Up" else "Volume Down",
+                        onItemSelected = { selectedButtonTab = if (it == "Volume Up") 0 else 1 },
                         labelProvider = { it }
                     )
 
-                    val currentAction = if (selectedTab == 0) viewModel.volumeUpAction.value else viewModel.volumeDownAction.value
-                    val onActionSelected: (String) -> Unit = { action ->
-                        if (selectedTab == 0) viewModel.setVolumeUpAction(action, context)
-                        else viewModel.setVolumeDownAction(action, context)
+                    val currentAction = when {
+                        selectedScreenTab == 0 && selectedButtonTab == 0 -> viewModel.volumeUpActionOff.value
+                        selectedScreenTab == 0 && selectedButtonTab == 1 -> viewModel.volumeDownActionOff.value
+                        selectedScreenTab == 1 && selectedButtonTab == 0 -> viewModel.volumeUpActionOn.value
+                        else -> viewModel.volumeDownActionOn.value
                     }
 
-                        RemapActionItem(
-                            title = "None",
-                            isSelected = currentAction == "None",
-                            onClick = { onActionSelected("None") },
-                            iconRes = R.drawable.rounded_do_not_disturb_on_24,
-                            modifier = Modifier,
-                        )
-                        RemapActionItem(
-                            title = "Toggle flashlight",
-                            isSelected = currentAction == "Toggle flashlight",
-                            onClick = { onActionSelected("Toggle flashlight") },
-                            hasSettings = true,
-                            onSettingsClick = { showFlashlightOptions = true },
-                            iconRes = R.drawable.rounded_flashlight_on_24,
-                            modifier = Modifier
-                        )
-                        RemapActionItem(
-                            title = "Media play/pause",
-                            isSelected = currentAction == "Media play/pause",
-                            onClick = { onActionSelected("Media play/pause") },
-                            iconRes = R.drawable.rounded_play_pause_24,
-                            modifier = Modifier
-                        )
-                        RemapActionItem(
-                            title = "Media next",
-                            isSelected = currentAction == "Media next",
-                            onClick = { onActionSelected("Media next") },
-                            iconRes = R.drawable.rounded_skip_next_24,
-                            modifier = Modifier
-                        )
-                        RemapActionItem(
-                            title = "Media previous",
-                            isSelected = currentAction == "Media previous",
-                            onClick = { onActionSelected("Media previous") },
-                            iconRes = R.drawable.rounded_skip_previous_24,
-                            modifier = Modifier
-                        )
-                        RemapActionItem(
-                            title = "Toggle vibrate",
-                            isSelected = currentAction == "Toggle vibrate",
-                            onClick = { onActionSelected("Toggle vibrate") },
-                            iconRes = R.drawable.rounded_mobile_vibrate_24,
-                            modifier = Modifier
-                        )
-                        RemapActionItem(
-                            title = "Toggle mute",
-                            isSelected = currentAction == "Toggle mute",
-                            onClick = { onActionSelected("Toggle mute") },
-                            iconRes = R.drawable.rounded_volume_off_24,
-                            modifier = Modifier
-                        )
-                        RemapActionItem(
-                            title = "AI assistant",
-                            isSelected = currentAction == "AI assistant",
-                            onClick = { onActionSelected("AI assistant") },
-                            iconRes = R.drawable.rounded_bubble_chart_24,
-                            modifier = Modifier
-                        )
-                }
+                    val onActionSelected: (String) -> Unit = { action ->
+                        when {
+                            selectedScreenTab == 0 && selectedButtonTab == 0 -> viewModel.setVolumeUpActionOff(action, context)
+                            selectedScreenTab == 0 && selectedButtonTab == 1 -> viewModel.setVolumeDownActionOff(action, context)
+                            selectedScreenTab == 1 && selectedButtonTab == 0 -> viewModel.setVolumeUpActionOn(action, context)
+                            else -> viewModel.setVolumeDownActionOn(action, context)
+                        }
+                    }
 
+                    RemapActionItem(
+                        title = "None",
+                        isSelected = currentAction == "None",
+                        onClick = { onActionSelected("None") },
+                        iconRes = R.drawable.rounded_do_not_disturb_on_24,
+                    )
+                    RemapActionItem(
+                        title = "Toggle flashlight",
+                        isSelected = currentAction == "Toggle flashlight",
+                        onClick = { onActionSelected("Toggle flashlight") },
+                        hasSettings = true,
+                        onSettingsClick = { showFlashlightOptions = true },
+                        iconRes = R.drawable.rounded_flashlight_on_24,
+                    )
+                    RemapActionItem(
+                        title = "Media play/pause",
+                        isSelected = currentAction == "Media play/pause",
+                        onClick = { onActionSelected("Media play/pause") },
+                        iconRes = R.drawable.rounded_play_pause_24,
+                    )
+                    RemapActionItem(
+                        title = "Media next",
+                        isSelected = currentAction == "Media next",
+                        onClick = { onActionSelected("Media next") },
+                        iconRes = R.drawable.rounded_skip_next_24,
+                    )
+                    RemapActionItem(
+                        title = "Media previous",
+                        isSelected = currentAction == "Media previous",
+                        onClick = { onActionSelected("Media previous") },
+                        iconRes = R.drawable.rounded_skip_previous_24,
+                    )
+                    RemapActionItem(
+                        title = "Toggle vibrate",
+                        isSelected = currentAction == "Toggle vibrate",
+                        onClick = { onActionSelected("Toggle vibrate") },
+                        iconRes = R.drawable.rounded_mobile_vibrate_24,
+                    )
+                    RemapActionItem(
+                        title = "Toggle mute",
+                        isSelected = currentAction == "Toggle mute",
+                        onClick = { onActionSelected("Toggle mute") },
+                        iconRes = R.drawable.rounded_volume_off_24,
+                    )
+                    RemapActionItem(
+                        title = "AI assistant",
+                        isSelected = currentAction == "AI assistant",
+                        onClick = { onActionSelected("AI assistant") },
+                        iconRes = R.drawable.rounded_bubble_chart_24,
+                    )
+                    if (selectedScreenTab == 1) {
+                        RemapActionItem(
+                            title = "Take screenshot",
+                            isSelected = currentAction == "Take screenshot",
+                            onClick = { onActionSelected("Take screenshot") },
+                            iconRes = R.drawable.rounded_screenshot_region_24,
+                        )
+                    }
+                }
             }
         }
 
         // Hint
         RoundedCardContainer {
             Text(
-                text = "When the screen is off, long-press the selected button to trigger its assigned action.",
+                text = if (selectedScreenTab == 0) 
+                    "When the screen is off, long-press the selected button to trigger its assigned action." 
+                    else "When the screen is on, long-press the selected button to trigger its assigned action.",
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(16.dp),
                 color = MaterialTheme.colorScheme.onSurfaceVariant

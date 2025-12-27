@@ -48,10 +48,11 @@ class ScreenOffAccessibilityService : AccessibilityService() {
     } else null
 
     private var lastPressedKeyCode: Int = -1
+    private var lastPendingAction: String? = null
     private var isLongPressTriggered: Boolean = false
     private val longPressRunnable = Runnable {
         isLongPressTriggered = true
-        handleLongPress(lastPressedKeyCode)
+        lastPendingAction?.let { handleLongPress(it) }
     }
     private val LONG_PRESS_TIMEOUT = 500L
     
@@ -295,14 +296,6 @@ class ScreenOffAccessibilityService : AccessibilityService() {
         val isEnabled = prefs.getBoolean("button_remap_enabled", false)
         if (!isEnabled) return super.onKeyEvent(event)
 
-        val action = if (event.keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
-            prefs.getString("button_remap_vol_up_action", "None")
-        } else {
-            prefs.getString("button_remap_vol_down_action", "None")
-        }
-
-        if (action == null || action == "None") return super.onKeyEvent(event)
-
         val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
         val isScreenOn = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
             powerManager.isInteractive
@@ -311,16 +304,28 @@ class ScreenOffAccessibilityService : AccessibilityService() {
             powerManager.isScreenOn
         }
 
+        val actionKeySuffix = if (isScreenOn) "_on" else "_off"
+        val actionKey = if (event.keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+            "button_remap_vol_up_action$actionKeySuffix"
+        } else {
+            "button_remap_vol_down_action$actionKeySuffix"
+        }
+        
+        val action = prefs.getString(actionKey, "None") ?: "None"
+        if (action == "None") return super.onKeyEvent(event)
+
         val isAlwaysTurnOffEnabled = prefs.getBoolean("flashlight_always_turn_off_enabled", false)
         
-        // Special case for flashlight: allow turning OFF while screen is on if enabled
+        // Intercept if screen is off, OR if an action is assigned to this button while screen is on.
+        // Special case for flashlight: allow turning OFF while screen is on if enabled and torch is already ON.
         val isFlashlightAction = action == "Toggle flashlight"
-        val shouldIntercept = !isScreenOn || (isFlashlightAction && isAlwaysTurnOffEnabled && isTorchOn)
+        val shouldIntercept = !isScreenOn || (isScreenOn && action != "None") || (isFlashlightAction && isAlwaysTurnOffEnabled && isTorchOn)
 
         if (shouldIntercept) {
             if (event.action == KeyEvent.ACTION_DOWN) {
                 if (event.repeatCount == 0) {
                     lastPressedKeyCode = event.keyCode
+                    lastPendingAction = action
                     isLongPressTriggered = false
                     handler.postDelayed(longPressRunnable, LONG_PRESS_TIMEOUT)
                 }
@@ -340,14 +345,7 @@ class ScreenOffAccessibilityService : AccessibilityService() {
         return super.onKeyEvent(event)
     }
 
-    private fun handleLongPress(keyCode: Int) {
-        val prefs = getSharedPreferences("essentials_prefs", MODE_PRIVATE)
-        val action = if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
-            prefs.getString("button_remap_vol_up_action", "None")
-        } else {
-            prefs.getString("button_remap_vol_down_action", "None")
-        }
-
+    private fun handleLongPress(action: String) {
         when (action) {
             "Toggle flashlight" -> toggleFlashlight()
             "Media play/pause" -> sendMediaKey(KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE)
@@ -356,6 +354,16 @@ class ScreenOffAccessibilityService : AccessibilityService() {
             "Toggle vibrate" -> toggleRingerMode(AudioManager.RINGER_MODE_VIBRATE)
             "Toggle mute" -> toggleRingerMode(AudioManager.RINGER_MODE_SILENT)
             "AI assistant" -> launchAssistant()
+            "Take screenshot" -> takeScreenshot()
+        }
+    }
+
+    private fun takeScreenshot() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            performGlobalAction(GLOBAL_ACTION_TAKE_SCREENSHOT)
+            triggerHapticFeedback()
+        } else {
+            Log.w("ButtonRemap", "Take screenshot is only supported on Android 9+")
         }
     }
 
