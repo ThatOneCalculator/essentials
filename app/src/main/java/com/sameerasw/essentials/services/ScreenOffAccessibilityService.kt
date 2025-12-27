@@ -48,7 +48,9 @@ class ScreenOffAccessibilityService : AccessibilityService() {
     } else null
 
     private var lastPressedKeyCode: Int = -1
+    private var isLongPressTriggered: Boolean = false
     private val longPressRunnable = Runnable {
+        isLongPressTriggered = true
         handleLongPress(lastPressedKeyCode)
     }
     private val LONG_PRESS_TIMEOUT = 500L
@@ -319,11 +321,18 @@ class ScreenOffAccessibilityService : AccessibilityService() {
             if (event.action == KeyEvent.ACTION_DOWN) {
                 if (event.repeatCount == 0) {
                     lastPressedKeyCode = event.keyCode
+                    isLongPressTriggered = false
                     handler.postDelayed(longPressRunnable, LONG_PRESS_TIMEOUT)
                 }
                 return true // Consume event
             } else if (event.action == KeyEvent.ACTION_UP) {
                 handler.removeCallbacks(longPressRunnable)
+                if (!isLongPressTriggered) {
+                    // It was a short press, re-simulate the volume button behavior
+                    val am = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                    val direction = if (event.keyCode == KeyEvent.KEYCODE_VOLUME_UP) AudioManager.ADJUST_RAISE else AudioManager.ADJUST_LOWER
+                    am.adjustStreamVolume(AudioManager.STREAM_MUSIC, direction, AudioManager.FLAG_SHOW_UI)
+                }
                 return true // Consume event
             }
         }
