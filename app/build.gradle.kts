@@ -61,6 +61,7 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation("androidx.activity:activity-compose:1.8.0")
     implementation("io.coil-kt:coil-compose:2.5.0")
+    implementation(libs.androidx.compose.foundation.layout)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
