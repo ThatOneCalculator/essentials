@@ -64,3 +64,6 @@ A collection of useful tiles to toggle system settings:
   <img src="https://github.com/user-attachments/assets/50d762a5-5bc6-46e7-a9ce-9ccfc207957f" width="19%" />
   <img src="https://github.com/user-attachments/assets/d77c91c0-a1b3-45e4-9123-eee0f09a558f" width="19%" />
 </p>
+
+# How to grant accessibility permissions
+<img width="1280" height="696" alt="image" src="https://github.com/user-attachments/assets/685115e7-4caa-4add-9196-d2e1e2c126a6" />
