@@ -3,7 +3,8 @@
 Essential tools, mods and workarounds for Pixels and other Androids
 
 > Essentials got featured by HowToMen! 🎉 <br>
-> [![Essentials got featured by HowToMen!](https://img.youtube.com/vi/7favc9MDedQ/0.jpg)](https://youtu.be/7favc9MDedQ?si=dduc7452R5Yxj7Aa&t=79)
+> [![Essentials got featured by HowToMen!](https://github.com/user-attachments/assets/9dffa436-034e-4d59-811e-f5979b000414)](https://youtu.be/7favc9MDedQ?si=dduc7452R5Yxj7Aa&t=79)
+
 
 
 # Features
