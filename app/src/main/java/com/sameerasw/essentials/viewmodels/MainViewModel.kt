@@ -151,7 +151,7 @@ class MainViewModel : ViewModel() {
         if (!manual) {
             if (!isAutoUpdateEnabled.value) return
             val currentTime = System.currentTimeMillis()
-            if (currentTime - lastUpdateCheckTime < 3600000) return // 1 hour cooldown
+            if (currentTime - lastUpdateCheckTime < 900000) return
         }
 
         isCheckingUpdate.value = true

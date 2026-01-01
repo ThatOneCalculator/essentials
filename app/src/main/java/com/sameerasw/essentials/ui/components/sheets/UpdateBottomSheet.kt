@@ -13,9 +13,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -27,8 +30,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.sameerasw.essentials.R
 import com.sameerasw.essentials.domain.model.UpdateInfo
+import com.sameerasw.essentials.ui.components.containers.RoundedCardContainer
+import com.sameerasw.essentials.ui.components.text.SimpleMarkdown
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun UpdateBottomSheet(
     updateInfo: UpdateInfo?,
@@ -48,7 +53,7 @@ fun UpdateBottomSheet(
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Icon(
                 painter = painterResource(id = if (updateInfo?.isUpdateAvailable == true) R.drawable.rounded_mobile_arrow_down_24 else R.drawable.rounded_mobile_check_24),
@@ -64,27 +69,30 @@ fun UpdateBottomSheet(
             )
 
             if (updateInfo != null) {
-                Text(
-                    text = "v${updateInfo.versionName}",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-
                 if (updateInfo.releaseNotes.isNotEmpty()) {
                     Column(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalAlignment = Alignment.Start
                     ) {
                         Text(
-                            text = "Release Notes",
-                            style = MaterialTheme.typography.titleSmall,
+                            text = "Release Notes v${updateInfo.versionName}",
+                            style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = updateInfo.releaseNotes,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
+                        RoundedCardContainer {
+                            Surface(
+                                modifier = Modifier.fillMaxWidth(),
+                                color = MaterialTheme.colorScheme.surfaceContainer
+                            ) {
+                                SimpleMarkdown(
+                                    content = updateInfo.releaseNotes,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp)
+                                )
+                            }
+                        }
                     }
                 }
 
@@ -100,7 +108,7 @@ fun UpdateBottomSheet(
                     }
                 }
             } else {
-                Text(text = "Checking for updates...")
+                LoadingIndicator()
             }
 
             Spacer(modifier = Modifier.height(32.dp))

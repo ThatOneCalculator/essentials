@@ -82,7 +82,7 @@ fun AboutSection(
                 Icon(
                     painter = painterResource(id = R.drawable.rounded_mobile_arrow_down_24),
                     contentDescription = null,
-                    modifier = Modifier.size(18.dp)
+                    modifier = Modifier.size(24.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text("Check for updates", fontWeight = FontWeight.Bold)
@@ -102,7 +102,7 @@ fun AboutSection(
                 )
                 Text(
                     text = "Auto check updates at launch",
-                    style = MaterialTheme.typography.bodySmall
+                    style = MaterialTheme.typography.bodyMedium
                 )
             }
 
