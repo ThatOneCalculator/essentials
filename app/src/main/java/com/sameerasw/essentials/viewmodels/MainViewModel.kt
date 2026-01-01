@@ -26,6 +26,12 @@ import com.sameerasw.essentials.utils.AppUtil
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.sameerasw.essentials.services.EdgeLightingService
+import com.sameerasw.essentials.domain.model.UpdateInfo
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.net.URL
+import androidx.lifecycle.viewModelScope
 
 class MainViewModel : ViewModel() {
     val isAccessibilityEnabled = mutableStateOf(false)
@@ -59,6 +65,13 @@ class MainViewModel : ViewModel() {
     val isPixelImsEnabled = mutableStateOf(false)
     val isScreenLockedSecurityEnabled = mutableStateOf(false)
     val isDeviceAdminEnabled = mutableStateOf(false)
+
+    // Update state
+    val updateInfo = mutableStateOf<UpdateInfo?>(null)
+    val isUpdateAvailable = mutableStateOf(false)
+    val isCheckingUpdate = mutableStateOf(false)
+    val isAutoUpdateEnabled = mutableStateOf(true)
+    private var lastUpdateCheckTime: Long = 0
 
     fun check(context: Context) {
         isAccessibilityEnabled.value = isAccessibilityServiceEnabled(context)
@@ -120,6 +133,92 @@ class MainViewModel : ViewModel() {
         isPixelImsEnabled.value = prefs.getBoolean("pixel_ims_enabled", false)
         isScreenLockedSecurityEnabled.value = prefs.getBoolean("screen_locked_security_enabled", false)
         isDeviceAdminEnabled.value = isDeviceAdminActive(context)
+        
+        isAutoUpdateEnabled.value = prefs.getBoolean("auto_update_enabled", true)
+        lastUpdateCheckTime = prefs.getLong("last_update_check_time", 0)
+    }
+
+    fun setAutoUpdateEnabled(enabled: Boolean, context: Context) {
+        isAutoUpdateEnabled.value = enabled
+        context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
+            putBoolean("auto_update_enabled", enabled)
+        }
+    }
+
+    fun checkForUpdates(context: Context, manual: Boolean = false) {
+        if (isCheckingUpdate.value) return
+        
+        if (!manual) {
+            if (!isAutoUpdateEnabled.value) return
+            val currentTime = System.currentTimeMillis()
+            if (currentTime - lastUpdateCheckTime < 3600000) return // 1 hour cooldown
+        }
+
+        isCheckingUpdate.value = true
+        viewModelScope.launch {
+            try {
+                val currentVersion = try {
+                    context.packageManager.getPackageInfo(context.packageName, 0).versionName
+                } catch (e: Exception) {
+                    "0.0"
+                } ?: "0.0"
+                
+                val releaseData = withContext(Dispatchers.IO) {
+                    val url = URL("https://api.github.com/repos/sameerasw/essentials/releases/latest")
+                    url.readText()
+                }
+
+                val mapType = object : TypeToken<Map<String, Any>>() {}.type
+                val release: Map<String, Any> = Gson().fromJson(releaseData, mapType)
+
+                val latestVersion = (release["tag_name"] as? String)?.removePrefix("v") ?: "0.0"
+                val body = release["body"] as? String ?: ""
+                val assets = release["assets"] as? List<Map<String, Any>>
+                val downloadUrl = assets?.firstOrNull { it["name"].toString().endsWith(".apk") }?.get("browser_download_url") as? String ?: ""
+
+                val hasUpdate = isNewerVersion(currentVersion, latestVersion)
+                
+                updateInfo.value = UpdateInfo(
+                    versionName = latestVersion,
+                    releaseNotes = body,
+                    downloadUrl = downloadUrl,
+                    isUpdateAvailable = hasUpdate
+                )
+                isUpdateAvailable.value = hasUpdate
+                
+                // Update last check time on success
+                lastUpdateCheckTime = System.currentTimeMillis()
+                context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
+                    putLong("last_update_check_time", lastUpdateCheckTime)
+                }
+                
+            } catch (e: Exception) {
+                e.printStackTrace()
+                if (manual) {
+                    // Fail silently or handle error
+                }
+            } finally {
+                isCheckingUpdate.value = false
+            }
+        }
+    }
+
+    private fun isNewerVersion(current: String, latest: String): Boolean {
+        return try {
+            val currentParts = current.split(".").map { it.toIntOrNull() ?: 0 }
+            val latestParts = latest.split(".").map { it.toIntOrNull() ?: 0 }
+            
+            val maxLength = maxOf(currentParts.size, latestParts.size)
+            for (i in 0 until maxLength) {
+                val v1 = if (i < currentParts.size) currentParts[i] else 0
+                val v2 = if (i < latestParts.size) latestParts[i] else 0
+                if (v2 > v1) return true
+                if (v1 > v2) return false
+            }
+            false
+        } catch (e: Exception) {
+            latest != current
+        }
     }
 
     private fun isDeviceAdminActive(context: Context): Boolean {

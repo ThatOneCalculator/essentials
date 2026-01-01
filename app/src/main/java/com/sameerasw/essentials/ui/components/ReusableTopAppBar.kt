@@ -23,6 +23,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.sameerasw.essentials.R
 import androidx.compose.ui.unit.dp
 import com.sameerasw.essentials.utils.HapticUtil
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -34,6 +40,8 @@ fun ReusableTopAppBar(
     onBackClick: (() -> Unit)? = null,
     onSearchClick: (() -> Unit)? = null,
     onSettingsClick: (() -> Unit)? = null,
+    onUpdateClick: (() -> Unit)? = null,
+    hasUpdateAvailable: Boolean = false,
     scrollBehavior: TopAppBarScrollBehavior? = null,
     subtitle: String? = null
 ) {
@@ -96,7 +104,35 @@ fun ReusableTopAppBar(
             }
         },
         actions = {
-
+            if (hasUpdateAvailable) {
+                val view = LocalView.current
+                IconButton(
+                    onClick = {
+                        HapticUtil.performVirtualKeyHaptic(view)
+                        onUpdateClick?.invoke()
+                    },
+                    colors = IconButtonDefaults.iconButtonColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceBright
+                    ),
+                    modifier = Modifier.size(48.dp)
+                ) {
+                    Box {
+                        Icon(
+                            painter = painterResource(id = R.drawable.rounded_mobile_arrow_down_24),
+                            contentDescription = "Update Available",
+                            modifier = Modifier.size(32.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        // Red dot
+                        Box(
+                            modifier = Modifier
+                                .size(10.dp)
+                                .align(Alignment.TopEnd)
+                                .background(Color.Red, CircleShape)
+                        )
+                    }
+                }
+            }
 
             if (hasSettings) {
                 val view = LocalView.current

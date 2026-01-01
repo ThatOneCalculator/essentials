@@ -27,6 +27,7 @@ import com.sameerasw.essentials.ui.composables.SetupFeatures
 import com.sameerasw.essentials.ui.theme.EssentialsTheme
 import com.sameerasw.essentials.utils.HapticUtil
 import com.sameerasw.essentials.viewmodels.MainViewModel
+import com.sameerasw.essentials.ui.components.sheets.UpdateBottomSheet
 
 @OptIn(ExperimentalMaterial3Api::class)
 class MainActivity : ComponentActivity() {
@@ -126,7 +127,6 @@ class MainActivity : ComponentActivity() {
         HapticUtil.initialize(this)
         // initialize permission registry
         initPermissionRegistry()
-        viewModel.check(this)
         setContent {
             EssentialsTheme {
                 val context = LocalContext.current
@@ -138,6 +138,21 @@ class MainActivity : ComponentActivity() {
 
                 var searchRequested by remember { mutableStateOf(false) }
                 val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
+                var showUpdateSheet by remember { mutableStateOf(false) }
+                val isUpdateAvailable by viewModel.isUpdateAvailable
+                val updateInfo by viewModel.updateInfo
+
+                LaunchedEffect(Unit) {
+                    viewModel.check(context)
+                    viewModel.checkForUpdates(context)
+                }
+
+                if (showUpdateSheet) {
+                    UpdateBottomSheet(
+                        updateInfo = updateInfo,
+                        onDismissRequest = { showUpdateSheet = false }
+                    )
+                }
                 Scaffold(
                     modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
                     containerColor = MaterialTheme.colorScheme.surfaceContainer,
@@ -149,6 +164,8 @@ class MainActivity : ComponentActivity() {
                             hasSettings = true,
                             onSearchClick = { searchRequested = true },
                             onSettingsClick = { startActivity(Intent(this, SettingsActivity::class.java)) },
+                            onUpdateClick = { showUpdateSheet = true },
+                            hasUpdateAvailable = isUpdateAvailable,
                             scrollBehavior = scrollBehavior,
                             subtitle = "v$versionName"
                         )

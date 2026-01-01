@@ -5,9 +5,9 @@ import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -27,19 +28,26 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.semantics.Role.Companion.Button
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import com.sameerasw.essentials.R
+import com.sameerasw.essentials.utils.HapticUtil
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 
 @Composable
 fun AboutSection(
     modifier: Modifier = Modifier,
     appName: String = "Essentials",
     developerName: String = "Sameera Wijerathna",
-    description: String = "The all-in-one toolbox for your Pixel and Androids"
+    description: String = "The all-in-one toolbox for your Pixel and Androids",
+    onCheckForUpdates: (() -> Unit)? = null,
+    isAutoUpdateEnabled: Boolean = true,
+    onAutoUpdateEnabledChange: (Boolean) -> Unit = {}
 ) {
     val context = LocalContext.current
     val versionName = try {
@@ -60,7 +68,45 @@ fun AboutSection(
             Text(text = "$appName v$versionName", style = MaterialTheme.typography.headlineLarge)
             Spacer(modifier = Modifier.height(8.dp))
             Text(text = description, style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center)
-            Spacer(modifier = Modifier.height(24.dp))
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            val view = LocalView.current
+            Button(
+                onClick = {
+                    HapticUtil.performVirtualKeyHaptic(view)
+                    onCheckForUpdates?.invoke()
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.rounded_mobile_arrow_down_24),
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Check for updates", fontWeight = FontWeight.Bold)
+            }
+
+            Spacer(modifier = Modifier.height(4.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onAutoUpdateEnabledChange(!isAutoUpdateEnabled) },
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start
+            ) {
+                Checkbox(
+                    checked = isAutoUpdateEnabled,
+                    onCheckedChange = onAutoUpdateEnabledChange
+                )
+                Text(
+                    text = "Auto check updates at launch",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
             Image(
                 painter = painterResource(id = R.drawable.avatar),
                 contentDescription = "Developer Avatar",
