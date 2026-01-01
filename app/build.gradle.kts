@@ -4,6 +4,15 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
+
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
+        kotlin {
+            compilerOptions {
+                jvmTarget.set(JvmTarget.JVM_11)
+            }
+        }
+
 android {
     namespace = "com.sameerasw.essentials"
     compileSdk {
@@ -14,8 +23,8 @@ android {
         applicationId = "com.sameerasw.essentials"
         minSdk = 23
         targetSdk = 36
-        versionCode = 10
-        versionName = "7.1"
+        versionCode = 11
+        versionName = "7.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -32,9 +41,6 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
-    }
-    kotlinOptions {
-        jvmTarget = "11"
     }
     buildFeatures {
         compose = true

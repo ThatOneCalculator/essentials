@@ -54,6 +54,7 @@ import com.sameerasw.essentials.ui.components.cards.PermissionCard
 import com.sameerasw.essentials.ui.components.dialogs.AboutSection
 import com.sameerasw.essentials.viewmodels.MainViewModel
 import com.sameerasw.essentials.utils.HapticUtil
+import com.sameerasw.essentials.ui.components.sheets.UpdateBottomSheet
 import rikka.shizuku.Shizuku
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -134,6 +135,16 @@ fun SettingsContent(viewModel: MainViewModel, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val isAppHapticsEnabled = remember { mutableStateOf(HapticUtil.loadAppHapticsEnabled(context)) }
     var isPermissionsExpanded by remember { mutableStateOf(false) }
+    var showUpdateSheet by remember { mutableStateOf(false) }
+    val updateInfo by viewModel.updateInfo
+    val isAutoUpdateEnabled by viewModel.isAutoUpdateEnabled
+
+    if (showUpdateSheet) {
+        UpdateBottomSheet(
+            updateInfo = updateInfo,
+            onDismissRequest = { showUpdateSheet = false }
+        )
+    }
 
     Column(
         modifier = modifier
@@ -319,7 +330,14 @@ fun SettingsContent(viewModel: MainViewModel, modifier: Modifier = Modifier) {
 
 
         RoundedCardContainer {
-            AboutSection()
+            AboutSection(
+                onCheckForUpdates = {
+                    viewModel.checkForUpdates(context, manual = true)
+                    showUpdateSheet = true
+                },
+                isAutoUpdateEnabled = isAutoUpdateEnabled,
+                onAutoUpdateEnabledChange = { viewModel.setAutoUpdateEnabled(it, context) }
+            )
         }
 
     }
