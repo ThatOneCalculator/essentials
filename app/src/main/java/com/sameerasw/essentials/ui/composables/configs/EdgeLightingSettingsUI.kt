@@ -59,6 +59,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.sameerasw.essentials.ui.components.sheets.AppSelectionSheet
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -69,53 +70,10 @@ fun EdgeLightingSettingsUI(
     val context = LocalContext.current
     val view = LocalView.current
 
-    // App selection state
-    var selectedApps by remember { mutableStateOf<List<NotificationApp>>(emptyList()) }
-    var isLoadingApps by remember { mutableStateOf(false) }
+    // App selection Logic
+    var showAppSelectionSheet by remember { mutableStateOf(false) }
 
-    // Search state
-    var searchQuery by remember { mutableStateOf("") }
-
-    // Load apps when composable is first shown
-    LaunchedEffect(Unit) {
-        isLoadingApps = true
-        withContext(Dispatchers.IO) {
-            try {
-                // Load saved selections first (fast operation)
-                val savedSelections = viewModel.loadEdgeLightingSelectedApps(context)
-
-                // Load all installed apps (heavy operation on background thread)
-                val allApps = AppUtil.getInstalledApps(context)
-
-                // If no apps are saved yet, initialize with all apps enabled
-                val finalSelections = if (savedSelections.isEmpty()) {
-                    val initialSelections = allApps.map { AppSelection(it.packageName, true) }
-                    // Save in background to avoid blocking UI (already on IO)
-                    viewModel.saveEdgeLightingSelectedApps(context, allApps)
-                    initialSelections
-                } else {
-                    savedSelections
-                }
-
-                // Merge saved preferences with installed apps
-                val merged = AppUtil.mergeWithSavedApps(allApps, finalSelections)
-                withContext(Dispatchers.Main) {
-                   selectedApps = merged
-                }
-            } catch (e: Exception) {
-                android.util.Log.e("EdgeLightingSettingsUI", "Error loading apps: ${e.message}")
-            } finally {
-                withContext(Dispatchers.Main) {
-                    isLoadingApps = false
-                }
-            }
-        }
-    }
-
-    // Filter to only show downloaded apps
-    val filteredApps = selectedApps.filter { 
-        !it.isSystemApp && (searchQuery.isEmpty() || it.appName.contains(searchQuery, ignoreCase = true))
-    }
+    // Corner radius state
 
     // Corner radius state
     var cornerRadiusDp by remember { mutableStateOf(viewModel.loadEdgeLightingCornerRadius(context).toFloat()) }
@@ -370,100 +328,29 @@ fun EdgeLightingSettingsUI(
             )
         }
 
-        // Downloaded Apps Section
-        Text(
-            text = "Downloaded Apps",
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp),
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        
-        // Search Bar
-        androidx.compose.material3.OutlinedTextField(
-            value = searchQuery,
-            onValueChange = { searchQuery = it },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 8.dp),
-            placeholder = { Text("Search apps") },
-            leadingIcon = { 
-                Icon(
-                    painter = painterResource(id = R.drawable.rounded_search_24),
-                    contentDescription = "Search"
-                ) 
-            },
-            singleLine = true,
-            shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp)
-        )
+        Spacer(modifier = Modifier.height(16.dp))
 
-        RoundedCardContainer(
-            modifier = Modifier,
-            spacing = 2.dp,
-            cornerRadius = 24.dp
-        ) {
-
-            if (isLoadingApps) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    LoadingIndicator()
-                }
-            } else {
-                if (filteredApps.isEmpty()) {
-                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Text(
-                            text = if (searchQuery.isNotEmpty()) "No apps found" else "No apps available",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                } else {
-                    val (selected, unselected) = filteredApps.partition { it.isEnabled }
-                    val sortedApps = selected.sortedBy { it.appName.lowercase() } + unselected.sortedBy { it.appName.lowercase() }
-
-                    sortedApps.forEach { app ->
-                        AppToggleItem(
-                            app = app,
-                            isChecked = app.isEnabled,
-                            onCheckedChange = { isChecked ->
-                                viewModel.updateEdgeLightingAppEnabled(context, app.packageName, isChecked)
-                                selectedApps = selectedApps.map {
-                                    if (it.packageName == app.packageName) it.copy(isEnabled = isChecked) else it
-                                }
-                            }
-                        )
-                    }
-                }
-            }
-        }
-
-        // Invert Selection Button
-        OutlinedButton(
+        // App Selection Sheet Button
+        Button(
             onClick = {
                 HapticUtil.performVirtualKeyHaptic(view)
-                filteredApps.forEach { app ->
-                    val newEnabled = !app.isEnabled
-                    viewModel.updateEdgeLightingAppEnabled(context, app.packageName, newEnabled)
-                }
-                selectedApps = selectedApps.map { app ->
-                    if (filteredApps.any { it.packageName == app.packageName }) {
-                        app.copy(isEnabled = !app.isEnabled)
-                    } else {
-                        app
-                    }
-                }
+                showAppSelectionSheet = true
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Invert Selection")
+            Text("Select apps")
+        }
+
+        Spacer(modifier = Modifier.height(64.dp))
+
+        if (showAppSelectionSheet) {
+            AppSelectionSheet(
+                onDismissRequest = { showAppSelectionSheet = false },
+                onLoadApps = { viewModel.loadEdgeLightingSelectedApps(it) },
+                onSaveApps = { ctx, apps -> viewModel.saveEdgeLightingSelectedApps(ctx, apps) },
+                onAppToggle = { ctx, pkg, enabled -> viewModel.updateEdgeLightingAppEnabled(ctx, pkg, enabled) },
+                context = context
+            )
         }
     }
 }
@@ -491,50 +378,5 @@ fun ColorCircle(
                     .background(Color.White.copy(alpha = 0.8f))
             )
         }
-    }
-}
-
-@Composable
-fun AppToggleItem(
-    app: NotificationApp,
-    isChecked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val view = LocalView.current
-
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(
-                color = MaterialTheme.colorScheme.surfaceBright,
-                shape = RoundedCornerShape(MaterialTheme.shapes.extraSmall.bottomEnd)
-            )
-            .padding(12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Spacer(modifier = Modifier.size(2.dp))
-        Image(
-            bitmap = app.icon.toBitmap().asImageBitmap(),
-            contentDescription = app.appName,
-            modifier = Modifier.size(24.dp)
-        )
-        Spacer(modifier = Modifier.size(2.dp))
-
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = app.appName,
-                style = MaterialTheme.typography.bodyMedium
-            )
-        }
-
-        Switch(
-            checked = isChecked,
-            onCheckedChange = { checked ->
-                HapticUtil.performVirtualKeyHaptic(view)
-                onCheckedChange(checked)
-            }
-        )
     }
 }

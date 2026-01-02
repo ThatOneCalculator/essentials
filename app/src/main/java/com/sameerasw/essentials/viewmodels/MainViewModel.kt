@@ -596,11 +596,10 @@ class MainViewModel : ViewModel() {
     }
 
     // Edge Lighting App Selection Methods
-    fun saveEdgeLightingSelectedApps(context: Context, apps: List<NotificationApp>) {
+    fun saveEdgeLightingSelectedApps(context: Context, apps: List<AppSelection>) {
         val prefs = context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE)
-        val selections = apps.map { AppSelection(it.packageName, it.isEnabled) }
         val gson = Gson()
-        val json = gson.toJson(selections)
+        val json = gson.toJson(apps)
         prefs.edit().putString("edge_lighting_selected_apps", json).apply()
     }
 
@@ -663,11 +662,10 @@ class MainViewModel : ViewModel() {
     }
 
     // Dynamic Night Light App Selection Methods
-    fun saveDynamicNightLightSelectedApps(context: Context, apps: List<NotificationApp>) {
+    fun saveDynamicNightLightSelectedApps(context: Context, apps: List<AppSelection>) {
         val prefs = context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE)
-        val selections = apps.map { AppSelection(it.packageName, it.isEnabled) }
         val gson = Gson()
-        val json = gson.toJson(selections)
+        val json = gson.toJson(apps)
         prefs.edit().putString("dynamic_night_light_selected_apps", json).apply()
     }
 
