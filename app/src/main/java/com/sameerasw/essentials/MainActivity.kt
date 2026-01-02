@@ -5,7 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.animation.AnticipateInterpolator
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.WindowCompat
@@ -30,7 +30,7 @@ import com.sameerasw.essentials.viewmodels.MainViewModel
 import com.sameerasw.essentials.ui.components.sheets.UpdateBottomSheet
 
 @OptIn(ExperimentalMaterial3Api::class)
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
     val viewModel: MainViewModel by viewModels()
     private var isAppReady = false
 
