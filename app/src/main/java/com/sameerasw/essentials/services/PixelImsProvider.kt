@@ -42,7 +42,7 @@ class PixelImsProvider : rikka.shizuku.ShizukuProvider() {
         }
         
         val callingUid = Binder.getCallingUid()
-        if (callingUid != sdkUid && callingUid != Process.SHELL_UID) {
+        if (callingUid != sdkUid && callingUid != Process.SHELL_UID && callingUid != 0) {
             return Bundle()
         }
 
