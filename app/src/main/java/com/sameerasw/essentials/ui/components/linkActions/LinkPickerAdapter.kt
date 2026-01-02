@@ -144,6 +144,7 @@ fun LinkPickerScreen(uri: Uri, onFinish: () -> Unit, modifier: Modifier = Modifi
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
 
     Scaffold(
+        contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0),
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
         topBar = {
