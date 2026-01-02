@@ -10,28 +10,31 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButton
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.foundation.layout.size
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.sameerasw.essentials.domain.model.EdgeLightingStyle
 import com.sameerasw.essentials.ui.components.containers.RoundedCardContainer
+import com.sameerasw.essentials.R
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun EdgeLightingStylePicker(
     selectedStyle: EdgeLightingStyle,
     onStyleSelected: (EdgeLightingStyle) -> Unit,
-    modifier: Modifier = Modifier,
-    options: List<Pair<String, EdgeLightingStyle>> = listOf(
-        "Stroke" to EdgeLightingStyle.STROKE,
-        "Glow" to EdgeLightingStyle.GLOW
-    )
+    modifier: Modifier = Modifier
 ) {
-    val labels = options.map { it.first }
-    val styles = options.map { it.second }
+    val styles = listOf(EdgeLightingStyle.STROKE, EdgeLightingStyle.GLOW)
+    val icons = listOf(
+        R.drawable.rounded_rounded_corner_24,
+        R.drawable.rounded_blur_linear_24
+    )
 
     val selectedIndex = styles.indexOf(selectedStyle).coerceAtLeast(0)
 
@@ -45,22 +48,26 @@ fun EdgeLightingStylePicker(
                 .padding(10.dp),
             horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween),
         ) {
-            val modifiers = List(labels.size) { Modifier.weight(1f) }
+            val modifiers = List(styles.size) { Modifier.weight(1f) }
 
-            labels.forEachIndexed { index, label ->
+            styles.forEachIndexed { index, style ->
                 ToggleButton(
                     checked = selectedIndex == index,
                     onCheckedChange = {
-                        onStyleSelected(styles[index])
+                        onStyleSelected(style)
                     },
                     modifier = modifiers[index].semantics { role = Role.RadioButton },
                     shapes = when (index) {
                         0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
-                        labels.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
+                        styles.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
                         else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
                     },
                 ) {
-                    Text(label)
+                    Icon(
+                        painter = painterResource(id = icons[index]),
+                        contentDescription = style.name,
+                        modifier = Modifier.size(64.dp)
+                    )
                 }
             }
         }
