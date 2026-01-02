@@ -343,6 +343,7 @@ class MainViewModel : ViewModel() {
             val intent = Intent(context, com.sameerasw.essentials.services.EdgeLightingService::class.java).apply {
                 putExtra("corner_radius_dp", radius)
                 putExtra("stroke_thickness_dp", thickness)
+                putExtra("ignore_screen_state", true)
             }
             context.startService(intent)
         } catch (e: Exception) {
@@ -356,6 +357,7 @@ class MainViewModel : ViewModel() {
             val intent = Intent(context, com.sameerasw.essentials.services.EdgeLightingService::class.java).apply {
                 putExtra("corner_radius_dp", cornerRadiusDp)
                 putExtra("is_preview", true)
+                putExtra("ignore_screen_state", true)
             }
             context.startService(intent)
         } catch (e: Exception) {
@@ -370,6 +372,7 @@ class MainViewModel : ViewModel() {
                 putExtra("corner_radius_dp", cornerRadiusDp)
                 putExtra("stroke_thickness_dp", strokeThicknessDp)
                 putExtra("is_preview", true)
+                putExtra("ignore_screen_state", true)
             }
             context.startService(intent)
         } catch (e: Exception) {

@@ -92,6 +92,7 @@ class EdgeLightingService : Service() {
         strokeThicknessDp = intent?.getIntExtra("stroke_thickness_dp", OverlayHelper.STROKE_DP)
             ?: OverlayHelper.STROKE_DP
         isPreview = intent?.getBooleanExtra("is_preview", false) ?: false
+        val ignoreScreenState = intent?.getBooleanExtra("ignore_screen_state", false) ?: false
         val removePreview = intent?.getBooleanExtra("remove_preview", false) ?: false
 
         if (removePreview) {
@@ -119,6 +120,7 @@ class EdgeLightingService : Service() {
                     putExtra("corner_radius_dp", cornerRadiusDp)
                     putExtra("stroke_thickness_dp", strokeThicknessDp)
                     putExtra("is_preview", isPreview)
+                    putExtra("ignore_screen_state", ignoreScreenState)
                 }
                 // Use startService to request the accessibility service perform the elevated overlay.
                 // Starting an accessibility service via startForegroundService can cause MissingForegroundServiceType

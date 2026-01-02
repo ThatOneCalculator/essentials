@@ -41,6 +41,7 @@ class ScreenOffAccessibilityService : AccessibilityService() {
     private var cornerRadiusDp: Int = OverlayHelper.CORNER_RADIUS_DP
     private var strokeThicknessDp: Int = OverlayHelper.STROKE_DP
     private var isPreview: Boolean = false
+    private var ignoreScreenState: Boolean = false
     private var screenReceiver: BroadcastReceiver? = null
     
     private var originalAnimationScale: Float = 1.0f
@@ -320,6 +321,7 @@ class ScreenOffAccessibilityService : AccessibilityService() {
             cornerRadiusDp = intent.getIntExtra("corner_radius_dp", OverlayHelper.CORNER_RADIUS_DP)
             strokeThicknessDp = intent.getIntExtra("stroke_thickness_dp", OverlayHelper.STROKE_DP)
             isPreview = intent.getBooleanExtra("is_preview", false)
+            ignoreScreenState = intent.getBooleanExtra("ignore_screen_state", false)
             val removePreview = intent.getBooleanExtra("remove_preview", false)
             if (removePreview) {
                 // Remove preview overlay
@@ -395,7 +397,7 @@ class ScreenOffAccessibilityService : AccessibilityService() {
                     // If only show when screen off is enabled, check before pulsing
                     val prefs = getSharedPreferences("essentials_prefs", MODE_PRIVATE)
                     val onlyShowWhenScreenOff = prefs.getBoolean("edge_lighting_only_screen_off", true)
-                    if (onlyShowWhenScreenOff) {
+                    if (onlyShowWhenScreenOff && !ignoreScreenState) {
                         val powerManager = getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
                         val isScreenOn = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
                             powerManager.isInteractive
