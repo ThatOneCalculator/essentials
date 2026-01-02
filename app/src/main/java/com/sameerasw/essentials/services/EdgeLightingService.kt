@@ -16,6 +16,7 @@ import android.provider.Settings
 import android.view.View
 import android.view.WindowManager
 import androidx.core.app.NotificationCompat
+import com.sameerasw.essentials.domain.model.EdgeLightingColorMode
 import com.sameerasw.essentials.utils.OverlayHelper
 
 /**
@@ -35,6 +36,8 @@ class EdgeLightingService : Service() {
     private var cornerRadiusDp: Int = OverlayHelper.CORNER_RADIUS_DP
     private var strokeThicknessDp: Int = OverlayHelper.STROKE_DP
     private var isPreview: Boolean = false
+    private var colorMode: EdgeLightingColorMode = EdgeLightingColorMode.SYSTEM
+    private var customColor: Int = 0
 
     private var screenReceiver: BroadcastReceiver? = null
 
@@ -92,6 +95,9 @@ class EdgeLightingService : Service() {
         strokeThicknessDp = intent?.getIntExtra("stroke_thickness_dp", OverlayHelper.STROKE_DP)
             ?: OverlayHelper.STROKE_DP
         isPreview = intent?.getBooleanExtra("is_preview", false) ?: false
+        val colorModeName = intent?.getStringExtra("color_mode")
+        colorMode = EdgeLightingColorMode.valueOf(colorModeName ?: EdgeLightingColorMode.SYSTEM.name)
+        customColor = intent?.getIntExtra("custom_color", 0) ?: 0
         val ignoreScreenState = intent?.getBooleanExtra("ignore_screen_state", false) ?: false
         val removePreview = intent?.getBooleanExtra("remove_preview", false) ?: false
 
@@ -121,6 +127,8 @@ class EdgeLightingService : Service() {
                     putExtra("stroke_thickness_dp", strokeThicknessDp)
                     putExtra("is_preview", isPreview)
                     putExtra("ignore_screen_state", ignoreScreenState)
+                    putExtra("color_mode", intent?.getStringExtra("color_mode"))
+                    putExtra("custom_color", intent?.getIntExtra("custom_color", 0) ?: 0)
                 }
                 // Use startService to request the accessibility service perform the elevated overlay.
                 // Starting an accessibility service via startForegroundService can cause MissingForegroundServiceType
@@ -180,7 +188,14 @@ class EdgeLightingService : Service() {
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
 
         try {
-            val overlay = OverlayHelper.createOverlayView(this, android.R.color.system_accent1_100, strokeDp = strokeThicknessDp, cornerRadiusDp = cornerRadiusDp)
+            val color = if (colorMode == EdgeLightingColorMode.CUSTOM) {
+                customColor
+            } else {
+                // SYSTEM or APP_SPECIFIC (for now fallback to system)
+                getColor(android.R.color.system_accent1_100)
+            }
+            
+            val overlay = OverlayHelper.createOverlayView(this, color, strokeDp = strokeThicknessDp, cornerRadiusDp = cornerRadiusDp)
             val params = OverlayHelper.createOverlayLayoutParams(getOverlayType())
 
             if (OverlayHelper.addOverlayView(windowManager, overlay, params)) {

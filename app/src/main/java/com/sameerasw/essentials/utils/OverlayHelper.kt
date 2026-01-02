@@ -27,19 +27,18 @@ object OverlayHelper {
      * Creates a rounded rectangle overlay view with stroke.
      *
      * @param context The context to get resources from
-     * @param colorResId The color resource ID for the stroke
+     * @param color The color integer for the stroke
      * @param strokeDp The stroke width in DP (default: STROKE_DP)
      * @param cornerRadiusDp The corner radius in DP (default: CORNER_RADIUS_DP)
      * @return A FrameLayout with the overlay background drawable
      */
     fun createOverlayView(
         context: Context,
-        colorResId: Int,
+        color: Int,
         strokeDp: Int = STROKE_DP,
         cornerRadiusDp: Int = CORNER_RADIUS_DP
     ): FrameLayout {
         val overlay = FrameLayout(context)
-        val color = ContextCompat.getColor(context, colorResId)
         val strokePx = (context.resources.displayMetrics.density * strokeDp).toInt()
         val cornerRadiusPx = (context.resources.displayMetrics.density * cornerRadiusDp).toInt()
 

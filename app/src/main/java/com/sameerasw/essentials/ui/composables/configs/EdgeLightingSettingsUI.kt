@@ -2,13 +2,20 @@ package com.sameerasw.essentials.ui.composables.configs
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -29,6 +36,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
@@ -38,8 +47,10 @@ import androidx.core.graphics.drawable.toBitmap
 import com.sameerasw.essentials.R
 import com.sameerasw.essentials.domain.model.NotificationApp
 import com.sameerasw.essentials.domain.model.AppSelection
+import com.sameerasw.essentials.domain.model.EdgeLightingColorMode
 import com.sameerasw.essentials.ui.components.containers.RoundedCardContainer
 import com.sameerasw.essentials.ui.components.cards.IconToggleItem
+import com.sameerasw.essentials.ui.components.pickers.EdgeLightingColorModePicker
 import com.sameerasw.essentials.utils.AppUtil
 import com.sameerasw.essentials.viewmodels.MainViewModel
 import com.sameerasw.essentials.utils.HapticUtil
@@ -57,7 +68,6 @@ fun EdgeLightingSettingsUI(
     val context = LocalContext.current
     val view = LocalView.current
 
-    // App selection state
     // App selection state
     var selectedApps by remember { mutableStateOf<List<NotificationApp>>(emptyList()) }
     var isLoadingApps by remember { mutableStateOf(false) }
@@ -93,7 +103,6 @@ fun EdgeLightingSettingsUI(
                 }
             } catch (e: Exception) {
                 android.util.Log.e("EdgeLightingSettingsUI", "Error loading apps: ${e.message}")
-                // Handle error - maybe show empty state or error message
             } finally {
                 withContext(Dispatchers.Main) {
                     isLoadingApps = false
@@ -107,15 +116,14 @@ fun EdgeLightingSettingsUI(
         !it.isSystemApp && (searchQuery.isEmpty() || it.appName.contains(searchQuery, ignoreCase = true))
     }
 
-    // Corner radius state (default: 20 DP to match OverlayHelper.CORNER_RADIUS_DP)
+    // Corner radius state
     var cornerRadiusDp by remember { mutableStateOf(viewModel.loadEdgeLightingCornerRadius(context).toFloat()) }
     var strokeThicknessDp by remember { mutableStateOf(viewModel.loadEdgeLightingStrokeThickness(context).toFloat()) }
     val coroutineScope = rememberCoroutineScope()
 
-    // Cleanup overlay when composable is destroyed (activity paused/closed/destroyed)
+    // Cleanup overlay when composable is destroyed
     DisposableEffect(Unit) {
         onDispose {
-            // Remove any ongoing preview overlay when the composable is disposed
             viewModel.removePreviewOverlay(context)
         }
     }
@@ -221,6 +229,126 @@ fun EdgeLightingSettingsUI(
             )
         }
 
+        // Color Mode section
+        Text(
+            text = "Color Mode",
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp),
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        RoundedCardContainer(
+            modifier = Modifier
+        ) {
+            EdgeLightingColorModePicker(
+                selectedMode = viewModel.edgeLightingColorMode.value,
+                onModeSelected = { mode ->
+                    HapticUtil.performVirtualKeyHaptic(view)
+                    viewModel.setEdgeLightingColorMode(mode, context)
+                }
+            )
+            
+            if (viewModel.edgeLightingColorMode.value == EdgeLightingColorMode.CUSTOM) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            color = MaterialTheme.colorScheme.surfaceBright,
+                            shape = RoundedCornerShape(MaterialTheme.shapes.extraSmall.bottomEnd)
+                        )
+                        .padding(bottom = 16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    val allColors = remember {
+                        val colors = mutableListOf<Int>()
+                        val totalColumns = 21
+                        
+                        for (page in 0..2) {
+                            
+                            val row1 = mutableListOf<Int>()
+                            val row2 = mutableListOf<Int>()
+                            val row3 = mutableListOf<Int>()
+                            
+                            for (col in 0..6) {
+                                val globalCol = page * 7 + col
+                                val hue = (globalCol.toFloat() / totalColumns) * 360f
+                                
+                                // Row 1: Light
+                                row1.add(android.graphics.Color.HSVToColor(floatArrayOf(hue, 0.4f, 1.0f)))
+                                // Row 2: Regular
+                                row2.add(android.graphics.Color.HSVToColor(floatArrayOf(hue, 0.85f, 1.0f)))
+                                // Row 3: Dark
+                                row3.add(android.graphics.Color.HSVToColor(floatArrayOf(hue, 1.0f, 0.55f)))
+                            }
+                            colors.addAll(row1)
+                            colors.addAll(row2)
+                            colors.addAll(row3)
+                        }
+                        colors
+                    }
+                    
+                    val pages = allColors.chunked(21)
+                    val pagerState = rememberPagerState(pageCount = { pages.size })
+                    val currentCustomColor = viewModel.edgeLightingCustomColor.intValue
+
+                    HorizontalPager(
+                        state = pagerState,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(170.dp)
+                    ) { pageIndex ->
+                        val pageColors = pages[pageIndex]
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 8.dp),
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            val rows = pageColors.chunked(7)
+                            rows.forEach { rowColors ->
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceEvenly
+                                ) {
+                                    rowColors.forEach { colorInt ->
+                                        ColorCircle(
+                                            color = Color(colorInt),
+                                            isSelected = currentCustomColor == colorInt,
+                                            size = 36.dp,
+                                            onClick = {
+                                                HapticUtil.performVirtualKeyHaptic(view)
+                                                viewModel.setEdgeLightingCustomColor(colorInt, context)
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Pager Indicator
+                    Row(
+                        Modifier
+                            .height(8.dp)
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        repeat(pages.size) { iteration ->
+                            val color = if (pagerState.currentPage == iteration) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
+                            Box(
+                                modifier = Modifier
+                                    .padding(horizontal = 4.dp)
+                                    .clip(CircleShape)
+                                    .background(color)
+                                    .size(8.dp)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
         // Downloaded Apps Section
         Text(
             text = "Downloaded Apps",
@@ -286,7 +414,6 @@ fun EdgeLightingSettingsUI(
                             isChecked = app.isEnabled,
                             onCheckedChange = { isChecked ->
                                 viewModel.updateEdgeLightingAppEnabled(context, app.packageName, isChecked)
-                                // Update local state
                                 selectedApps = selectedApps.map {
                                     if (it.packageName == app.packageName) it.copy(isEnabled = isChecked) else it
                                 }
@@ -301,12 +428,10 @@ fun EdgeLightingSettingsUI(
         OutlinedButton(
             onClick = {
                 HapticUtil.performVirtualKeyHaptic(view)
-                // Invert selection for currently filtered apps
                 filteredApps.forEach { app ->
                     val newEnabled = !app.isEnabled
                     viewModel.updateEdgeLightingAppEnabled(context, app.packageName, newEnabled)
                 }
-                // Update local state
                 selectedApps = selectedApps.map { app ->
                     if (filteredApps.any { it.packageName == app.packageName }) {
                         app.copy(isEnabled = !app.isEnabled)
@@ -318,6 +443,32 @@ fun EdgeLightingSettingsUI(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Invert Selection")
+        }
+    }
+}
+
+@Composable
+fun ColorCircle(
+    color: Color,
+    isSelected: Boolean,
+    size: androidx.compose.ui.unit.Dp = 40.dp,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .size(size)
+            .clip(CircleShape)
+            .background(color)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        if (isSelected) {
+            Box(
+                modifier = Modifier
+                    .size(size * 0.4f)
+                    .clip(CircleShape)
+                    .background(Color.White.copy(alpha = 0.8f))
+            )
         }
     }
 }

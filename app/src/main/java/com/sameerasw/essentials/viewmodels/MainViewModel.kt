@@ -9,29 +9,32 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.provider.Settings
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.graphics.toArgb
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
-import com.sameerasw.essentials.services.receivers.SecurityDeviceAdminReceiver
-import com.sameerasw.essentials.MapsState
-import com.sameerasw.essentials.services.NotificationListener
-import com.sameerasw.essentials.services.CaffeinateWakeLockService
-import com.sameerasw.essentials.services.ScreenOffAccessibilityService
-import com.sameerasw.essentials.utils.HapticFeedbackType
-import com.sameerasw.essentials.utils.ShizukuUtils
-import com.sameerasw.essentials.domain.model.NotificationApp
-import com.sameerasw.essentials.domain.model.AppSelection
-import com.sameerasw.essentials.utils.AppUtil
+import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.sameerasw.essentials.services.EdgeLightingService
+import com.sameerasw.essentials.MapsState
+import com.sameerasw.essentials.domain.model.AppSelection
+import com.sameerasw.essentials.domain.model.EdgeLightingColorMode
+import com.sameerasw.essentials.domain.model.NotificationApp
 import com.sameerasw.essentials.domain.model.UpdateInfo
+import com.sameerasw.essentials.services.CaffeinateWakeLockService
+import com.sameerasw.essentials.services.EdgeLightingService
+import com.sameerasw.essentials.services.NotificationListener
+import com.sameerasw.essentials.services.ScreenOffAccessibilityService
+import com.sameerasw.essentials.services.receivers.SecurityDeviceAdminReceiver
+import com.sameerasw.essentials.utils.AppUtil
+import com.sameerasw.essentials.utils.HapticFeedbackType
+import com.sameerasw.essentials.utils.ShizukuUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.net.URL
-import androidx.lifecycle.viewModelScope
 
 class MainViewModel : ViewModel() {
     val isAccessibilityEnabled = mutableStateOf(false)
@@ -66,6 +69,8 @@ class MainViewModel : ViewModel() {
     val isScreenLockedSecurityEnabled = mutableStateOf(false)
     val isDeviceAdminEnabled = mutableStateOf(false)
     val skipSilentNotifications = mutableStateOf(true)
+    val edgeLightingColorMode = mutableStateOf(EdgeLightingColorMode.SYSTEM)
+    val edgeLightingCustomColor = mutableIntStateOf(0xFF6200EE.toInt()) // Default purple
 
     // Update state
     val updateInfo = mutableStateOf<UpdateInfo?>(null)
@@ -98,6 +103,9 @@ class MainViewModel : ViewModel() {
         isEdgeLightingEnabled.value = prefs.getBoolean("edge_lighting_enabled", false)
         onlyShowWhenScreenOff.value = prefs.getBoolean("edge_lighting_only_screen_off", true)
         skipSilentNotifications.value = prefs.getBoolean("edge_lighting_skip_silent", true)
+        val colorModeName = prefs.getString("edge_lighting_color_mode", EdgeLightingColorMode.SYSTEM.name)
+        edgeLightingColorMode.value = EdgeLightingColorMode.valueOf(colorModeName ?: EdgeLightingColorMode.SYSTEM.name)
+        edgeLightingCustomColor.intValue = prefs.getInt("edge_lighting_custom_color", 0xFF6200EE.toInt())
         MapsState.isEnabled = isMapsPowerSavingEnabled.value
         loadHapticFeedback(context)
         checkCaffeinateActive(context)
@@ -286,6 +294,20 @@ class MainViewModel : ViewModel() {
         }
     }
 
+    fun setEdgeLightingColorMode(mode: EdgeLightingColorMode, context: Context) {
+        edgeLightingColorMode.value = mode
+        context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
+            putString("edge_lighting_color_mode", mode.name)
+        }
+    }
+
+    fun setEdgeLightingCustomColor(color: Int, context: Context) {
+        edgeLightingCustomColor.intValue = color
+        context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
+            putInt("edge_lighting_custom_color", color)
+        }
+    }
+
     fun setButtonRemapEnabled(enabled: Boolean, context: Context) {
         isButtonRemapEnabled.value = enabled
         context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
@@ -344,6 +366,8 @@ class MainViewModel : ViewModel() {
                 putExtra("corner_radius_dp", radius)
                 putExtra("stroke_thickness_dp", thickness)
                 putExtra("ignore_screen_state", true)
+                putExtra("color_mode", edgeLightingColorMode.value.name)
+                putExtra("custom_color", edgeLightingCustomColor.intValue)
             }
             context.startService(intent)
         } catch (e: Exception) {
@@ -358,6 +382,8 @@ class MainViewModel : ViewModel() {
                 putExtra("corner_radius_dp", cornerRadiusDp)
                 putExtra("is_preview", true)
                 putExtra("ignore_screen_state", true)
+                putExtra("color_mode", edgeLightingColorMode.value.name)
+                putExtra("custom_color", edgeLightingCustomColor.intValue)
             }
             context.startService(intent)
         } catch (e: Exception) {
@@ -373,6 +399,8 @@ class MainViewModel : ViewModel() {
                 putExtra("stroke_thickness_dp", strokeThicknessDp)
                 putExtra("is_preview", true)
                 putExtra("ignore_screen_state", true)
+                putExtra("color_mode", edgeLightingColorMode.value.name)
+                putExtra("custom_color", edgeLightingCustomColor.intValue)
             }
             context.startService(intent)
         } catch (e: Exception) {

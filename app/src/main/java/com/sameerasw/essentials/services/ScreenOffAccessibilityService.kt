@@ -8,6 +8,7 @@ import android.os.VibratorManager
 import android.view.accessibility.AccessibilityEvent
 import com.sameerasw.essentials.utils.HapticFeedbackType
 import com.sameerasw.essentials.utils.performHapticFeedback
+import com.sameerasw.essentials.domain.model.EdgeLightingColorMode
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.IntentFilter
@@ -42,6 +43,8 @@ class ScreenOffAccessibilityService : AccessibilityService() {
     private var strokeThicknessDp: Int = OverlayHelper.STROKE_DP
     private var isPreview: Boolean = false
     private var ignoreScreenState: Boolean = false
+    private var colorMode: EdgeLightingColorMode = EdgeLightingColorMode.SYSTEM
+    private var customColor: Int = 0
     private var screenReceiver: BroadcastReceiver? = null
     
     private var originalAnimationScale: Float = 1.0f
@@ -318,11 +321,14 @@ class ScreenOffAccessibilityService : AccessibilityService() {
             performGlobalAction(GLOBAL_ACTION_LOCK_SCREEN)
         } else if (intent?.action == "SHOW_EDGE_LIGHTING") {
             // Extract corner radius and preview flag from intent
-            cornerRadiusDp = intent.getIntExtra("corner_radius_dp", OverlayHelper.CORNER_RADIUS_DP)
-            strokeThicknessDp = intent.getIntExtra("stroke_thickness_dp", OverlayHelper.STROKE_DP)
-            isPreview = intent.getBooleanExtra("is_preview", false)
-            ignoreScreenState = intent.getBooleanExtra("ignore_screen_state", false)
-            val removePreview = intent.getBooleanExtra("remove_preview", false)
+            cornerRadiusDp = intent?.getIntExtra("corner_radius_dp", OverlayHelper.CORNER_RADIUS_DP) ?: OverlayHelper.CORNER_RADIUS_DP
+            strokeThicknessDp = intent?.getIntExtra("stroke_thickness_dp", OverlayHelper.STROKE_DP) ?: OverlayHelper.STROKE_DP
+            isPreview = intent?.getBooleanExtra("is_preview", false) ?: false
+            ignoreScreenState = intent?.getBooleanExtra("ignore_screen_state", false) ?: false
+            val colorModeName = intent?.getStringExtra("color_mode")
+            colorMode = EdgeLightingColorMode.valueOf(colorModeName ?: EdgeLightingColorMode.SYSTEM.name)
+            customColor = intent?.getIntExtra("custom_color", 0) ?: 0
+            val removePreview = intent?.getBooleanExtra("remove_preview", false) ?: false
             if (removePreview) {
                 // Remove preview overlay
                 removeOverlay()
@@ -385,7 +391,14 @@ class ScreenOffAccessibilityService : AccessibilityService() {
         }
 
         try {
-            val overlay = OverlayHelper.createOverlayView(this, android.R.color.system_accent1_100, strokeDp = strokeThicknessDp, cornerRadiusDp = cornerRadiusDp)
+            val color = if (colorMode == EdgeLightingColorMode.CUSTOM) {
+                customColor
+            } else {
+                // SYSTEM or APP_SPECIFIC (for now fallback to system)
+                getColor(android.R.color.system_accent1_100)
+            }
+            
+            val overlay = OverlayHelper.createOverlayView(this, color, strokeDp = strokeThicknessDp, cornerRadiusDp = cornerRadiusDp)
             val params = OverlayHelper.createOverlayLayoutParams(overlayType)
 
             if (OverlayHelper.addOverlayView(windowManager, overlay, params)) {
