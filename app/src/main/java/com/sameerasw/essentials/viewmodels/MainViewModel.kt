@@ -73,6 +73,7 @@ class MainViewModel : ViewModel() {
     val isPixelImsEnabled = mutableStateOf(false)
     val isScreenLockedSecurityEnabled = mutableStateOf(false)
     val isDeviceAdminEnabled = mutableStateOf(false)
+    val isDeveloperModeEnabled = mutableStateOf(false)
     val skipSilentNotifications = mutableStateOf(true)
     val edgeLightingStyle = mutableStateOf(EdgeLightingStyle.STROKE)
     val edgeLightingColorMode = mutableStateOf(EdgeLightingColorMode.SYSTEM)
@@ -185,6 +186,7 @@ class MainViewModel : ViewModel() {
         isAutoUpdateEnabled.value = prefs.getBoolean("auto_update_enabled", true)
         isUpdateNotificationEnabled.value = prefs.getBoolean("update_notification_enabled", true)
         lastUpdateCheckTime = prefs.getLong("last_update_check_time", 0)
+        isDeveloperModeEnabled.value = prefs.getBoolean("developer_mode_enabled", false)
     }
 
     fun setAutoUpdateEnabled(enabled: Boolean, context: Context) {
@@ -198,6 +200,13 @@ class MainViewModel : ViewModel() {
         isUpdateNotificationEnabled.value = enabled
         context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
             putBoolean("update_notification_enabled", enabled)
+        }
+    }
+
+    fun setDeveloperModeEnabled(enabled: Boolean, context: Context) {
+        isDeveloperModeEnabled.value = enabled
+        context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
+            putBoolean("developer_mode_enabled", enabled)
         }
     }
 
@@ -799,6 +808,88 @@ class MainViewModel : ViewModel() {
         val gson = Gson()
         val json = gson.toJson(sides)
         prefs.edit().putString("edge_lighting_glow_sides", json).apply()
+    }
+
+    fun exportConfigs(context: Context, outputStream: java.io.OutputStream) {
+        try {
+            // Map<FileName, Map<PrefKey, WrappedValue>>
+            val allConfigs = mutableMapOf<String, Map<String, Map<String, Any>>>()
+            val prefFiles = listOf("essentials_prefs", "caffeinate_prefs")
+
+            prefFiles.forEach { fileName ->
+                val prefs = context.getSharedPreferences(fileName, Context.MODE_PRIVATE)
+                val wrapperMap = mutableMapOf<String, Map<String, Any>>()
+                
+                prefs.all.forEach { (key, value) ->
+                    val type = when (value) {
+                        is Boolean -> "Boolean"
+                        is Int -> "Int"
+                        is Long -> "Long"
+                        is Float -> "Float"
+                        is String -> "String"
+                        is Set<*> -> "StringSet"
+                        else -> "Unknown"
+                    }
+                    if (value != null && type != "Unknown") {
+                        wrapperMap[key] = mapOf("type" to type, "value" to value)
+                    }
+                }
+                allConfigs[fileName] = wrapperMap
+            }
+
+            val json = Gson().toJson(allConfigs)
+            outputStream.write(json.toByteArray())
+            outputStream.flush()
+            outputStream.close()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    fun importConfigs(context: Context, inputStream: java.io.InputStream): Boolean {
+        return try {
+            val json = inputStream.bufferedReader().use { it.readText() }
+            // Map<FileName, Map<PrefKey, Map<Type_Value, Value>>>
+            val type = object : TypeToken<Map<String, Map<String, Map<String, Any>>>>() {}.type
+            val allConfigs: Map<String, Map<String, Map<String, Any>>> = Gson().fromJson(json, type)
+            
+            allConfigs.forEach { (fileName, prefWrapper) ->
+                val prefs = context.getSharedPreferences(fileName, Context.MODE_PRIVATE)
+                prefs.edit {
+                    clear()
+                    prefWrapper.forEach { (key, item) ->
+                        val itemType = item["type"] as? String
+                        val itemValue = item["value"]
+                        
+                        if (itemType != null && itemValue != null) {
+                            try {
+                                when (itemType) {
+                                    "Boolean" -> putBoolean(key, itemValue as Boolean)
+                                    "Int" -> putInt(key, (itemValue as Double).toInt())
+                                    "Long" -> putLong(key, (itemValue as Double).toLong())
+                                    "Float" -> putFloat(key, (itemValue as Double).toFloat())
+                                    "String" -> putString(key, itemValue as String)
+                                    "StringSet" -> {
+                                        @Suppress("UNCHECKED_CAST")
+                                        putStringSet(key, (itemValue as List<String>).toSet())
+                                    }
+                                }
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                            }
+                        }
+                    }
+                }
+            }
+            // Trigger a refresh of states
+            check(context)
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        } finally {
+            inputStream.close()
+        }
     }
 
     private fun loadEdgeLightingGlowSides(context: Context): Set<EdgeLightingSide> {

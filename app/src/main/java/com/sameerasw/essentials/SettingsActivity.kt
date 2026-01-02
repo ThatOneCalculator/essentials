@@ -63,6 +63,14 @@ import com.sameerasw.essentials.viewmodels.MainViewModel
 import com.sameerasw.essentials.utils.HapticUtil
 import com.sameerasw.essentials.ui.components.sheets.UpdateBottomSheet
 import com.sameerasw.essentials.ui.components.buttons.HelpPillButton
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import android.widget.Toast
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import rikka.shizuku.Shizuku
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -160,6 +168,42 @@ fun SettingsContent(viewModel: MainViewModel, modifier: Modifier = Modifier) {
     val updateInfo by viewModel.updateInfo
     val isAutoUpdateEnabled by viewModel.isAutoUpdateEnabled
     val isUpdateNotificationEnabled by viewModel.isUpdateNotificationEnabled
+    val isDeveloperModeEnabled by viewModel.isDeveloperModeEnabled
+
+    val exportLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/json")
+    ) { uri ->
+        uri?.let {
+            try {
+                context.contentResolver.openOutputStream(it)?.use { outputStream ->
+                    viewModel.exportConfigs(context, outputStream)
+                    Toast.makeText(context, "Config exported successfully", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(context, "Failed to export config", Toast.LENGTH_SHORT).show()
+                e.printStackTrace()
+            }
+        }
+    }
+
+    val importLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        uri?.let {
+            try {
+                context.contentResolver.openInputStream(it)?.use { inputStream ->
+                    if (viewModel.importConfigs(context, inputStream)) {
+                        Toast.makeText(context, "Config imported successfully", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(context, "Failed to import config", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } catch (e: Exception) {
+                Toast.makeText(context, "Failed to import config", Toast.LENGTH_SHORT).show()
+                e.printStackTrace()
+            }
+        }
+    }
 
     if (showUpdateSheet) {
         UpdateBottomSheet(
@@ -400,8 +444,58 @@ fun SettingsContent(viewModel: MainViewModel, modifier: Modifier = Modifier) {
         Spacer(modifier = Modifier.height(16.dp))
 
         RoundedCardContainer {
-            AboutSection()
+            AboutSection(
+                onAvatarLongClick = {
+                    val newState = !isDeveloperModeEnabled
+                    viewModel.setDeveloperModeEnabled(newState, context)
+                    Toast.makeText(context, if (newState) "Developer options enabled" else "Developer options disabled", Toast.LENGTH_SHORT).show()
+                }
+            )
         }
 
+        if (isDeveloperModeEnabled) {
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Updates Section
+            Text(
+                text = "Developer Options",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp),
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            RoundedCardContainer {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                color = MaterialTheme.colorScheme.surfaceBright,
+                                shape = RoundedCornerShape(MaterialTheme.shapes.extraSmall.bottomEnd)
+                            )
+                            .padding(12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Button(
+                            onClick = { 
+                                val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+                                exportLauncher.launch("essentials_config_$timeStamp.json")
+                            },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text("Export Config")
+                        }
+                        Button(
+                            onClick = { 
+                                importLauncher.launch(arrayOf("application/json"))
+                            },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text("Import Config")
+                        }
+                    }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
     }
 }
