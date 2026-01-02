@@ -89,13 +89,6 @@ fun EdgeLightingSettingsUI(
 
     Column(modifier = modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
 
-        Button(onClick = {
-            HapticUtil.performVirtualKeyHaptic(view)
-            viewModel.triggerEdgeLighting(context)
-        }, modifier = Modifier.fillMaxWidth()) {
-            Icon(painter = painterResource(id = R.drawable.rounded_play_arrow_24), contentDescription = null)
-            Text("Preview")
-        }
 
         RoundedCardContainer(
             modifier = Modifier.padding(top = 8.dp),
@@ -341,7 +334,7 @@ fun EdgeLightingSettingsUI(
             Text("Select apps")
         }
 
-        Spacer(modifier = Modifier.height(64.dp))
+        Spacer(modifier = Modifier.height(80.dp))
 
         if (showAppSelectionSheet) {
             AppSelectionSheet(

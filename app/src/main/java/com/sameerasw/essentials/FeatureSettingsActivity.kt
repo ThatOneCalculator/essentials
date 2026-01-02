@@ -5,14 +5,17 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Vibrator
+import android.os.VibratorManager
 import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -21,6 +24,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.ui.res.painterResource
+import kotlinx.coroutines.delay
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -30,6 +38,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
@@ -54,6 +63,9 @@ import com.sameerasw.essentials.viewmodels.MainViewModel
 import com.sameerasw.essentials.viewmodels.StatusBarIconViewModel
 import com.sameerasw.essentials.ui.components.sheets.PermissionItem
 import com.sameerasw.essentials.ui.components.sheets.PermissionsBottomSheet
+import com.sameerasw.essentials.ui.composables.configs.PixelImsSettingsUI
+import com.sameerasw.essentials.ui.composables.configs.ScreenLockedSecuritySettingsUI
+import com.sameerasw.essentials.utils.HapticUtil
 
 @OptIn(ExperimentalMaterial3Api::class)
 class FeatureSettingsActivity : ComponentActivity() {
@@ -81,10 +93,11 @@ class FeatureSettingsActivity : ComponentActivity() {
         setContent {
             EssentialsTheme {
                 val context = LocalContext.current
+                val view = LocalView.current
                 val prefs = context.getSharedPreferences("essentials_prefs", MODE_PRIVATE)
 
-                val vibrator = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-                    context.getSystemService(android.os.VibratorManager::class.java)?.defaultVibrator
+                val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    context.getSystemService(VibratorManager::class.java)?.defaultVibrator
                 } else {
                     @Suppress("DEPRECATION")
                     context.getSystemService(VIBRATOR_SERVICE) as? Vibrator
@@ -137,6 +150,16 @@ class FeatureSettingsActivity : ComponentActivity() {
                 val isEdgeLightingAccessibilityEnabled by viewModel.isEdgeLightingAccessibilityEnabled
                 val isNotificationListenerEnabled by viewModel.isNotificationListenerEnabled
 
+                // FAB State for Edge Lighting
+                var fabExpanded by remember { mutableStateOf(true) }
+                LaunchedEffect(feature) {
+                    if (feature == "Edge lighting") {
+                        fabExpanded = true
+                        delay(3000)
+                        fabExpanded = false
+                    }
+                }
+
                 // Show permission sheet if feature has missing permissions
                 LaunchedEffect(feature, isAccessibilityEnabled, isWriteSecureSettingsEnabled, isOverlayPermissionGranted, isEdgeLightingAccessibilityEnabled, isNotificationListenerEnabled) {
                     val hasMissingPermissions = when (feature) {
@@ -176,7 +199,7 @@ class FeatureSettingsActivity : ComponentActivity() {
                                 actionLabel = "Copy ADB",
                                 action = {
                                     val adbCommand = "adb shell pm grant com.sameerasw.essentials android.permission.WRITE_SECURE_SETTINGS"
-                                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                    val clipboard = context.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
                                     val clip = ClipData.newPlainText("adb_command", adbCommand)
                                     clipboard.setPrimaryClip(clip)
                                 },
@@ -259,7 +282,7 @@ class FeatureSettingsActivity : ComponentActivity() {
                                 actionLabel = "Copy ADB",
                                 action = {
                                     val adbCommand = "adb shell pm grant com.sameerasw.essentials android.permission.WRITE_SECURE_SETTINGS"
-                                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                    val clipboard = context.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
                                     val clip = ClipData.newPlainText("adb_command", adbCommand)
                                     clipboard.setPrimaryClip(clip)
                                 },
@@ -301,7 +324,7 @@ class FeatureSettingsActivity : ComponentActivity() {
                                 actionLabel = "Copy ADB",
                                 action = {
                                     val adbCommand = "adb shell pm grant com.sameerasw.essentials android.permission.WRITE_SECURE_SETTINGS"
-                                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                    val clipboard = context.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
                                     val clip = ClipData.newPlainText("adb_command", adbCommand)
                                     clipboard.setPrimaryClip(clip)
                                 },
@@ -344,6 +367,20 @@ class FeatureSettingsActivity : ComponentActivity() {
                             scrollBehavior = scrollBehavior,
                             subtitle = description
                         )
+                    },
+                    floatingActionButton = {
+                        if (feature == "Edge lighting") {
+                            ExtendedFloatingActionButton(
+                                onClick = {
+                                    HapticUtil.performVirtualKeyHaptic(view)
+                                    viewModel.triggerEdgeLighting(context)
+                                },
+                                expanded = fabExpanded,
+                                icon = { Icon(painter = painterResource(id = R.drawable.rounded_play_arrow_24), contentDescription = null) },
+                                text = { Text("Preview") },
+                                modifier = Modifier.height(64.dp)
+                            )
+                        }
                     }
                 ) { innerPadding ->
                     val hasScroll = feature != "Sound mode tile"
@@ -389,10 +426,10 @@ class FeatureSettingsActivity : ComponentActivity() {
                                 )
                             }
                             "Dynamic night light" -> {
-                    com.sameerasw.essentials.ui.composables.configs.DynamicNightLightSettingsUI(viewModel = viewModel)
+                                DynamicNightLightSettingsUI(viewModel = viewModel)
                 }
                 "Pixel IMS" -> {
-                    com.sameerasw.essentials.ui.composables.configs.PixelImsSettingsUI(viewModel = viewModel)
+                    PixelImsSettingsUI(viewModel = viewModel)
                 }
                             "Snooze system notifications" -> {
                                 SnoozeNotificationsSettingsUI(
@@ -401,7 +438,7 @@ class FeatureSettingsActivity : ComponentActivity() {
                                 )
                             }
                             "Screen locked security" -> {
-                                com.sameerasw.essentials.ui.composables.configs.ScreenLockedSecuritySettingsUI(
+                                ScreenLockedSecuritySettingsUI(
                                     viewModel = viewModel,
                                     modifier = Modifier.padding(top = 16.dp)
                                 )
