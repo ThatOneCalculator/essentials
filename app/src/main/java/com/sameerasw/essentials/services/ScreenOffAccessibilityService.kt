@@ -508,20 +508,35 @@ class ScreenOffAccessibilityService : AccessibilityService() {
         }
         
         val action = prefs.getString(actionKey, "None") ?: "None"
-        if (action == "None") return super.onKeyEvent(event)
-
+        
         val isAlwaysTurnOffEnabled = prefs.getBoolean("flashlight_always_turn_off_enabled", false)
         
+        // Check if the pressed button is assigned to flashlight in ANY state (screen on or off)
+        val isVolUpFlashlight = prefs.getString("button_remap_vol_up_action_off", "None") == "Toggle flashlight" ||
+                                prefs.getString("button_remap_vol_up_action_on", "None") == "Toggle flashlight"
+        val isVolDownFlashlight = prefs.getString("button_remap_vol_down_action_off", "None") == "Toggle flashlight" ||
+                                  prefs.getString("button_remap_vol_down_action_on", "None") == "Toggle flashlight"
+        
+        val isFlashlightCapableButton = (event.keyCode == KeyEvent.KEYCODE_VOLUME_UP && isVolUpFlashlight) ||
+                                       (event.keyCode == KeyEvent.KEYCODE_VOLUME_DOWN && isVolDownFlashlight)
+
+        // Always prioritize turning OFF flashlight if it's already ON and the setting is enabled
+        var finalAction = action
+        if (isTorchOn && isAlwaysTurnOffEnabled && isFlashlightCapableButton) {
+            finalAction = "Toggle flashlight"
+        }
+
+        if (finalAction == "None") return super.onKeyEvent(event)
+
         // Intercept if screen is off, OR if an action is assigned to this button while screen is on.
-        // Special case for flashlight: allow turning OFF while screen is on if enabled and torch is already ON.
-        val isFlashlightAction = action == "Toggle flashlight"
-        val shouldIntercept = !isScreenOn || (isScreenOn && action != "None") || (isFlashlightAction && isAlwaysTurnOffEnabled && isTorchOn)
+        // The override above ensures that if flashlight turn-off is needed, it will have an action and thus be intercepted.
+        val shouldIntercept = !isScreenOn || (isScreenOn && finalAction != "None")
 
         if (shouldIntercept) {
             if (event.action == KeyEvent.ACTION_DOWN) {
                 if (event.repeatCount == 0) {
                     lastPressedKeyCode = event.keyCode
-                    lastPendingAction = action
+                    lastPendingAction = finalAction
                     isLongPressTriggered = false
                     handler.postDelayed(longPressRunnable, LONG_PRESS_TIMEOUT)
                 }
