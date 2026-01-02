@@ -16,6 +16,9 @@ import android.provider.Settings
 import android.view.View
 import android.view.WindowManager
 import androidx.core.app.NotificationCompat
+import com.sameerasw.essentials.domain.model.EdgeLightingColorMode
+import com.sameerasw.essentials.domain.model.EdgeLightingStyle
+import com.sameerasw.essentials.domain.model.EdgeLightingSide
 import com.sameerasw.essentials.utils.OverlayHelper
 
 /**
@@ -35,6 +38,16 @@ class EdgeLightingService : Service() {
     private var cornerRadiusDp: Int = OverlayHelper.CORNER_RADIUS_DP
     private var strokeThicknessDp: Int = OverlayHelper.STROKE_DP
     private var isPreview: Boolean = false
+    private var colorMode: EdgeLightingColorMode = EdgeLightingColorMode.SYSTEM
+    private var customColor: Int = 0
+    private var resolvedColor: Int? = null
+    private var pulseCount: Int = 1
+    private var pulseDuration: Long = 3000
+    private var edgeLightingStyle: EdgeLightingStyle = EdgeLightingStyle.STROKE
+    private var glowSides: Set<EdgeLightingSide> = setOf(EdgeLightingSide.LEFT, EdgeLightingSide.RIGHT)
+    private var indicatorX: Float = 50f
+    private var indicatorY: Float = 2f
+    private var indicatorScale: Float = 1.0f
 
     private var screenReceiver: BroadcastReceiver? = null
 
@@ -92,6 +105,21 @@ class EdgeLightingService : Service() {
         strokeThicknessDp = intent?.getIntExtra("stroke_thickness_dp", OverlayHelper.STROKE_DP)
             ?: OverlayHelper.STROKE_DP
         isPreview = intent?.getBooleanExtra("is_preview", false) ?: false
+        val colorModeName = intent?.getStringExtra("color_mode")
+        colorMode = EdgeLightingColorMode.valueOf(colorModeName ?: EdgeLightingColorMode.SYSTEM.name)
+        customColor = intent?.getIntExtra("custom_color", 0) ?: 0
+        resolvedColor = if (intent?.hasExtra("resolved_color") == true) intent.getIntExtra("resolved_color", 0) else null
+        pulseCount = intent?.getIntExtra("pulse_count", 1) ?: 1
+        pulseDuration = intent?.getLongExtra("pulse_duration", 3000L) ?: 3000L
+        val styleName = intent?.getStringExtra("style")
+        edgeLightingStyle = if (styleName != null) EdgeLightingStyle.valueOf(styleName) else EdgeLightingStyle.STROKE
+        val glowSidesArray = intent?.getStringArrayExtra("glow_sides")
+        glowSides = glowSidesArray?.mapNotNull { try { EdgeLightingSide.valueOf(it) } catch(e: Exception) { null } }?.toSet()
+            ?: setOf(EdgeLightingSide.LEFT, EdgeLightingSide.RIGHT)
+        indicatorX = intent?.getFloatExtra("indicator_x", 50f) ?: 50f
+        indicatorY = intent?.getFloatExtra("indicator_y", 2f) ?: 2f
+        indicatorScale = intent?.getFloatExtra("indicator_scale", 1.0f) ?: 1.0f
+        val ignoreScreenState = intent?.getBooleanExtra("ignore_screen_state", false) ?: false
         val removePreview = intent?.getBooleanExtra("remove_preview", false) ?: false
 
         if (removePreview) {
@@ -119,6 +147,19 @@ class EdgeLightingService : Service() {
                     putExtra("corner_radius_dp", cornerRadiusDp)
                     putExtra("stroke_thickness_dp", strokeThicknessDp)
                     putExtra("is_preview", isPreview)
+                    putExtra("ignore_screen_state", ignoreScreenState)
+                    putExtra("color_mode", intent?.getStringExtra("color_mode"))
+                    putExtra("custom_color", intent?.getIntExtra("custom_color", 0) ?: 0)
+                    putExtra("pulse_count", pulseCount)
+                    putExtra("pulse_duration", pulseDuration)
+                    putExtra("style", edgeLightingStyle.name)
+                    putExtra("glow_sides", glowSides.map { it.name }.toTypedArray())
+                    putExtra("indicator_x", indicatorX)
+                    putExtra("indicator_y", indicatorY)
+                    putExtra("indicator_scale", indicatorScale)
+                    if (intent?.hasExtra("resolved_color") == true) {
+                        putExtra("resolved_color", intent.getIntExtra("resolved_color", 0))
+                    }
                 }
                 // Use startService to request the accessibility service perform the elevated overlay.
                 // Starting an accessibility service via startForegroundService can cause MissingForegroundServiceType
@@ -178,17 +219,39 @@ class EdgeLightingService : Service() {
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
 
         try {
-            val overlay = OverlayHelper.createOverlayView(this, android.R.color.system_accent1_100, strokeDp = strokeThicknessDp, cornerRadiusDp = cornerRadiusDp)
+            val color = when {
+                resolvedColor != null -> resolvedColor!!
+                colorMode == EdgeLightingColorMode.CUSTOM -> customColor
+                else -> getColor(android.R.color.system_accent1_100)
+            }
+            
+            val overlay = OverlayHelper.createOverlayView(
+                this, 
+                color, 
+                strokeDp = strokeThicknessDp, 
+                cornerRadiusDp = cornerRadiusDp,
+                style = edgeLightingStyle,
+                glowSides = glowSides,
+                indicatorScale = indicatorScale
+            )
             val params = OverlayHelper.createOverlayLayoutParams(getOverlayType())
 
             if (OverlayHelper.addOverlayView(windowManager, overlay, params)) {
                 overlayViews.add(overlay)
                 if (isPreview) {
-                    // For preview mode, just fade in and keep visible
-                    OverlayHelper.fadeInOverlay(overlay)
+                    // For preview mode, show static preview
+                    OverlayHelper.showPreview(overlay, edgeLightingStyle, strokeThicknessDp, indicatorX, indicatorY)
                 } else {
                     // Normal mode: pulse the overlay
-                    OverlayHelper.pulseOverlay(overlay) {
+                    OverlayHelper.pulseOverlay(
+                        overlay, 
+                        maxPulses = pulseCount, 
+                        pulseDurationMillis = pulseDuration,
+                        style = edgeLightingStyle,
+                        strokeWidthDp = strokeThicknessDp,
+                        indicatorX = indicatorX,
+                        indicatorY = indicatorY
+                    ) {
                         // When pulsing completes, remove the overlay
                         OverlayHelper.fadeOutAndRemoveOverlay(windowManager, overlay, overlayViews) {
                             // When all overlays are removed, stop foreground

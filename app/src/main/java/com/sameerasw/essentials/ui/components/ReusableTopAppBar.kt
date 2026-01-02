@@ -3,6 +3,8 @@ package com.sameerasw.essentials.ui.components
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -120,8 +122,7 @@ fun ReusableTopAppBar(
                         Icon(
                             painter = painterResource(id = R.drawable.rounded_mobile_arrow_down_24),
                             contentDescription = "Update Available",
-                            modifier = Modifier.size(32.dp),
-                            tint = MaterialTheme.colorScheme.primary
+                            modifier = Modifier.size(32.dp)
                         )
                         // Red dot
                         Box(
@@ -132,6 +133,10 @@ fun ReusableTopAppBar(
                         )
                     }
                 }
+            }
+
+            if (hasUpdateAvailable && hasSettings) {
+                Spacer(modifier = Modifier.width(8.dp))
             }
 
             if (hasSettings) {

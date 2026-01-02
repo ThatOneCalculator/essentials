@@ -23,8 +23,8 @@ android {
         applicationId = "com.sameerasw.essentials"
         minSdk = 23
         targetSdk = 36
-        versionCode = 11
-        versionName = "7.2"
+        versionCode = 12
+        versionName = "7.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -65,7 +65,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.appcompat)
-    implementation("androidx.activity:activity-compose:1.8.0")
+
     implementation("io.coil-kt:coil-compose:2.5.0")
     implementation(libs.androidx.compose.foundation.layout)
     testImplementation(libs.junit)
@@ -85,6 +85,7 @@ dependencies {
 
     // Gson for JSON serialization
     implementation("com.google.code.gson:gson:2.10.1")
+    implementation("androidx.palette:palette:1.0.0")
 
     // Reorderable library
     implementation("sh.calvin.reorderable:reorderable:3.0.0")

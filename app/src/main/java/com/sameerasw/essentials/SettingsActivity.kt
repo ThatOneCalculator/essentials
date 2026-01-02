@@ -10,7 +10,9 @@ import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.SystemBarStyle
 import androidx.activity.viewModels
+import android.os.Build
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -40,8 +42,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -49,12 +54,23 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalView
 import androidx.core.app.ActivityCompat
+import com.sameerasw.essentials.ui.components.cards.IconToggleItem
 import com.sameerasw.essentials.ui.components.cards.PermissionCard
 import com.sameerasw.essentials.ui.components.dialogs.AboutSection
 import com.sameerasw.essentials.viewmodels.MainViewModel
 import com.sameerasw.essentials.utils.HapticUtil
 import com.sameerasw.essentials.ui.components.sheets.UpdateBottomSheet
+import com.sameerasw.essentials.ui.components.buttons.HelpPillButton
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import android.widget.Toast
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import rikka.shizuku.Shizuku
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -71,7 +87,19 @@ class SettingsActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.auto(
+                android.graphics.Color.TRANSPARENT,
+                android.graphics.Color.TRANSPARENT
+            ),
+            navigationBarStyle = SystemBarStyle.auto(
+                android.graphics.Color.TRANSPARENT,
+                android.graphics.Color.TRANSPARENT
+            )
+        )
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            window.isNavigationBarContrastEnforced = false
+        }
         // Register Shizuku permission listener
         Shizuku.addRequestPermissionResultListener(shizukuPermissionResultListener)
         setContent {
@@ -84,6 +112,7 @@ class SettingsActivity : ComponentActivity() {
                 }
 
                 Scaffold(
+                    contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0),
                     modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
                     containerColor = MaterialTheme.colorScheme.surfaceContainer,
                     topBar = {
@@ -138,6 +167,43 @@ fun SettingsContent(viewModel: MainViewModel, modifier: Modifier = Modifier) {
     var showUpdateSheet by remember { mutableStateOf(false) }
     val updateInfo by viewModel.updateInfo
     val isAutoUpdateEnabled by viewModel.isAutoUpdateEnabled
+    val isUpdateNotificationEnabled by viewModel.isUpdateNotificationEnabled
+    val isDeveloperModeEnabled by viewModel.isDeveloperModeEnabled
+
+    val exportLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/json")
+    ) { uri ->
+        uri?.let {
+            try {
+                context.contentResolver.openOutputStream(it)?.use { outputStream ->
+                    viewModel.exportConfigs(context, outputStream)
+                    Toast.makeText(context, "Config exported successfully", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(context, "Failed to export config", Toast.LENGTH_SHORT).show()
+                e.printStackTrace()
+            }
+        }
+    }
+
+    val importLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        uri?.let {
+            try {
+                context.contentResolver.openInputStream(it)?.use { inputStream ->
+                    if (viewModel.importConfigs(context, inputStream)) {
+                        Toast.makeText(context, "Config imported successfully", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(context, "Failed to import config", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } catch (e: Exception) {
+                Toast.makeText(context, "Failed to import config", Toast.LENGTH_SHORT).show()
+                e.printStackTrace()
+            }
+        }
+    }
 
     if (showUpdateSheet) {
         UpdateBottomSheet(
@@ -185,11 +251,14 @@ fun SettingsContent(viewModel: MainViewModel, modifier: Modifier = Modifier) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(
-                text = "Permissions",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    text = "Permissions",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                HelpPillButton()
+            }
             Icon(
                 painter = painterResource(id = if (isPermissionsExpanded) R.drawable.rounded_keyboard_arrow_up_24 else R.drawable.rounded_keyboard_arrow_down_24),
                 contentDescription = if (isPermissionsExpanded) "Collapse" else "Expand",
@@ -326,19 +395,107 @@ fun SettingsContent(viewModel: MainViewModel, modifier: Modifier = Modifier) {
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
+        // Updates Section
+        Text(
+            text = "Updates",
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp),
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
 
         RoundedCardContainer {
-            AboutSection(
-                onCheckForUpdates = {
-                    viewModel.checkForUpdates(context, manual = true)
-                    showUpdateSheet = true
-                },
-                isAutoUpdateEnabled = isAutoUpdateEnabled,
-                onAutoUpdateEnabledChange = { viewModel.setAutoUpdateEnabled(it, context) }
+            IconToggleItem(
+                iconRes = R.drawable.rounded_mobile_check_24,
+                title = "Auto check for updates",
+                description = "Check for updates at app launch",
+                isChecked = isAutoUpdateEnabled,
+                onCheckedChange = { viewModel.setAutoUpdateEnabled(it, context) }
+            )
+            IconToggleItem(
+                iconRes = R.drawable.rounded_notifications_unread_24,
+                title = "Notify for new updates",
+                description = "Show a notification when an update is found",
+                isChecked = isUpdateNotificationEnabled,
+                onCheckedChange = { viewModel.setUpdateNotificationEnabled(it, context) }
             )
         }
 
+        // Check for updates button
+        val view = LocalView.current
+        Button(
+            onClick = {
+                HapticUtil.performVirtualKeyHaptic(view)
+                viewModel.checkForUpdates(context, manual = true)
+                showUpdateSheet = true
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp)
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.rounded_mobile_arrow_down_24),
+                contentDescription = null,
+                modifier = Modifier.size(24.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Check for updates", fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        RoundedCardContainer {
+            AboutSection(
+                onAvatarLongClick = {
+                    val newState = !isDeveloperModeEnabled
+                    viewModel.setDeveloperModeEnabled(newState, context)
+                    Toast.makeText(context, if (newState) "Developer options enabled" else "Developer options disabled", Toast.LENGTH_SHORT).show()
+                }
+            )
+        }
+
+        if (isDeveloperModeEnabled) {
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Updates Section
+            Text(
+                text = "Developer Options",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp),
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            RoundedCardContainer {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                color = MaterialTheme.colorScheme.surfaceBright,
+                                shape = RoundedCornerShape(MaterialTheme.shapes.extraSmall.bottomEnd)
+                            )
+                            .padding(12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Button(
+                            onClick = { 
+                                val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+                                exportLauncher.launch("essentials_config_$timeStamp.json")
+                            },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text("Export Config")
+                        }
+                        Button(
+                            onClick = { 
+                                importLauncher.launch(arrayOf("application/json"))
+                            },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text("Import Config")
+                        }
+                    }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
     }
 }

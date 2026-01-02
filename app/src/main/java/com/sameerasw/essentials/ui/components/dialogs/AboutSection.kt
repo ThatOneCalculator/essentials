@@ -1,5 +1,6 @@
 package com.sameerasw.essentials.ui.components.dialogs
 
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.util.Log
 import android.widget.Toast
@@ -38,16 +39,17 @@ import com.sameerasw.essentials.R
 import com.sameerasw.essentials.utils.HapticUtil
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.ExperimentalFoundationApi
 
 @Composable
+@OptIn(ExperimentalFoundationApi::class)
 fun AboutSection(
     modifier: Modifier = Modifier,
     appName: String = "Essentials",
     developerName: String = "Sameera Wijerathna",
     description: String = "The all-in-one toolbox for your Pixel and Androids",
-    onCheckForUpdates: (() -> Unit)? = null,
-    isAutoUpdateEnabled: Boolean = true,
-    onAutoUpdateEnabledChange: (Boolean) -> Unit = {}
+    onAvatarLongClick: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val versionName = try {
@@ -70,43 +72,6 @@ fun AboutSection(
             Text(text = description, style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center)
 
             Spacer(modifier = Modifier.height(16.dp))
-
-            val view = LocalView.current
-            Button(
-                onClick = {
-                    HapticUtil.performVirtualKeyHaptic(view)
-                    onCheckForUpdates?.invoke()
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.rounded_mobile_arrow_down_24),
-                    contentDescription = null,
-                    modifier = Modifier.size(24.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Check for updates", fontWeight = FontWeight.Bold)
-            }
-
-            Spacer(modifier = Modifier.height(4.dp))
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onAutoUpdateEnabledChange(!isAutoUpdateEnabled) },
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Start
-            ) {
-                Checkbox(
-                    checked = isAutoUpdateEnabled,
-                    onCheckedChange = onAutoUpdateEnabledChange
-                )
-                Text(
-                    text = "Auto check updates at launch",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
             Image(
                 painter = painterResource(id = R.drawable.avatar),
                 contentDescription = "Developer Avatar",
@@ -115,6 +80,12 @@ fun AboutSection(
                     .size(120.dp)
                     .clip(RoundedCornerShape(16.dp))
                     .background(MaterialTheme.colorScheme.primary)
+                    .combinedClickable(
+                        onClick = {},
+                        onLongClick = { 
+                            onAvatarLongClick()
+                        }
+                    )
             )
             Spacer(modifier = Modifier.height(24.dp))
             Text(text = "Developed by $developerName\nwith ❤\uFE0F from \uD83C\uDDF1\uD83C\uDDF0", style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
@@ -168,7 +139,7 @@ fun AboutSection(
                         }
                         try {
                             context.startActivity(Intent.createChooser(emailIntent, "Send email"))
-                        } catch (e: android.content.ActivityNotFoundException) {
+                        } catch (e: ActivityNotFoundException) {
                             Log.w("AboutSection", "No email app available", e)
                             Toast.makeText(context, "No email app available", Toast.LENGTH_SHORT).show()
                         }

@@ -7,31 +7,39 @@ import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.provider.Settings
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.graphics.toArgb
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
-import com.sameerasw.essentials.services.receivers.SecurityDeviceAdminReceiver
-import com.sameerasw.essentials.MapsState
-import com.sameerasw.essentials.services.NotificationListener
-import com.sameerasw.essentials.services.CaffeinateWakeLockService
-import com.sameerasw.essentials.services.ScreenOffAccessibilityService
-import com.sameerasw.essentials.utils.HapticFeedbackType
-import com.sameerasw.essentials.utils.ShizukuUtils
-import com.sameerasw.essentials.domain.model.NotificationApp
-import com.sameerasw.essentials.domain.model.AppSelection
-import com.sameerasw.essentials.utils.AppUtil
+import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.sameerasw.essentials.services.EdgeLightingService
+import com.sameerasw.essentials.MapsState
+import com.sameerasw.essentials.domain.model.AppSelection
+import com.sameerasw.essentials.domain.model.EdgeLightingColorMode
+import com.sameerasw.essentials.domain.model.EdgeLightingStyle
+import com.sameerasw.essentials.domain.model.EdgeLightingSide
+import com.sameerasw.essentials.domain.model.NotificationApp
 import com.sameerasw.essentials.domain.model.UpdateInfo
+import com.sameerasw.essentials.services.CaffeinateWakeLockService
+import com.sameerasw.essentials.services.EdgeLightingService
+import com.sameerasw.essentials.services.NotificationListener
+import com.sameerasw.essentials.services.ScreenOffAccessibilityService
+import com.sameerasw.essentials.services.receivers.SecurityDeviceAdminReceiver
+import com.sameerasw.essentials.utils.AppUtil
+import com.sameerasw.essentials.utils.HapticFeedbackType
+import com.sameerasw.essentials.utils.PermissionUtils
+import com.sameerasw.essentials.utils.ShizukuUtils
+import com.sameerasw.essentials.utils.UpdateNotificationHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.net.URL
-import androidx.lifecycle.viewModelScope
 
 class MainViewModel : ViewModel() {
     val isAccessibilityEnabled = mutableStateOf(false)
@@ -65,17 +73,43 @@ class MainViewModel : ViewModel() {
     val isPixelImsEnabled = mutableStateOf(false)
     val isScreenLockedSecurityEnabled = mutableStateOf(false)
     val isDeviceAdminEnabled = mutableStateOf(false)
+    val isDeveloperModeEnabled = mutableStateOf(false)
+    val skipSilentNotifications = mutableStateOf(true)
+    val edgeLightingStyle = mutableStateOf(EdgeLightingStyle.STROKE)
+    val edgeLightingColorMode = mutableStateOf(EdgeLightingColorMode.SYSTEM)
+    val edgeLightingCustomColor = mutableIntStateOf(0xFF6200EE.toInt()) // Default purple
+    val edgeLightingPulseCount = mutableIntStateOf(1)
+    val edgeLightingPulseDuration = mutableStateOf(3000f)
+    val edgeLightingIndicatorX = mutableStateOf(50f) // 0-100 percentage
+    val edgeLightingIndicatorY = mutableStateOf(2f)  // 0-100 percentage, default top
+    val edgeLightingIndicatorScale = mutableStateOf(1.0f)
+    val edgeLightingGlowSides = mutableStateOf(setOf(EdgeLightingSide.LEFT, EdgeLightingSide.RIGHT))
 
     // Update state
     val updateInfo = mutableStateOf<UpdateInfo?>(null)
     val isUpdateAvailable = mutableStateOf(false)
     val isCheckingUpdate = mutableStateOf(false)
     val isAutoUpdateEnabled = mutableStateOf(true)
+    val isUpdateNotificationEnabled = mutableStateOf(true)
     private var lastUpdateCheckTime: Long = 0
+    
+    private val preferenceChangeListener = SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->
+        when (key) {
+            "edge_lighting_enabled" -> isEdgeLightingEnabled.value = sharedPreferences.getBoolean(key, false)
+            "dynamic_night_light_enabled" -> isDynamicNightLightEnabled.value = sharedPreferences.getBoolean(key, false)
+            "screen_locked_security_enabled" -> isScreenLockedSecurityEnabled.value = sharedPreferences.getBoolean(key, false)
+            "maps_power_saving_enabled" -> {
+                isMapsPowerSavingEnabled.value = sharedPreferences.getBoolean(key, false)
+                MapsState.isEnabled = isMapsPowerSavingEnabled.value
+            }
+            "status_bar_icon_control_enabled" -> isStatusBarIconControlEnabled.value = sharedPreferences.getBoolean(key, false)
+            "button_remap_enabled" -> isButtonRemapEnabled.value = sharedPreferences.getBoolean(key, false)
+        }
+    }
 
     fun check(context: Context) {
-        isAccessibilityEnabled.value = isAccessibilityServiceEnabled(context)
-        isWriteSecureSettingsEnabled.value = canWriteSecureSettings(context)
+        isAccessibilityEnabled.value = PermissionUtils.isAccessibilityServiceEnabled(context)
+        isWriteSecureSettingsEnabled.value = PermissionUtils.canWriteSecureSettings(context)
         isReadPhoneStateEnabled.value = ContextCompat.checkSelfPermission(
             context,
             Manifest.permission.READ_PHONE_STATE
@@ -86,16 +120,31 @@ class MainViewModel : ViewModel() {
         ) == PackageManager.PERMISSION_GRANTED
         isShizukuAvailable.value = ShizukuUtils.isShizukuAvailable()
         isShizukuPermissionGranted.value = ShizukuUtils.hasPermission()
-        isNotificationListenerEnabled.value = hasNotificationListenerPermission(context)
-        isOverlayPermissionGranted.value = canDrawOverlays(context)
-        isEdgeLightingAccessibilityEnabled.value = isEdgeLightingAccessibilityServiceEnabled(context)
-        isDefaultBrowserSet.value = isDefaultBrowser(context)
+        isNotificationListenerEnabled.value = PermissionUtils.hasNotificationListenerPermission(context)
+        isOverlayPermissionGranted.value = PermissionUtils.canDrawOverlays(context)
+        isEdgeLightingAccessibilityEnabled.value = PermissionUtils.isEdgeLightingAccessibilityServiceEnabled(context)
+        isDefaultBrowserSet.value = PermissionUtils.isDefaultBrowser(context)
         val prefs = context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE)
+        prefs.unregisterOnSharedPreferenceChangeListener(preferenceChangeListener)
+        prefs.registerOnSharedPreferenceChangeListener(preferenceChangeListener)
+        
         isWidgetEnabled.value = prefs.getBoolean("widget_enabled", false)
         isStatusBarIconControlEnabled.value = prefs.getBoolean("status_bar_icon_control_enabled", false)
         isMapsPowerSavingEnabled.value = prefs.getBoolean("maps_power_saving_enabled", false)
         isEdgeLightingEnabled.value = prefs.getBoolean("edge_lighting_enabled", false)
         onlyShowWhenScreenOff.value = prefs.getBoolean("edge_lighting_only_screen_off", true)
+        skipSilentNotifications.value = prefs.getBoolean("edge_lighting_skip_silent", true)
+        val styleName = prefs.getString("edge_lighting_style", EdgeLightingStyle.STROKE.name)
+        edgeLightingStyle.value = EdgeLightingStyle.valueOf(styleName ?: EdgeLightingStyle.STROKE.name)
+        val colorModeName = prefs.getString("edge_lighting_color_mode", EdgeLightingColorMode.SYSTEM.name)
+        edgeLightingColorMode.value = EdgeLightingColorMode.valueOf(colorModeName ?: EdgeLightingColorMode.SYSTEM.name)
+        edgeLightingCustomColor.intValue = prefs.getInt("edge_lighting_custom_color", 0xFF6200EE.toInt())
+        edgeLightingPulseCount.intValue = prefs.getInt("edge_lighting_pulse_count", 1)
+        edgeLightingPulseDuration.value = prefs.getFloat("edge_lighting_pulse_duration", 3000f)
+        edgeLightingIndicatorX.value = prefs.getFloat("edge_lighting_indicator_x", 50f)
+        edgeLightingIndicatorY.value = prefs.getFloat("edge_lighting_indicator_y", 2f)
+        edgeLightingIndicatorScale.value = prefs.getFloat("edge_lighting_indicator_scale", 1.0f)
+        edgeLightingGlowSides.value = loadEdgeLightingGlowSides(context)
         MapsState.isEnabled = isMapsPowerSavingEnabled.value
         loadHapticFeedback(context)
         checkCaffeinateActive(context)
@@ -135,13 +184,29 @@ class MainViewModel : ViewModel() {
         isDeviceAdminEnabled.value = isDeviceAdminActive(context)
         
         isAutoUpdateEnabled.value = prefs.getBoolean("auto_update_enabled", true)
+        isUpdateNotificationEnabled.value = prefs.getBoolean("update_notification_enabled", true)
         lastUpdateCheckTime = prefs.getLong("last_update_check_time", 0)
+        isDeveloperModeEnabled.value = prefs.getBoolean("developer_mode_enabled", false)
     }
 
     fun setAutoUpdateEnabled(enabled: Boolean, context: Context) {
         isAutoUpdateEnabled.value = enabled
         context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
             putBoolean("auto_update_enabled", enabled)
+        }
+    }
+
+    fun setUpdateNotificationEnabled(enabled: Boolean, context: Context) {
+        isUpdateNotificationEnabled.value = enabled
+        context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
+            putBoolean("update_notification_enabled", enabled)
+        }
+    }
+
+    fun setDeveloperModeEnabled(enabled: Boolean, context: Context) {
+        isDeveloperModeEnabled.value = enabled
+        context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
+            putBoolean("developer_mode_enabled", enabled)
         }
     }
 
@@ -186,6 +251,12 @@ class MainViewModel : ViewModel() {
                 )
                 isUpdateAvailable.value = hasUpdate
                 
+                if (hasUpdate && downloadUrl.isNotEmpty()) {
+                    if (isUpdateNotificationEnabled.value) {
+                        UpdateNotificationHelper.showUpdateNotification(context, latestVersion, downloadUrl)
+                    }
+                }
+                
                 // Update last check time on success
                 lastUpdateCheckTime = System.currentTimeMillis()
                 context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
@@ -222,9 +293,7 @@ class MainViewModel : ViewModel() {
     }
 
     private fun isDeviceAdminActive(context: Context): Boolean {
-        val dpm = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-        val adminComponent = ComponentName(context, SecurityDeviceAdminReceiver::class.java)
-        return dpm.isAdminActive(adminComponent)
+        return PermissionUtils.isDeviceAdminActive(context)
     }
 
     fun requestDeviceAdmin(context: Context) {
@@ -274,6 +343,34 @@ class MainViewModel : ViewModel() {
         onlyShowWhenScreenOff.value = enabled
         context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
             putBoolean("edge_lighting_only_screen_off", enabled)
+        }
+    }
+    
+    fun setSkipSilentNotifications(enabled: Boolean, context: Context) {
+        skipSilentNotifications.value = enabled
+        context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
+            putBoolean("edge_lighting_skip_silent", enabled)
+        }
+    }
+
+    fun setEdgeLightingStyle(style: EdgeLightingStyle, context: Context) {
+        edgeLightingStyle.value = style
+        context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
+            putString("edge_lighting_style", style.name)
+        }
+    }
+
+    fun setEdgeLightingColorMode(mode: EdgeLightingColorMode, context: Context) {
+        edgeLightingColorMode.value = mode
+        context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
+            putString("edge_lighting_color_mode", mode.name)
+        }
+    }
+
+    fun setEdgeLightingCustomColor(color: Int, context: Context) {
+        edgeLightingCustomColor.intValue = color
+        context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
+            putInt("edge_lighting_custom_color", color)
         }
     }
 
@@ -326,6 +423,20 @@ class MainViewModel : ViewModel() {
         }
     }
 
+    fun saveEdgeLightingPulseCount(context: Context, count: Int) {
+        edgeLightingPulseCount.intValue = count
+        context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
+            putInt("edge_lighting_pulse_count", count)
+        }
+    }
+
+    fun saveEdgeLightingPulseDuration(context: Context, duration: Float) {
+        edgeLightingPulseDuration.value = duration
+        context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
+            putFloat("edge_lighting_pulse_duration", duration)
+        }
+    }
+
     // Helper to show the overlay service for testing/triggering
     fun triggerEdgeLighting(context: Context) {
         val radius = loadEdgeLightingCornerRadius(context)
@@ -334,6 +445,16 @@ class MainViewModel : ViewModel() {
             val intent = Intent(context, com.sameerasw.essentials.services.EdgeLightingService::class.java).apply {
                 putExtra("corner_radius_dp", radius)
                 putExtra("stroke_thickness_dp", thickness)
+                putExtra("ignore_screen_state", true)
+                putExtra("style", edgeLightingStyle.value.name)
+                putExtra("color_mode", edgeLightingColorMode.value.name)
+                putExtra("custom_color", edgeLightingCustomColor.intValue)
+                putExtra("pulse_count", edgeLightingPulseCount.intValue)
+                putExtra("pulse_duration", edgeLightingPulseDuration.value.toLong())
+                putExtra("glow_sides", edgeLightingGlowSides.value.map { it.name }.toTypedArray())
+                putExtra("indicator_x", edgeLightingIndicatorX.value)
+                putExtra("indicator_y", edgeLightingIndicatorY.value)
+                putExtra("indicator_scale", edgeLightingIndicatorScale.value)
             }
             context.startService(intent)
         } catch (e: Exception) {
@@ -347,6 +468,14 @@ class MainViewModel : ViewModel() {
             val intent = Intent(context, com.sameerasw.essentials.services.EdgeLightingService::class.java).apply {
                 putExtra("corner_radius_dp", cornerRadiusDp)
                 putExtra("is_preview", true)
+                putExtra("ignore_screen_state", true)
+                putExtra("style", edgeLightingStyle.value.name)
+                putExtra("color_mode", edgeLightingColorMode.value.name)
+                putExtra("custom_color", edgeLightingCustomColor.intValue)
+                putExtra("glow_sides", edgeLightingGlowSides.value.map { it.name }.toTypedArray())
+                putExtra("indicator_x", edgeLightingIndicatorX.value)
+                putExtra("indicator_y", edgeLightingIndicatorY.value)
+                putExtra("indicator_scale", edgeLightingIndicatorScale.value)
             }
             context.startService(intent)
         } catch (e: Exception) {
@@ -361,6 +490,14 @@ class MainViewModel : ViewModel() {
                 putExtra("corner_radius_dp", cornerRadiusDp)
                 putExtra("stroke_thickness_dp", strokeThicknessDp)
                 putExtra("is_preview", true)
+                putExtra("ignore_screen_state", true)
+                putExtra("style", edgeLightingStyle.value.name)
+                putExtra("color_mode", edgeLightingColorMode.value.name)
+                putExtra("custom_color", edgeLightingCustomColor.intValue)
+                putExtra("glow_sides", edgeLightingGlowSides.value.map { it.name }.toTypedArray())
+                putExtra("indicator_x", edgeLightingIndicatorX.value)
+                putExtra("indicator_y", edgeLightingIndicatorY.value)
+                putExtra("indicator_scale", edgeLightingIndicatorScale.value)
             }
             context.startService(intent)
         } catch (e: Exception) {
@@ -406,31 +543,11 @@ class MainViewModel : ViewModel() {
     }
 
     private fun isAccessibilityServiceEnabled(context: Context): Boolean {
-        val enabledServices = Settings.Secure.getString(
-            context.contentResolver,
-            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
-        )
-        val serviceName = "${context.packageName}/${ScreenOffAccessibilityService::class.java.name}"
-        return enabledServices?.contains(serviceName) == true
+        return PermissionUtils.isAccessibilityServiceEnabled(context)
     }
 
     fun canWriteSecureSettings(context: Context): Boolean {
-        return try {
-            // Try to write to the setting to test if we have permission
-            val currentValue = Settings.Secure.getString(
-                context.contentResolver,
-                "icon_blacklist"
-            )
-            // Try to write the same value back (no-op) to verify permission
-            Settings.Secure.putString(
-                context.contentResolver,
-                "icon_blacklist",
-                currentValue ?: ""
-            )
-            true
-        } catch (e: Exception) {
-            false
-        }
+        return PermissionUtils.canWriteSecureSettings(context)
     }
 
     fun requestReadPhoneStatePermission(activity: androidx.activity.ComponentActivity) {
@@ -441,17 +558,18 @@ class MainViewModel : ViewModel() {
         )
     }
 
-    private fun hasNotificationListenerPermission(context: Context): Boolean {
-        return try {
-            val enabledServices = Settings.Secure.getString(
-                context.contentResolver,
-                "enabled_notification_listeners"
-            ) ?: return false
-            val componentName = ComponentName(context, NotificationListener::class.java)
-            enabledServices.contains(componentName.flattenToString())
-        } catch (_: Exception) {
-            false
+    fun requestNotificationPermission(activity: androidx.activity.ComponentActivity) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            androidx.core.app.ActivityCompat.requestPermissions(
+                activity,
+                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                1002
+            )
         }
+    }
+
+    private fun hasNotificationListenerPermission(context: Context): Boolean {
+        return PermissionUtils.hasNotificationListenerPermission(context)
     }
 
     fun requestNotificationListenerPermission(context: Context) {
@@ -499,48 +617,22 @@ class MainViewModel : ViewModel() {
     }
 
     private fun canDrawOverlays(context: Context): Boolean {
-        return if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-            Settings.canDrawOverlays(context)
-        } else {
-            true
-        }
+        return PermissionUtils.canDrawOverlays(context)
     }
 
     private fun isEdgeLightingAccessibilityServiceEnabled(context: Context): Boolean {
-        return try {
-            val enabledServices = Settings.Secure.getString(
-                context.contentResolver,
-                Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
-            )
-            val serviceName = "${context.packageName}/${ScreenOffAccessibilityService::class.java.name}"
-            enabledServices?.contains(serviceName) == true
-        } catch (e: Exception) {
-            false
-        }
+        return PermissionUtils.isEdgeLightingAccessibilityServiceEnabled(context)
     }
 
     private fun isDefaultBrowser(context: Context): Boolean {
-        return try {
-            val pm = context.packageManager
-            val browserIntent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("http://www.example.com"))
-            val resolveInfo = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-                pm.resolveActivity(browserIntent, android.content.pm.PackageManager.ResolveInfoFlags.of(android.content.pm.PackageManager.MATCH_DEFAULT_ONLY.toLong()))
-            } else {
-                @Suppress("DEPRECATION")
-                pm.resolveActivity(browserIntent, android.content.pm.PackageManager.MATCH_DEFAULT_ONLY)
-            }
-            resolveInfo?.activityInfo?.packageName == context.packageName
-        } catch (e: Exception) {
-            false
-        }
+        return PermissionUtils.isDefaultBrowser(context)
     }
 
     // Edge Lighting App Selection Methods
-    fun saveEdgeLightingSelectedApps(context: Context, apps: List<NotificationApp>) {
+    fun saveEdgeLightingSelectedApps(context: Context, apps: List<AppSelection>) {
         val prefs = context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE)
-        val selections = apps.map { AppSelection(it.packageName, it.isEnabled) }
         val gson = Gson()
-        val json = gson.toJson(selections)
+        val json = gson.toJson(apps)
         prefs.edit().putString("edge_lighting_selected_apps", json).apply()
     }
 
@@ -603,11 +695,10 @@ class MainViewModel : ViewModel() {
     }
 
     // Dynamic Night Light App Selection Methods
-    fun saveDynamicNightLightSelectedApps(context: Context, apps: List<NotificationApp>) {
+    fun saveDynamicNightLightSelectedApps(context: Context, apps: List<AppSelection>) {
         val prefs = context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE)
-        val selections = apps.map { AppSelection(it.packageName, it.isEnabled) }
         val gson = Gson()
-        val json = gson.toJson(selections)
+        val json = gson.toJson(apps)
         prefs.edit().putString("dynamic_night_light_selected_apps", json).apply()
     }
 
@@ -683,6 +774,137 @@ class MainViewModel : ViewModel() {
         isScreenLockedSecurityEnabled.value = enabled
         context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
             putBoolean("screen_locked_security_enabled", enabled)
+        }
+    }
+
+    fun setEdgeLightingGlowSides(sides: Set<EdgeLightingSide>, context: Context) {
+        edgeLightingGlowSides.value = sides
+        saveEdgeLightingGlowSides(context, sides)
+    }
+
+    fun saveEdgeLightingIndicatorX(context: Context, x: Float) {
+        edgeLightingIndicatorX.value = x
+        context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
+            putFloat("edge_lighting_indicator_x", x)
+        }
+    }
+
+    fun saveEdgeLightingIndicatorY(context: Context, y: Float) {
+        edgeLightingIndicatorY.value = y
+        context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
+            putFloat("edge_lighting_indicator_y", y)
+        }
+    }
+
+    fun saveEdgeLightingIndicatorScale(context: Context, scale: Float) {
+        edgeLightingIndicatorScale.value = scale
+        context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
+            putFloat("edge_lighting_indicator_scale", scale)
+        }
+    }
+
+    private fun saveEdgeLightingGlowSides(context: Context, sides: Set<EdgeLightingSide>) {
+        val prefs = context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE)
+        val gson = Gson()
+        val json = gson.toJson(sides)
+        prefs.edit().putString("edge_lighting_glow_sides", json).apply()
+    }
+
+    fun exportConfigs(context: Context, outputStream: java.io.OutputStream) {
+        try {
+            // Map<FileName, Map<PrefKey, WrappedValue>>
+            val allConfigs = mutableMapOf<String, Map<String, Map<String, Any>>>()
+            val prefFiles = listOf("essentials_prefs", "caffeinate_prefs")
+
+            prefFiles.forEach { fileName ->
+                val prefs = context.getSharedPreferences(fileName, Context.MODE_PRIVATE)
+                val wrapperMap = mutableMapOf<String, Map<String, Any>>()
+                
+                prefs.all.forEach { (key, value) ->
+                    val type = when (value) {
+                        is Boolean -> "Boolean"
+                        is Int -> "Int"
+                        is Long -> "Long"
+                        is Float -> "Float"
+                        is String -> "String"
+                        is Set<*> -> "StringSet"
+                        else -> "Unknown"
+                    }
+                    if (value != null && type != "Unknown") {
+                        wrapperMap[key] = mapOf("type" to type, "value" to value)
+                    }
+                }
+                allConfigs[fileName] = wrapperMap
+            }
+
+            val json = Gson().toJson(allConfigs)
+            outputStream.write(json.toByteArray())
+            outputStream.flush()
+            outputStream.close()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    fun importConfigs(context: Context, inputStream: java.io.InputStream): Boolean {
+        return try {
+            val json = inputStream.bufferedReader().use { it.readText() }
+            // Map<FileName, Map<PrefKey, Map<Type_Value, Value>>>
+            val type = object : TypeToken<Map<String, Map<String, Map<String, Any>>>>() {}.type
+            val allConfigs: Map<String, Map<String, Map<String, Any>>> = Gson().fromJson(json, type)
+            
+            allConfigs.forEach { (fileName, prefWrapper) ->
+                val prefs = context.getSharedPreferences(fileName, Context.MODE_PRIVATE)
+                prefs.edit {
+                    clear()
+                    prefWrapper.forEach { (key, item) ->
+                        val itemType = item["type"] as? String
+                        val itemValue = item["value"]
+                        
+                        if (itemType != null && itemValue != null) {
+                            try {
+                                when (itemType) {
+                                    "Boolean" -> putBoolean(key, itemValue as Boolean)
+                                    "Int" -> putInt(key, (itemValue as Double).toInt())
+                                    "Long" -> putLong(key, (itemValue as Double).toLong())
+                                    "Float" -> putFloat(key, (itemValue as Double).toFloat())
+                                    "String" -> putString(key, itemValue as String)
+                                    "StringSet" -> {
+                                        @Suppress("UNCHECKED_CAST")
+                                        putStringSet(key, (itemValue as List<String>).toSet())
+                                    }
+                                }
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                            }
+                        }
+                    }
+                }
+            }
+            // Trigger a refresh of states
+            check(context)
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        } finally {
+            inputStream.close()
+        }
+    }
+
+    private fun loadEdgeLightingGlowSides(context: Context): Set<EdgeLightingSide> {
+        val prefs = context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE)
+        val json = prefs.getString("edge_lighting_glow_sides", null)
+        return if (json != null) {
+            val gson = Gson()
+            val type = object : TypeToken<Set<EdgeLightingSide>>() {}.type
+            try {
+                gson.fromJson(json, type)
+            } catch (e: Exception) {
+                setOf(EdgeLightingSide.LEFT, EdgeLightingSide.RIGHT)
+            }
+        } else {
+            setOf(EdgeLightingSide.LEFT, EdgeLightingSide.RIGHT)
         }
     }
 }

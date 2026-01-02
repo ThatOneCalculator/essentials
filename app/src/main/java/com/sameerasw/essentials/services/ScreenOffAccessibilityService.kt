@@ -8,6 +8,9 @@ import android.os.VibratorManager
 import android.view.accessibility.AccessibilityEvent
 import com.sameerasw.essentials.utils.HapticFeedbackType
 import com.sameerasw.essentials.utils.performHapticFeedback
+import com.sameerasw.essentials.domain.model.EdgeLightingColorMode
+import com.sameerasw.essentials.domain.model.EdgeLightingStyle
+import com.sameerasw.essentials.domain.model.EdgeLightingSide
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.IntentFilter
@@ -41,6 +44,17 @@ class ScreenOffAccessibilityService : AccessibilityService() {
     private var cornerRadiusDp: Int = OverlayHelper.CORNER_RADIUS_DP
     private var strokeThicknessDp: Int = OverlayHelper.STROKE_DP
     private var isPreview: Boolean = false
+    private var ignoreScreenState: Boolean = false
+    private var colorMode: EdgeLightingColorMode = EdgeLightingColorMode.SYSTEM
+    private var customColor: Int = 0
+    private var resolvedColor: Int? = null
+    private var pulseCount: Int = 1
+    private var pulseDuration: Long = 3000
+    private var edgeLightingStyle: EdgeLightingStyle = EdgeLightingStyle.STROKE
+    private var glowSides: Set<EdgeLightingSide> = setOf(EdgeLightingSide.LEFT, EdgeLightingSide.RIGHT)
+    private var indicatorX: Float = 50f
+    private var indicatorY: Float = 2f
+    private var indicatorScale: Float = 1.0f
     private var screenReceiver: BroadcastReceiver? = null
     
     private var originalAnimationScale: Float = 1.0f
@@ -317,10 +331,25 @@ class ScreenOffAccessibilityService : AccessibilityService() {
             performGlobalAction(GLOBAL_ACTION_LOCK_SCREEN)
         } else if (intent?.action == "SHOW_EDGE_LIGHTING") {
             // Extract corner radius and preview flag from intent
-            cornerRadiusDp = intent.getIntExtra("corner_radius_dp", OverlayHelper.CORNER_RADIUS_DP)
-            strokeThicknessDp = intent.getIntExtra("stroke_thickness_dp", OverlayHelper.STROKE_DP)
-            isPreview = intent.getBooleanExtra("is_preview", false)
-            val removePreview = intent.getBooleanExtra("remove_preview", false)
+            cornerRadiusDp = intent?.getIntExtra("corner_radius_dp", OverlayHelper.CORNER_RADIUS_DP) ?: OverlayHelper.CORNER_RADIUS_DP
+            strokeThicknessDp = intent?.getIntExtra("stroke_thickness_dp", OverlayHelper.STROKE_DP) ?: OverlayHelper.STROKE_DP
+            isPreview = intent?.getBooleanExtra("is_preview", false) ?: false
+            ignoreScreenState = intent?.getBooleanExtra("ignore_screen_state", false) ?: false
+            val colorModeName = intent?.getStringExtra("color_mode")
+            colorMode = EdgeLightingColorMode.valueOf(colorModeName ?: EdgeLightingColorMode.SYSTEM.name)
+            customColor = intent?.getIntExtra("custom_color", 0) ?: 0
+            resolvedColor = if (intent?.hasExtra("resolved_color") == true) intent.getIntExtra("resolved_color", 0) else null
+            pulseCount = intent?.getIntExtra("pulse_count", 1) ?: 1
+            pulseDuration = intent?.getLongExtra("pulse_duration", 3000L) ?: 3000L
+            val styleName = intent?.getStringExtra("style")
+            edgeLightingStyle = if (styleName != null) EdgeLightingStyle.valueOf(styleName) else EdgeLightingStyle.STROKE
+            val glowSidesArray = intent?.getStringArrayExtra("glow_sides")
+            glowSides = glowSidesArray?.mapNotNull { try { EdgeLightingSide.valueOf(it) } catch(e: Exception) { null } }?.toSet()
+                ?: setOf(EdgeLightingSide.LEFT, EdgeLightingSide.RIGHT)
+            indicatorX = intent?.getFloatExtra("indicator_x", 50f) ?: 50f
+            indicatorY = intent?.getFloatExtra("indicator_y", 2f) ?: 2f
+            indicatorScale = intent?.getFloatExtra("indicator_scale", 1.0f) ?: 1.0f
+            val removePreview = intent?.getBooleanExtra("remove_preview", false) ?: false
             if (removePreview) {
                 // Remove preview overlay
                 removeOverlay()
@@ -383,19 +412,33 @@ class ScreenOffAccessibilityService : AccessibilityService() {
         }
 
         try {
-            val overlay = OverlayHelper.createOverlayView(this, android.R.color.system_accent1_100, strokeDp = strokeThicknessDp, cornerRadiusDp = cornerRadiusDp)
+            val color = when {
+                resolvedColor != null -> resolvedColor!!
+                colorMode == EdgeLightingColorMode.CUSTOM -> customColor
+                else -> getColor(android.R.color.system_accent1_100)
+            }
+            
+            val overlay = OverlayHelper.createOverlayView(
+                this, 
+                color, 
+                strokeDp = strokeThicknessDp, 
+                cornerRadiusDp = cornerRadiusDp,
+                style = edgeLightingStyle,
+                glowSides = glowSides,
+                indicatorScale = indicatorScale
+            )
             val params = OverlayHelper.createOverlayLayoutParams(overlayType)
 
             if (OverlayHelper.addOverlayView(windowManager, overlay, params)) {
                 overlayViews.add(overlay)
                 if (isPreview) {
-                    // For preview mode, just fade in and keep visible
-                    OverlayHelper.fadeInOverlay(overlay)
+                    // For preview mode, show static preview
+                    OverlayHelper.showPreview(overlay, edgeLightingStyle, strokeThicknessDp)
                 } else {
                     // If only show when screen off is enabled, check before pulsing
                     val prefs = getSharedPreferences("essentials_prefs", MODE_PRIVATE)
                     val onlyShowWhenScreenOff = prefs.getBoolean("edge_lighting_only_screen_off", true)
-                    if (onlyShowWhenScreenOff) {
+                    if (onlyShowWhenScreenOff && !ignoreScreenState) {
                         val powerManager = getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
                         val isScreenOn = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
                             powerManager.isInteractive
@@ -410,7 +453,15 @@ class ScreenOffAccessibilityService : AccessibilityService() {
                     }
 
                     // Normal mode: pulse the overlay
-                    OverlayHelper.pulseOverlay(overlay) {
+                    OverlayHelper.pulseOverlay(
+                        overlay, 
+                        maxPulses = pulseCount, 
+                        pulseDurationMillis = pulseDuration,
+                        style = edgeLightingStyle,
+                        strokeWidthDp = strokeThicknessDp,
+                        indicatorX = indicatorX,
+                        indicatorY = indicatorY
+                    ) {
                         // When pulsing completes, remove the overlay
                         OverlayHelper.fadeOutAndRemoveOverlay(windowManager, overlay, overlayViews)
                     }
@@ -457,20 +508,35 @@ class ScreenOffAccessibilityService : AccessibilityService() {
         }
         
         val action = prefs.getString(actionKey, "None") ?: "None"
-        if (action == "None") return super.onKeyEvent(event)
-
+        
         val isAlwaysTurnOffEnabled = prefs.getBoolean("flashlight_always_turn_off_enabled", false)
         
+        // Check if the pressed button is assigned to flashlight in ANY state (screen on or off)
+        val isVolUpFlashlight = prefs.getString("button_remap_vol_up_action_off", "None") == "Toggle flashlight" ||
+                                prefs.getString("button_remap_vol_up_action_on", "None") == "Toggle flashlight"
+        val isVolDownFlashlight = prefs.getString("button_remap_vol_down_action_off", "None") == "Toggle flashlight" ||
+                                  prefs.getString("button_remap_vol_down_action_on", "None") == "Toggle flashlight"
+        
+        val isFlashlightCapableButton = (event.keyCode == KeyEvent.KEYCODE_VOLUME_UP && isVolUpFlashlight) ||
+                                       (event.keyCode == KeyEvent.KEYCODE_VOLUME_DOWN && isVolDownFlashlight)
+
+        // Always prioritize turning OFF flashlight if it's already ON and the setting is enabled
+        var finalAction = action
+        if (isTorchOn && isAlwaysTurnOffEnabled && isFlashlightCapableButton) {
+            finalAction = "Toggle flashlight"
+        }
+
+        if (finalAction == "None") return super.onKeyEvent(event)
+
         // Intercept if screen is off, OR if an action is assigned to this button while screen is on.
-        // Special case for flashlight: allow turning OFF while screen is on if enabled and torch is already ON.
-        val isFlashlightAction = action == "Toggle flashlight"
-        val shouldIntercept = !isScreenOn || (isScreenOn && action != "None") || (isFlashlightAction && isAlwaysTurnOffEnabled && isTorchOn)
+        // The override above ensures that if flashlight turn-off is needed, it will have an action and thus be intercepted.
+        val shouldIntercept = !isScreenOn || (isScreenOn && finalAction != "None")
 
         if (shouldIntercept) {
             if (event.action == KeyEvent.ACTION_DOWN) {
                 if (event.repeatCount == 0) {
                     lastPressedKeyCode = event.keyCode
-                    lastPendingAction = action
+                    lastPendingAction = finalAction
                     isLongPressTriggered = false
                     handler.postDelayed(longPressRunnable, LONG_PRESS_TIMEOUT)
                 }

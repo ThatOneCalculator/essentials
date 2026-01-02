@@ -200,7 +200,7 @@ fun ButtonRemapSettingsUI(
         RoundedCardContainer {
             Text(
                 text = if (selectedScreenTab == 0) 
-                    "When the screen is off, long-press the selected button to trigger its assigned action." 
+                    "When the screen is off, long-press the selected button to trigger its assigned action. On Pixel devices, this action only gets triggered if the AOD is on due to system limitations."
                     else "When the screen is on, long-press the selected button to trigger its assigned action.",
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(16.dp),
