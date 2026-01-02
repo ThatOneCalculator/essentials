@@ -56,6 +56,19 @@ class NotificationListener : NotificationListenerService() {
 
         // trigger edge lighting for any newly posted notification if feature enabled
         try {
+            val packageName = sbn.packageName
+            val notification = sbn.notification
+            val extras = notification.extras
+
+            // Skip media sessions
+            val isMedia = extras.containsKey(Notification.EXTRA_MEDIA_SESSION) ||
+                    extras.getString(Notification.EXTRA_TEMPLATE) == "android.app.Notification\$MediaStyle"
+            
+            if (isMedia) {
+                android.util.Log.d("NotificationListener", "Skipping edge lighting for media notification from $packageName")
+                return
+            }
+
             val prefs = applicationContext.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE)
             val enabled = prefs.getBoolean("edge_lighting_enabled", false)
             if (enabled) {
