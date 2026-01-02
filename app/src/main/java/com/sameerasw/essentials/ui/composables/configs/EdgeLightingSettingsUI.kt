@@ -165,6 +165,44 @@ fun EdgeLightingSettingsUI(
             )
         }
 
+
+        // Animation Settings
+        Text(
+            text = "Animation",
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp),
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        
+        
+        RoundedCardContainer(modifier = Modifier) {
+            ConfigSliderItem(
+                title = "Pulse count",
+                value = viewModel.edgeLightingPulseCount.intValue.toFloat(),
+                onValueChange = { 
+                    viewModel.saveEdgeLightingPulseCount(context, it.toInt())
+                    HapticUtil.performSliderHaptic(view)
+                },
+                valueRange = 1f..5f,
+                steps = 3,
+                valueFormatter = { "%.0f".format(it) },
+                onValueChangeFinished = { viewModel.triggerEdgeLighting(context) }
+            )
+                
+            ConfigSliderItem(
+                title = "Pulse duration",
+                value = viewModel.edgeLightingPulseDuration.value,
+                onValueChange = { 
+                    viewModel.saveEdgeLightingPulseDuration(context, it)
+                    HapticUtil.performSliderHaptic(view)
+                },
+                valueRange = 100f..10000f,
+                valueFormatter = { "%.1fs".format(it / 1000f) },
+                onValueChangeFinished = { viewModel.triggerEdgeLighting(context) }
+            )
+        }
+
+
         // Color Mode section
         Text(
             text = "Color Mode",
@@ -183,7 +221,7 @@ fun EdgeLightingSettingsUI(
                     viewModel.setEdgeLightingColorMode(mode, context)
                 }
             )
-            
+
             if (viewModel.edgeLightingColorMode.value == EdgeLightingColorMode.CUSTOM) {
                 Column(
                     modifier = Modifier
@@ -199,17 +237,17 @@ fun EdgeLightingSettingsUI(
                     val allColors = remember {
                         val colors = mutableListOf<Int>()
                         val totalColumns = 21
-                        
+
                         for (page in 0..2) {
-                            
+
                             val row1 = mutableListOf<Int>()
                             val row2 = mutableListOf<Int>()
                             val row3 = mutableListOf<Int>()
-                            
+
                             for (col in 0..6) {
                                 val globalCol = page * 7 + col
                                 val hue = (globalCol.toFloat() / totalColumns) * 360f
-                                
+
                                 // Row 1: Light
                                 row1.add(android.graphics.Color.HSVToColor(floatArrayOf(hue, 0.4f, 1.0f)))
                                 // Row 2: Regular
@@ -223,7 +261,7 @@ fun EdgeLightingSettingsUI(
                         }
                         colors
                     }
-                    
+
                     val pages = allColors.chunked(21)
                     val pagerState = rememberPagerState(pageCount = { pages.size })
                     val currentCustomColor = viewModel.edgeLightingCustomColor.intValue
@@ -283,42 +321,6 @@ fun EdgeLightingSettingsUI(
                     }
                 }
             }
-        }
-
-        // Animation Settings
-        Text(
-            text = "Animation",
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp),
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        
-        
-        RoundedCardContainer(modifier = Modifier) {
-            ConfigSliderItem(
-                title = "Pulse count",
-                value = viewModel.edgeLightingPulseCount.intValue.toFloat(),
-                onValueChange = { 
-                    viewModel.saveEdgeLightingPulseCount(context, it.toInt())
-                    HapticUtil.performSliderHaptic(view)
-                },
-                valueRange = 1f..5f,
-                steps = 3,
-                valueFormatter = { "%.0f".format(it) },
-                onValueChangeFinished = { viewModel.triggerEdgeLighting(context) }
-            )
-                
-            ConfigSliderItem(
-                title = "Pulse duration",
-                value = viewModel.edgeLightingPulseDuration.value,
-                onValueChange = { 
-                    viewModel.saveEdgeLightingPulseDuration(context, it)
-                    HapticUtil.performSliderHaptic(view)
-                },
-                valueRange = 100f..10000f,
-                valueFormatter = { "%.1fs".format(it / 1000f) },
-                onValueChangeFinished = { viewModel.triggerEdgeLighting(context) }
-            )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
