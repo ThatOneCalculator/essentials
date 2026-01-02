@@ -144,6 +144,10 @@ class MainActivity : AppCompatActivity() {
 
                 LaunchedEffect(Unit) {
                     viewModel.check(context)
+                    // Request notification permission if not granted (Android 13+)
+                    if (!viewModel.isPostNotificationsEnabled.value) {
+                        viewModel.requestNotificationPermission(this@MainActivity)
+                    }
                     viewModel.checkForUpdates(context)
                 }
 

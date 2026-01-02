@@ -40,8 +40,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -49,7 +52,9 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalView
 import androidx.core.app.ActivityCompat
+import com.sameerasw.essentials.ui.components.cards.IconToggleItem
 import com.sameerasw.essentials.ui.components.cards.PermissionCard
 import com.sameerasw.essentials.ui.components.dialogs.AboutSection
 import com.sameerasw.essentials.viewmodels.MainViewModel
@@ -138,6 +143,7 @@ fun SettingsContent(viewModel: MainViewModel, modifier: Modifier = Modifier) {
     var showUpdateSheet by remember { mutableStateOf(false) }
     val updateInfo by viewModel.updateInfo
     val isAutoUpdateEnabled by viewModel.isAutoUpdateEnabled
+    val isUpdateNotificationEnabled by viewModel.isUpdateNotificationEnabled
 
     if (showUpdateSheet) {
         UpdateBottomSheet(
@@ -326,18 +332,56 @@ fun SettingsContent(viewModel: MainViewModel, modifier: Modifier = Modifier) {
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
+        // Updates Section
+        Text(
+            text = "Updates",
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp),
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
 
         RoundedCardContainer {
-            AboutSection(
-                onCheckForUpdates = {
-                    viewModel.checkForUpdates(context, manual = true)
-                    showUpdateSheet = true
-                },
-                isAutoUpdateEnabled = isAutoUpdateEnabled,
-                onAutoUpdateEnabledChange = { viewModel.setAutoUpdateEnabled(it, context) }
+            IconToggleItem(
+                iconRes = R.drawable.rounded_mobile_check_24,
+                title = "Auto check for updates",
+                description = "Check for updates at app launch",
+                isChecked = isAutoUpdateEnabled,
+                onCheckedChange = { viewModel.setAutoUpdateEnabled(it, context) }
             )
+            IconToggleItem(
+                iconRes = R.drawable.rounded_notifications_unread_24,
+                title = "Notify for new updates",
+                description = "Show a notification when an update is found",
+                isChecked = isUpdateNotificationEnabled,
+                onCheckedChange = { viewModel.setUpdateNotificationEnabled(it, context) }
+            )
+        }
+
+        // Check for updates button
+        val view = LocalView.current
+        Button(
+            onClick = {
+                HapticUtil.performVirtualKeyHaptic(view)
+                viewModel.checkForUpdates(context, manual = true)
+                showUpdateSheet = true
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp)
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.rounded_mobile_arrow_down_24),
+                contentDescription = null,
+                modifier = Modifier.size(24.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Check for updates", fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        RoundedCardContainer {
+            AboutSection()
         }
 
     }

@@ -33,6 +33,7 @@ import com.sameerasw.essentials.services.receivers.SecurityDeviceAdminReceiver
 import com.sameerasw.essentials.utils.AppUtil
 import com.sameerasw.essentials.utils.HapticFeedbackType
 import com.sameerasw.essentials.utils.ShizukuUtils
+import com.sameerasw.essentials.utils.UpdateNotificationHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -86,6 +87,7 @@ class MainViewModel : ViewModel() {
     val isUpdateAvailable = mutableStateOf(false)
     val isCheckingUpdate = mutableStateOf(false)
     val isAutoUpdateEnabled = mutableStateOf(true)
+    val isUpdateNotificationEnabled = mutableStateOf(true)
     private var lastUpdateCheckTime: Long = 0
 
     fun check(context: Context) {
@@ -162,6 +164,7 @@ class MainViewModel : ViewModel() {
         isDeviceAdminEnabled.value = isDeviceAdminActive(context)
         
         isAutoUpdateEnabled.value = prefs.getBoolean("auto_update_enabled", true)
+        isUpdateNotificationEnabled.value = prefs.getBoolean("update_notification_enabled", true)
         lastUpdateCheckTime = prefs.getLong("last_update_check_time", 0)
     }
 
@@ -169,6 +172,13 @@ class MainViewModel : ViewModel() {
         isAutoUpdateEnabled.value = enabled
         context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
             putBoolean("auto_update_enabled", enabled)
+        }
+    }
+
+    fun setUpdateNotificationEnabled(enabled: Boolean, context: Context) {
+        isUpdateNotificationEnabled.value = enabled
+        context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
+            putBoolean("update_notification_enabled", enabled)
         }
     }
 
@@ -212,6 +222,12 @@ class MainViewModel : ViewModel() {
                     isUpdateAvailable = hasUpdate
                 )
                 isUpdateAvailable.value = hasUpdate
+                
+                if (hasUpdate && downloadUrl.isNotEmpty()) {
+                    if (isUpdateNotificationEnabled.value) {
+                        UpdateNotificationHelper.showUpdateNotification(context, latestVersion, downloadUrl)
+                    }
+                }
                 
                 // Update last check time on success
                 lastUpdateCheckTime = System.currentTimeMillis()
@@ -534,6 +550,16 @@ class MainViewModel : ViewModel() {
             arrayOf(Manifest.permission.READ_PHONE_STATE),
             1001
         )
+    }
+
+    fun requestNotificationPermission(activity: androidx.activity.ComponentActivity) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            androidx.core.app.ActivityCompat.requestPermissions(
+                activity,
+                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                1002
+            )
+        }
     }
 
     private fun hasNotificationListenerPermission(context: Context): Boolean {
