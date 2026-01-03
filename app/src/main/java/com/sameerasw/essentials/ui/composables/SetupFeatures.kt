@@ -729,11 +729,11 @@ fun SetupFeatures(
                             title = feature.title,
                             isEnabled = feature.isEnabled(viewModel),
                             onToggle = { enabled ->
-                                if (feature.title == "App lock" && context is FragmentActivity) {
+                                if (feature.category == "Security and Privacy" && context is FragmentActivity) {
                                     BiometricHelper.showBiometricPrompt(
                                         activity = context,
-                                        title = "App Lock Security",
-                                        subtitle = if (enabled) "Authenticate to enable app lock" else "Authenticate to disable app lock",
+                                        title = "${feature.title} Security",
+                                        subtitle = if (enabled) "Authenticate to enable this feature" else "Authenticate to disable this feature",
                                         onSuccess = { feature.onToggle(viewModel, context, enabled) }
                                     )
                                 } else {
@@ -741,10 +741,10 @@ fun SetupFeatures(
                                 }
                             },
                             onClick = {
-                                if (feature.title == "App lock" && context is FragmentActivity) {
+                                if (feature.category == "Security and Privacy" && context is FragmentActivity) {
                                     BiometricHelper.showBiometricPrompt(
                                         activity = context,
-                                        title = "App Lock Settings",
+                                        title = "${feature.title} Settings",
                                         subtitle = "Authenticate to access settings",
                                         onSuccess = { feature.onClick(context, viewModel) }
                                     )

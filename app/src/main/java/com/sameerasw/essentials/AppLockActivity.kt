@@ -3,6 +3,13 @@ package com.sameerasw.essentials
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.View
+import android.widget.FrameLayout
+import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.TextView
+import androidx.activity.SystemBarStyle
+import androidx.activity.enableEdgeToEdge
 import androidx.fragment.app.FragmentActivity
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
@@ -18,45 +25,95 @@ class AppLockActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
-        // Setup Full Screen
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
-            window.attributes.layoutInDisplayCutoutMode = android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
-        }
-        window.addFlags(android.view.WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
+        // Force Dark Theme
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT),
+            navigationBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
+        )
+        
         window.setBackgroundDrawableResource(android.R.color.black)
         
-        val root = android.widget.LinearLayout(this).apply {
-            orientation = android.widget.LinearLayout.VERTICAL
+        // Get accent color (respect Monet on Android 12+)
+        val primaryColor = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            ContextCompat.getColor(this, android.R.color.system_accent1_300)
+        } else {
+            val typedValue = android.util.TypedValue()
+            theme.resolveAttribute(android.R.attr.colorPrimary, typedValue, true)
+            typedValue.data
+        }
+
+        val root = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
             setBackgroundColor(android.graphics.Color.BLACK)
             gravity = android.view.Gravity.CENTER_HORIZONTAL
-            setPadding(0, (120 * resources.displayMetrics.density).toInt(), 0, 0)
+            setPadding(0, (140 * resources.displayMetrics.density).toInt(), 0, 0)
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.MATCH_PARENT
+            )
         }
         
-        val iconSize = (80 * resources.displayMetrics.density).toInt()
-        val iconView = android.widget.ImageView(this).apply {
-            setImageResource(R.drawable.rounded_security_24)
-            setColorFilter(android.graphics.Color.WHITE, android.graphics.PorterDuff.Mode.SRC_IN)
-            alpha = 0.3f
-            layoutParams = android.widget.LinearLayout.LayoutParams(iconSize, iconSize)
+        // Composite icon layout
+        val iconContainer = FrameLayout(this).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                (96 * resources.displayMetrics.density).toInt(),
+                (96 * resources.displayMetrics.density).toInt()
+            )
+        }
+
+        val baseIconSize = (80 * resources.displayMetrics.density).toInt()
+        val appRegistrationIcon = ImageView(this).apply {
+            setImageResource(R.drawable.rounded_shield_lock_24)
+            setColorFilter(primaryColor, android.graphics.PorterDuff.Mode.SRC_IN)
+            layoutParams = FrameLayout.LayoutParams(baseIconSize, baseIconSize).apply {
+                gravity = android.view.Gravity.CENTER
+            }
         }
         
-        val textView = android.widget.TextView(this).apply {
-            text = "Locked"
+        val essentialsIconSize = (32 * resources.displayMetrics.density).toInt()
+        val essentialsIconView = ImageView(this).apply {
+            setImageResource(R.mipmap.ic_launcher_round)
+            layoutParams = FrameLayout.LayoutParams(essentialsIconSize, essentialsIconSize).apply {
+                gravity = android.view.Gravity.BOTTOM or android.view.Gravity.END
+            }
+        }
+        
+        iconContainer.addView(appRegistrationIcon)
+        iconContainer.addView(essentialsIconView)
+        
+        val titleView = TextView(this).apply {
+            text = "App is locked"
             setTextColor(android.graphics.Color.WHITE)
-            textSize = 20f
-            alpha = 0.5f
-            setPadding(0, (16 * resources.displayMetrics.density).toInt(), 0, 0)
+            textSize = 22f
+            setPadding(0, (24 * resources.displayMetrics.density).toInt(), 0, 0)
             gravity = android.view.Gravity.CENTER
         }
         
-        root.addView(iconView)
-        root.addView(textView)
+        val subtextView = TextView(this).apply {
+            text = "Please authenticate to unlock or \ngive the phone to the owner \n( -_-)"
+            setTextColor(android.graphics.Color.WHITE)
+            textSize = 14f
+            alpha = 0.6f
+            setPadding((48 * resources.displayMetrics.density).toInt(), (8 * resources.displayMetrics.density).toInt(), (48 * resources.displayMetrics.density).toInt(), 0)
+            gravity = android.view.Gravity.CENTER
+        }
+        
+        root.addView(iconContainer)
+        root.addView(titleView)
+        root.addView(subtextView)
         setContentView(root)
         
         packageToLock = intent.getStringExtra("package_to_lock")
         if (packageToLock == null) {
             finish()
             return
+        }
+
+        val appLabel = try {
+            val appInfo = packageManager.getApplicationInfo(packageToLock!!, 0)
+            packageManager.getApplicationLabel(appInfo).toString()
+        } catch (e: Exception) {
+            packageToLock
         }
 
         executor = ContextCompat.getMainExecutor(this)
@@ -82,7 +139,7 @@ class AppLockActivity : FragmentActivity() {
 
         promptInfo = BiometricPrompt.PromptInfo.Builder()
             .setTitle("App Lock")
-            .setSubtitle("Unlock to access $packageToLock")
+            .setSubtitle("Unlock to access $appLabel")
             .setAllowedAuthenticators(androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG or androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL)
             .build()
 

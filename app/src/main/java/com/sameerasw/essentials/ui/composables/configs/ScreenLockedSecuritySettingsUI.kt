@@ -17,6 +17,8 @@ import com.sameerasw.essentials.ui.components.cards.IconToggleItem
 import com.sameerasw.essentials.ui.components.containers.RoundedCardContainer
 import com.sameerasw.essentials.ui.modifiers.highlight
 import com.sameerasw.essentials.viewmodels.MainViewModel
+import com.sameerasw.essentials.utils.BiometricHelper
+import androidx.fragment.app.FragmentActivity
 
 @Composable
 fun ScreenLockedSecuritySettingsUI(
@@ -49,7 +51,16 @@ fun ScreenLockedSecuritySettingsUI(
                 title = "Screen locked security",
                 isChecked = viewModel.isScreenLockedSecurityEnabled.value,
                 onCheckedChange = { isChecked ->
-                    viewModel.setScreenLockedSecurityEnabled(isChecked, context)
+                    if (context is FragmentActivity) {
+                        BiometricHelper.showBiometricPrompt(
+                            activity = context,
+                            title = "Screen Locked Security",
+                            subtitle = if (isChecked) "Authenticate to enable screen locked security" else "Authenticate to disable screen locked security",
+                            onSuccess = { viewModel.setScreenLockedSecurityEnabled(isChecked, context) }
+                        )
+                    } else {
+                        viewModel.setScreenLockedSecurityEnabled(isChecked, context)
+                    }
                 },
                 enabled = isAccessibilityEnabled && viewModel.isWriteSecureSettingsEnabled.value && viewModel.isDeviceAdminEnabled.value,
                 onDisabledClick = {
