@@ -20,7 +20,7 @@ class BubblesTileService : BaseTileService() {
         return checkCallingOrSelfPermission(android.Manifest.permission.WRITE_SECURE_SETTINGS) == android.content.pm.PackageManager.PERMISSION_GRANTED
     }
 
-    override fun getTileIcon(): Icon? {
+    override fun getTileIcon(): Icon {
         return Icon.createWithResource(this, R.drawable.rounded_bubble_24)
     }
 

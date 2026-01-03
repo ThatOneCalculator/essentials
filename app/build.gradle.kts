@@ -21,7 +21,7 @@ android {
 
     defaultConfig {
         applicationId = "com.sameerasw.essentials"
-        minSdk = 23
+        minSdk = 24
         targetSdk = 36
         versionCode = 12
         versionName = "7.3"
