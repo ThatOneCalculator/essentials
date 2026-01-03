@@ -4,7 +4,6 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.provider.Settings
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -12,9 +11,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
@@ -24,7 +26,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -37,12 +38,8 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import com.sameerasw.essentials.domain.model.Feature
+import androidx.core.net.toUri
 import com.sameerasw.essentials.FeatureRegistry
 import com.sameerasw.essentials.FeatureSettingsActivity
 import com.sameerasw.essentials.PermissionRegistry
@@ -51,13 +48,9 @@ import com.sameerasw.essentials.ui.components.cards.FeatureCard
 import com.sameerasw.essentials.ui.components.containers.RoundedCardContainer
 import com.sameerasw.essentials.ui.components.sheets.PermissionItem
 import com.sameerasw.essentials.ui.components.sheets.PermissionsBottomSheet
-import com.sameerasw.essentials.ui.theme.EssentialsTheme
 import com.sameerasw.essentials.viewmodels.MainViewModel
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
-private val previewMainViewModel = MainViewModel()
 private const val FEATURE_MAPS_POWER_SAVING = "Maps power saving mode"
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
@@ -70,20 +63,15 @@ fun SetupFeatures(
 ) {
     val isAccessibilityEnabled by viewModel.isAccessibilityEnabled
     val isWriteSecureSettingsEnabled by viewModel.isWriteSecureSettingsEnabled
-    val isWidgetEnabled by viewModel.isWidgetEnabled
-    val isStatusBarIconControlEnabled by viewModel.isStatusBarIconControlEnabled
-    val isCaffeinateActive by viewModel.isCaffeinateActive
     val isShizukuAvailable by viewModel.isShizukuAvailable
     val isShizukuPermissionGranted by viewModel.isShizukuPermissionGranted
     val isNotificationListenerEnabled by viewModel.isNotificationListenerEnabled
-    val isMapsPowerSavingEnabled by viewModel.isMapsPowerSavingEnabled
-    val isEdgeLightingEnabled by viewModel.isEdgeLightingEnabled
     val isOverlayPermissionGranted by viewModel.isOverlayPermissionGranted
     val isEdgeLightingAccessibilityEnabled by viewModel.isEdgeLightingAccessibilityEnabled
-    val isButtonRemapEnabled = viewModel.isButtonRemapEnabled.value
-    val isDynamicNightLightEnabled = viewModel.isDynamicNightLightEnabled.value
-    val isPixelImsEnabled = viewModel.isPixelImsEnabled.value
-    val isScreenLockedSecurityEnabled = viewModel.isScreenLockedSecurityEnabled.value
+    viewModel.isButtonRemapEnabled.value
+    viewModel.isDynamicNightLightEnabled.value
+    viewModel.isPixelImsEnabled.value
+    viewModel.isScreenLockedSecurityEnabled.value
     val context = LocalContext.current
 
     fun buildMapsPowerSavingPermissionItems(): List<PermissionItem> {
@@ -97,7 +85,8 @@ fun SetupFeatures(
                     dependentFeatures = PermissionRegistry.getFeatures("SHIZUKU"),
                     actionLabel = "Install Shizuku",
                     action = {
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=moe.shizuku.privileged.api"))
+                        val intent = Intent(Intent.ACTION_VIEW,
+                            "https://play.google.com/store/apps/details?id=moe.shizuku.privileged.api".toUri())
                         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                         context.startActivity(intent)
                     },
@@ -125,7 +114,7 @@ fun SetupFeatures(
                     title = "Notification listener",
                     description = "Required to detect when Maps is navigating.",
                     dependentFeatures = PermissionRegistry.getFeatures("NOTIFICATION_LISTENER"),
-                    actionLabel = if (isNotificationListenerEnabled) "Permission granted" else "Grant listener",
+                    actionLabel = "Grant listener",
                     action = { viewModel.requestNotificationListenerPermission(context) },
                     isGranted = isNotificationListenerEnabled
                 )
@@ -213,7 +202,8 @@ fun SetupFeatures(
                                 dependentFeatures = PermissionRegistry.getFeatures("DRAW_OVERLAYS"),
                                 actionLabel = "Grant Permission",
                                 action = {
-                                    val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:${context.packageName}"))
+                                    val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                        "package:${context.packageName}".toUri())
                                     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                                     context.startActivity(intent)
                                 },
@@ -315,7 +305,8 @@ fun SetupFeatures(
                                 dependentFeatures = PermissionRegistry.getFeatures("SHIZUKU"),
                                 actionLabel = "Install Shizuku",
                                 action = {
-                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=moe.shizuku.privileged.api"))
+                                    val intent = Intent(Intent.ACTION_VIEW,
+                                        "https://play.google.com/store/apps/details?id=moe.shizuku.privileged.api".toUri())
                                     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                                     context.startActivity(intent)
                                 },
@@ -440,7 +431,8 @@ fun SetupFeatures(
                         dependentFeatures = PermissionRegistry.getFeatures("DRAW_OVERLAYS"),
                         actionLabel = "Grant Permission",
                         action = {
-                            val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:${context.packageName}"))
+                            val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                "package:${context.packageName}".toUri())
                             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                             context.startActivity(intent)
                         },

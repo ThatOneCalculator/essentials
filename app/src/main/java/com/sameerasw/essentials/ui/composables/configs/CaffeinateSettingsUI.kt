@@ -24,7 +24,6 @@ import com.sameerasw.essentials.ui.components.cards.IconToggleItem
 import com.sameerasw.essentials.ui.components.sheets.PermissionItem
 import com.sameerasw.essentials.ui.components.sheets.PermissionsBottomSheet
 import com.sameerasw.essentials.ui.components.containers.RoundedCardContainer
-import com.sameerasw.essentials.ui.components.cards.SimpleToggleItem
 import com.sameerasw.essentials.ui.modifiers.highlight
 
 @Composable
@@ -50,7 +49,7 @@ fun CaffeinateSettingsUI(
 
     if (showPermissionSheet) {
         PermissionsBottomSheet(
-            onDismissRequest = { showPermissionSheet = false },
+            onDismissRequest = { },
             featureTitle = "Show Notification",
             permissions = listOf(
                 PermissionItem(
@@ -61,7 +60,6 @@ fun CaffeinateSettingsUI(
                     actionLabel = "Grant Permission",
                     action = {
                         requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                        showPermissionSheet = false
                     },
                     isGranted = viewModel.postNotificationsGranted.value
                 )
@@ -96,7 +94,6 @@ fun CaffeinateSettingsUI(
                 },
                 enabled = viewModel.postNotificationsGranted.value,
                 onDisabledClick = {
-                    showPermissionSheet = true
                 },
                 iconRes = R.drawable.rounded_notifications_unread_24,
                 modifier = Modifier.highlight(highlightSetting == "show_notification")

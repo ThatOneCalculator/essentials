@@ -1,5 +1,6 @@
 package com.sameerasw.essentials.ui.composables.configs
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -8,24 +9,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.sameerasw.essentials.viewmodels.MainViewModel
 import com.sameerasw.essentials.R
 import com.sameerasw.essentials.ui.components.cards.IconToggleItem
 import com.sameerasw.essentials.ui.components.containers.RoundedCardContainer
-import androidx.compose.ui.platform.LocalContext
-import com.sameerasw.essentials.ui.components.sheets.PermissionItem
-import com.sameerasw.essentials.PermissionRegistry
-import android.content.Intent
-import android.provider.Settings
-import android.content.Context
-import android.content.ClipboardManager
-import android.content.ClipData
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
-import androidx.compose.ui.text.font.FontWeight
 import com.sameerasw.essentials.ui.modifiers.highlight
+import com.sameerasw.essentials.viewmodels.MainViewModel
 
 @Composable
 fun ScreenLockedSecuritySettingsUI(
