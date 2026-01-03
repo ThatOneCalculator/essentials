@@ -1,4 +1,4 @@
-name: Telegram Bot
+name: Telegram Dev Bot Pro
 
 on:
   release:
@@ -25,6 +25,10 @@ jobs:
           EVENT="${{ github.event_name }}"
           ACTION="${{ github.event.action }}"
 
+          # Prepare variables
+          TITLE=""
+          MSG=""
+
           if [[ "$EVENT" == "release" || "$EVENT" == "workflow_dispatch" ]]; then
             if [[ "$EVENT" == "workflow_dispatch" ]]; then
               DATA=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/latest)
@@ -38,17 +42,15 @@ jobs:
               URL="${{ github.event.release.html_url }}"
               USER="${{ github.event.release.author.login }}"
             fi
-            echo "title=📦 *RELEASE:* $TAG" >> $GITHUB_OUTPUT
-            echo "msg=**By:** $USER\n\n$BODY\n\n[View on GitHub]($URL)" >> $GITHUB_OUTPUT
+            TITLE="📦 <b>RELEASE: $TAG</b>"
+            MSG="<b>By:</b> $USER%0A%0A$BODY%0A%0A<a href='$URL'>View on GitHub</a>"
 
           elif [[ "$EVENT" == "issues" ]]; then
             STATUS=$([[ "$ACTION" == "opened" ]] && echo "🟢 NEW ISSUE" || echo "🔴 CLOSED ISSUE")
-            LABELS="${{ join(github.event.issue.labels.*.name, ', ') }}"
-            echo "title=$STATUS: ${{ github.event.issue.title }}" >> $GITHUB_OUTPUT
-            echo "msg=**User:** ${{ github.event.issue.user.login }}\n**Labels:** ${LABELS:-none}\n\n${{ github.event.issue.body }}\n\n[View Issue](${{ github.event.issue.html_url }})" >> $GITHUB_OUTPUT
+            TITLE="<b>$STATUS: ${{ github.event.issue.title }}</b>"
+            MSG="<b>User:</b> ${{ github.event.issue.user.login }}%0A%0A${{ github.event.issue.body }}%0A%0A<a href='${{ github.event.issue.html_url }}'>View Issue</a>"
 
           elif [[ "$EVENT" == "pull_request" ]]; then
-            # Check if PR was merged or just closed
             if [[ "$ACTION" == "closed" && "${{ github.event.pull_request.merged }}" == "true" ]]; then
               STATUS="💜 MERGED PR"
             elif [[ "$ACTION" == "closed" ]]; then
@@ -56,9 +58,19 @@ jobs:
             else
               STATUS="🔵 NEW PR"
             fi
-            echo "title=$STATUS: ${{ github.event.pull_request.title }}" >> $GITHUB_OUTPUT
-            echo "msg=**Author:** ${{ github.event.pull_request.user.login }}\n**Changes:** ${{ github.event.pull_request.commits }} commits, +${{ github.event.pull_request.additions }}/-${{ github.event.pull_request.deletions }}\n\n[View PR](${{ github.event.pull_request.html_url }})" >> $GITHUB_OUTPUT
+            TITLE="<b>$STATUS: ${{ github.event.pull_request.title }}</b>"
+            MSG="<b>Author:</b> ${{ github.event.pull_request.user.login }}%0A<b>Changes:</b> ${{ github.event.pull_request.commits }} commits%0A%0A<a href='${{ github.event.pull_request.html_url }}'>View PR</a>"
           fi
+
+          # The Fix: Using a delimiter for multi-line output
+          {
+            echo "title<<EOF"
+            echo "$TITLE"
+            echo "EOF"
+            echo "msg<<EOF"
+            echo "$MSG"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Send to Telegram
         env:
@@ -68,18 +80,23 @@ jobs:
           TITLE: ${{ steps.info.outputs.title }}
           MESSAGE: ${{ steps.info.outputs.msg }}
         run: |
-          # Combining and escaping for JSON
-          TEXT=$(echo -e "$TITLE\n\n$MESSAGE")
+          # Combine Title and Message
+          # We use printf to handle newlines correctly
+          FULL_TEXT=$(printf "$TITLE\n\n$MESSAGE")
           
           jq -n \
             --arg chat_id "$CHAT_ID" \
             --arg thread_id "$TOPIC_ID" \
-            --arg text "$TEXT" \
+            --arg text "$FULL_TEXT" \
             '{
               chat_id: $chat_id, 
               message_thread_id: $thread_id, 
               text: $text, 
-              parse_mode: "Markdown"
+              parse_mode: "HTML",
+              disable_web_page_preview: false
             }' > payload.json
 
-          curl -X POST -H "Content-Type: application/json" -d @payload.json https://api.telegram.org/bot$BOT_TOKEN/sendMessage
+          curl -X POST \
+               -H "Content-Type: application/json" \
+               -d @payload.json \
+               https://api.telegram.org/bot$BOT_TOKEN/sendMessage
