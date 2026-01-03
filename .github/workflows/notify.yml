@@ -16,7 +16,6 @@ jobs:
       - name: Gather and Clean Data
         id: info
         run: |
-          # Fallback values
           CHAT_ID="${{ secrets.TELEGRAM_CHAT_ID }}"
           TOPIC_ID="${{ secrets.TELEGRAM_TOPIC_ID }}"
           echo "final_chat_id=${CHAT_ID:- -1001653455300}" >> $GITHUB_OUTPUT
@@ -37,7 +36,6 @@ jobs:
               URL="${{ github.event.release.html_url }}"
             fi
             
-            # 1. Clean Body: Escape HTML, standardise bullets, remove images/headers
             CLEAN_BODY=$(echo "$RAW_BODY" | \
               sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g' | \
               sed 's/^\* / - /g' | \
@@ -45,11 +43,10 @@ jobs:
               sed 's/^#* //g' | \
               head -c 3000)
 
-            # 2. Build the structured message
             {
               echo "full_message<<EOF"
               echo "🚀 <b>New Release: $REPO $TAG</b>"
-              echo "<a href='$URL'>View Release</a>"
+              echo "<a href='$URL'>View Release Details</a>"
               echo ""
               echo "<b>Release notes:</b>"
               echo "$CLEAN_BODY"
@@ -62,8 +59,7 @@ jobs:
             {
               echo "full_message<<EOF"
               echo "<b>$STATUS: $REPO</b>"
-              echo "Title: ${{ github.event.issue.title }}"
-              echo "<a href='${{ github.event.issue.html_url }}'>View Issue</a>"
+              echo "<a href='${{ github.event.issue.html_url }}'>Issue: ${{ github.event.issue.title }}</a>"
               echo "EOF"
             } >> "$GITHUB_OUTPUT"
 
@@ -73,8 +69,7 @@ jobs:
             {
               echo "full_message<<EOF"
               echo "<b>$STATUS: $REPO</b>"
-              echo "Title: ${{ github.event.pull_request.title }}"
-              echo "<a href='${{ github.event.pull_request.html_url }}'>View PR</a>"
+              echo "<a href='${{ github.event.pull_request.html_url }}'>PR: ${{ github.event.pull_request.title }}</a>"
               echo "EOF"
             } >> "$GITHUB_OUTPUT"
           fi
@@ -95,7 +90,7 @@ jobs:
               message_thread_id: $thread_id, 
               text: $text, 
               parse_mode: "HTML",
-              disable_web_page_preview: true
+              disable_web_page_preview: false
             }' > payload.json
 
           curl -X POST -H "Content-Type: application/json" -d @payload.json https://api.telegram.org/bot$BOT_TOKEN/sendMessage
