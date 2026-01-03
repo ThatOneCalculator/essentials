@@ -6,6 +6,7 @@ import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
 import androidx.annotation.RequiresApi
 import com.sameerasw.essentials.utils.HapticUtil
+import androidx.core.content.edit
 
 @RequiresApi(Build.VERSION_CODES.N)
 abstract class BaseTileService : TileService() {
@@ -39,9 +40,9 @@ abstract class BaseTileService : TileService() {
 
     private fun setTileAddedState(isAdded: Boolean) {
         getSharedPreferences("essentials_prefs", android.content.Context.MODE_PRIVATE)
-            .edit()
-            .putBoolean("${this::class.java.name}_is_added", isAdded)
-            .apply()
+            .edit {
+                putBoolean("${this::class.java.name}_is_added", isAdded)
+            }
     }
 
     override fun onClick() {

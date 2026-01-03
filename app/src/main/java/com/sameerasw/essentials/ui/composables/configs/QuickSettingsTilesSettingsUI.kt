@@ -13,9 +13,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,7 +25,17 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.sameerasw.essentials.R
-import com.sameerasw.essentials.services.*
+import com.sameerasw.essentials.services.AlwaysOnDisplayTileService
+import com.sameerasw.essentials.services.BubblesTileService
+import com.sameerasw.essentials.services.CaffeinateTileService
+import com.sameerasw.essentials.services.DynamicNightLightTileService
+import com.sameerasw.essentials.services.EdgeLightingTileService
+import com.sameerasw.essentials.services.MonoAudioTileService
+import com.sameerasw.essentials.services.PrivateNotificationsTileService
+import com.sameerasw.essentials.services.ScreenLockedSecurityTileService
+import com.sameerasw.essentials.services.SoundModeTileService
+import com.sameerasw.essentials.services.TapToWakeTileService
+import com.sameerasw.essentials.services.UiBlurTileService
 import com.sameerasw.essentials.ui.modifiers.highlight
 
 data class QSTileInfo(
@@ -40,7 +50,7 @@ fun QuickSettingsTilesSettingsUI(
     highlightSetting: String? = null
 ) {
     val context = LocalContext.current
-    val view = LocalView.current
+    LocalView.current
 
     val tiles = listOf(
         QSTileInfo("UI Blur", R.drawable.rounded_blur_on_24, UiBlurTileService::class.java),
@@ -72,7 +82,7 @@ fun QuickSettingsTilesSettingsUI(
                         tile = tile,
                         modifier = Modifier
                             .weight(1f)
-                            .highlight(highlightSetting?.lowercase() == tile.title.lowercase()),
+                            .highlight(highlightSetting.equals(tile.title, ignoreCase = true)),
                         onClick = {
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                                 val statusBarManager = context.getSystemService(StatusBarManager::class.java)

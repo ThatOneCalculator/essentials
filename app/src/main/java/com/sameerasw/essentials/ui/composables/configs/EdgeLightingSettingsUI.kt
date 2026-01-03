@@ -22,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -35,19 +36,19 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import com.sameerasw.essentials.R
 import com.sameerasw.essentials.domain.model.EdgeLightingColorMode
-import com.sameerasw.essentials.ui.components.containers.RoundedCardContainer
+import com.sameerasw.essentials.domain.model.EdgeLightingStyle
 import com.sameerasw.essentials.ui.components.cards.IconToggleItem
+import com.sameerasw.essentials.ui.components.containers.RoundedCardContainer
 import com.sameerasw.essentials.ui.components.pickers.EdgeLightingColorModePicker
+import com.sameerasw.essentials.ui.components.pickers.EdgeLightingStylePicker
+import com.sameerasw.essentials.ui.components.pickers.GlowSidesPicker
+import com.sameerasw.essentials.ui.components.sheets.AppSelectionSheet
 import com.sameerasw.essentials.ui.components.sliders.ConfigSliderItem
-import com.sameerasw.essentials.viewmodels.MainViewModel
+import com.sameerasw.essentials.ui.modifiers.highlight
 import com.sameerasw.essentials.utils.HapticUtil
+import com.sameerasw.essentials.viewmodels.MainViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import com.sameerasw.essentials.ui.components.sheets.AppSelectionSheet
-import com.sameerasw.essentials.ui.components.pickers.EdgeLightingStylePicker
-import com.sameerasw.essentials.domain.model.EdgeLightingStyle
-import com.sameerasw.essentials.ui.components.pickers.GlowSidesPicker
-import com.sameerasw.essentials.ui.modifiers.highlight
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -65,8 +66,8 @@ fun EdgeLightingSettingsUI(
     // Corner radius state
 
     // Corner radius state
-    var cornerRadiusDp by remember { mutableStateOf(viewModel.loadEdgeLightingCornerRadius(context).toFloat()) }
-    var strokeThicknessDp by remember { mutableStateOf(viewModel.loadEdgeLightingStrokeThickness(context).toFloat()) }
+    var cornerRadiusDp by remember { mutableFloatStateOf(viewModel.loadEdgeLightingCornerRadius(context).toFloat()) }
+    var strokeThicknessDp by remember { mutableFloatStateOf(viewModel.loadEdgeLightingStrokeThickness(context).toFloat()) }
     val coroutineScope = rememberCoroutineScope()
 
     // Cleanup overlay when composable is destroyed

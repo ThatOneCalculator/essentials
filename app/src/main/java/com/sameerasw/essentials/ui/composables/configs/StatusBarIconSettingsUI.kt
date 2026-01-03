@@ -10,9 +10,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.Button
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -25,16 +25,17 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.edit
 import com.sameerasw.essentials.R
 import com.sameerasw.essentials.domain.StatusBarIconRegistry
-import com.sameerasw.essentials.viewmodels.StatusBarIconViewModel
+import com.sameerasw.essentials.ui.components.cards.IconToggleItem
+import com.sameerasw.essentials.ui.components.containers.RoundedCardContainer
 import com.sameerasw.essentials.ui.components.pickers.NetworkTypePicker
 import com.sameerasw.essentials.ui.components.sheets.PermissionItem
 import com.sameerasw.essentials.ui.components.sheets.PermissionsBottomSheet
-import com.sameerasw.essentials.ui.components.cards.IconToggleItem
-import com.sameerasw.essentials.ui.components.containers.RoundedCardContainer
-import com.sameerasw.essentials.utils.HapticUtil
 import com.sameerasw.essentials.ui.modifiers.highlight
+import com.sameerasw.essentials.utils.HapticUtil
+import com.sameerasw.essentials.viewmodels.StatusBarIconViewModel
 
 @Composable
 fun StatusBarIconSettingsUI(
@@ -235,10 +236,12 @@ fun StatusBarIconSettingsUI(
                                 "essentials_prefs",
                                 Context.MODE_PRIVATE
                             )
-                            prefs.edit().putStringSet(
-                                "selected_network_types",
-                                selectedTypes.map { it.name }.toSet()
-                            ).apply()
+                            prefs.edit {
+                                putStringSet(
+                                    "selected_network_types",
+                                    selectedTypes.map { it.name }.toSet()
+                                )
+                            }
                         }
                     )
                 }

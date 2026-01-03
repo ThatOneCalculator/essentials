@@ -5,8 +5,6 @@ import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
 import androidx.annotation.RequiresPermission
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalView
 
 /**
  * Provides haptic feedback based on the given type.
@@ -46,14 +44,6 @@ fun performHapticFeedback(
             }
         }
 
-    }
-}
-
-@Composable
-fun rememberHapticFeedback(feedbackType: HapticFeedbackType): () -> Unit {
-    val view = LocalView.current
-    return {
-        view.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
     }
 }
 
