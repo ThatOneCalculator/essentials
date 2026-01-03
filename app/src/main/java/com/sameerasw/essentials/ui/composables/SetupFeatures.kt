@@ -687,14 +687,26 @@ fun SetupFeatures(
                             isEnabled = true,
                             onToggle = {},
                             onClick = {
-                                context.startActivity(
-                                    Intent(context, FeatureSettingsActivity::class.java).apply {
-                                        putExtra("feature", result.featureKey)
-                                        result.targetSettingHighlightKey?.let {
-                                            putExtra("highlight_setting", it)
+                                val action = {
+                                    context.startActivity(
+                                        Intent(context, FeatureSettingsActivity::class.java).apply {
+                                            putExtra("feature", result.featureKey)
+                                            result.targetSettingHighlightKey?.let {
+                                                putExtra("highlight_setting", it)
+                                            }
                                         }
-                                    }
-                                )
+                                    )
+                                }
+                                if (result.category == "Security and Privacy" && context is FragmentActivity) {
+                                    BiometricHelper.showBiometricPrompt(
+                                        activity = context,
+                                        title = "${result.title} Settings",
+                                        subtitle = "Authenticate to access settings",
+                                        onSuccess = action
+                                    )
+                                } else {
+                                    action()
+                                }
                             },
                             iconRes = result.icon ?: R.drawable.rounded_settings_24,
                             modifier = Modifier.padding(horizontal = 0.dp, vertical = 0.dp),
