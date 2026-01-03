@@ -37,6 +37,6 @@ class MonoAudioTileService : BaseTileService() {
     }
 
     private fun isMonoAudioEnabled(): Boolean {
-        return Settings.System.getInt(contentResolver, "master_mono", 1) == 1
+        return Settings.System.getInt(contentResolver, "master_mono", 0) == 1
     }
 }
