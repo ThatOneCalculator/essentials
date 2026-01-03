@@ -38,6 +38,7 @@ Essential tools, mods and workarounds for Pixels and other Androids
 - **Pixel IMS**: Force enable VoLTE, VoWiFi and other IMS features on Pixel devices without root.
 - **Screen Locked Security**: Protect your device by disabling sensitive Quick Settings tiles and power menu when the device is locked.
 - **Backups**: (Experimental) Export and import your app settings.
+- **App Lock**: To protect apps with biometrics
 
 ### Visuals
 
@@ -63,7 +64,7 @@ A collection of useful tiles to toggle system settings:
 
 # Requirements
 
-- Android 6.0 or higher (Feature support may vary)
+- Android 7.0 or higher (Feature support may vary)
 - App permissions are optional, Grant necessary permissions for each feature
 - Targetted for Google Pixel devices
 - Tested on Google Pixel 7 (Android 16 beta program)
