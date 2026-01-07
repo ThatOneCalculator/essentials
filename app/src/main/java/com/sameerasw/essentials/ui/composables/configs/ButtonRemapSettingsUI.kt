@@ -225,7 +225,7 @@ fun ButtonRemapSettingsUI(
     // Flashlight Options Bottom Sheet
     if (showFlashlightOptions) {
         ModalBottomSheet(
-            onDismissRequest = { },
+            onDismissRequest = { showFlashlightOptions = false },
             containerColor = MaterialTheme.colorScheme.surfaceContainer
         ) {
             Column(
@@ -254,6 +254,7 @@ fun ButtonRemapSettingsUI(
                 Button(
                     onClick = { 
                         HapticUtil.performVirtualKeyHaptic(view)
+                        showFlashlightOptions = false
                     },
                     modifier = Modifier.fillMaxWidth(),
                     shape = MaterialTheme.shapes.extraLarge
