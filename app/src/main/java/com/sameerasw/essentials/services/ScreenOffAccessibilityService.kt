@@ -50,6 +50,8 @@ class ScreenOffAccessibilityService : AccessibilityService() {
     private var currentTorchId: String? = null
     private var currentIntensityLevel: Int = 1
     private var flashlightJob: Job? = null
+    private var isInternalToggle = false
+
 
 
     private var windowManager: WindowManager? = null
@@ -80,10 +82,39 @@ class ScreenOffAccessibilityService : AccessibilityService() {
             override fun onTorchModeChanged(cameraId: String, enabled: Boolean) {
                 super.onTorchModeChanged(cameraId, enabled)
                 isTorchOn = enabled
+                
+                val prefs = getSharedPreferences("essentials_prefs", MODE_PRIVATE)
+                val isGlobalEnabled = prefs.getBoolean("flashlight_global_enabled", false)
+                val lastIntensity = prefs.getInt("flashlight_last_intensity", 1)
+
                 if (enabled) {
                     currentTorchId = cameraId
-                    // Initialize intensity level when turned on
-                    currentIntensityLevel = com.sameerasw.essentials.utils.FlashlightUtil.getDefaultLevel(this@ScreenOffAccessibilityService, cameraId)
+                    
+                    if (isGlobalEnabled && !isInternalToggle) {
+                        // External trigger - smoothly fade in to last known intensity
+                        Log.d("Flashlight", "Global control detected external ON. Fading in to $lastIntensity")
+                        flashlightJob?.cancel()
+                        flashlightJob = serviceScope.launch {
+                            com.sameerasw.essentials.utils.FlashlightUtil.fadeFlashlight(
+                                this@ScreenOffAccessibilityService,
+                                cameraId,
+                                fromLevel = 1,
+                                toLevel = lastIntensity,
+                                durationMs = 400L,
+                                steps = 20
+                            )
+                        }
+                    } else if (isInternalToggle) {
+                        // Internal trigger - we already handled the job
+                        isInternalToggle = false
+                    } else {
+                        // Normal mode or no global - sync level
+                        currentIntensityLevel = com.sameerasw.essentials.utils.FlashlightUtil.getDefaultLevel(this@ScreenOffAccessibilityService, cameraId)
+                    }
+                } else {
+                    // Flashlight turned OFF
+                    flashlightJob?.cancel() // Stop any ongoing fade-in or fade-out
+                    isInternalToggle = false // Reset
                 }
             }
         }
@@ -557,8 +588,9 @@ class ScreenOffAccessibilityService : AccessibilityService() {
         val prefs = getSharedPreferences("essentials_prefs", MODE_PRIVATE)
         val isButtonRemapEnabled = prefs.getBoolean("button_remap_enabled", false)
         val isAdjustEnabled = prefs.getBoolean("flashlight_adjust_intensity_enabled", false)
+        val isGlobalEnabled = prefs.getBoolean("flashlight_global_enabled", false)
 
-        if (isTorchOn && isAdjustEnabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        if (isTorchOn && (isAdjustEnabled || isGlobalEnabled) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (event.action == KeyEvent.ACTION_DOWN) {
                 if (event.repeatCount == 0) {
                     isLongPressTriggered = false
@@ -659,6 +691,16 @@ class ScreenOffAccessibilityService : AccessibilityService() {
             
             Log.d("Flashlight", "Smoothly adjusting intensity to $targetLevel (from $currentSystemLevel)")
             
+            // Sync local state
+            currentIntensityLevel = targetLevel
+            
+            val prefs = getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE)
+            // Persist the level if global is enabled
+            if (prefs.getBoolean("flashlight_global_enabled", false)) {
+                prefs.edit().putInt("flashlight_last_intensity", targetLevel).apply()
+            }
+            
+            // Cancel any ongoing adjustment or toggle fade
             flashlightJob?.cancel()
             flashlightJob = serviceScope.launch {
                 com.sameerasw.essentials.utils.FlashlightUtil.fadeFlashlight(
@@ -670,6 +712,7 @@ class ScreenOffAccessibilityService : AccessibilityService() {
                     steps = 5
                 )
             }
+
 
             
             // Give stronger feedback if we just reached the limit
@@ -774,22 +817,34 @@ class ScreenOffAccessibilityService : AccessibilityService() {
                 if (isFadeEnabled && com.sameerasw.essentials.utils.FlashlightUtil.isIntensitySupported(this, finalCameraId)) {
                     val targetState = !isTorchOn
                     if (targetState) {
-                        currentIntensityLevel = defaultLevel
+                        currentIntensityLevel = if (prefs.getBoolean("flashlight_global_enabled", false)) {
+                            prefs.getInt("flashlight_last_intensity", defaultLevel)
+                        } else {
+                            defaultLevel
+                        }
                     }
+                    isInternalToggle = true
                     flashlightJob?.cancel()
                     flashlightJob = serviceScope.launch {
                         com.sameerasw.essentials.utils.FlashlightUtil.fadeFlashlight(
                             this@ScreenOffAccessibilityService,
                             finalCameraId,
                             targetState,
-                            maxLevel = if (targetState) defaultLevel else currentIntensityLevel
+                            maxLevel = currentIntensityLevel
                         )
                     }
                 } else {
+                    isInternalToggle = true
                     flashlightJob?.cancel()
                     cameraManager.setTorchMode(finalCameraId, !isTorchOn)
-                    currentIntensityLevel = defaultLevel
+                    currentIntensityLevel = if (prefs.getBoolean("flashlight_global_enabled", false)) {
+                        prefs.getInt("flashlight_last_intensity", defaultLevel)
+                    } else {
+                        defaultLevel
+                    }
                 }
+
+
 
                 triggerHapticFeedback()
             } else {

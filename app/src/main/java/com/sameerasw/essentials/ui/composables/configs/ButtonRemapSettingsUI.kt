@@ -10,10 +10,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.magnifier
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -232,30 +234,51 @@ fun ButtonRemapSettingsUI(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 32.dp, start = 16.dp, end = 16.dp, top = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
+
                 Text(
-                    text = "Flashlight Options",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 8.dp)
+                    text = "Flashlight Intensity",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 8.dp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 
-                RoundedCardContainer(spacing = 0.dp) {
+                RoundedCardContainer(spacing = 2.dp) {
                     IconToggleItem(
-                        iconRes = R.drawable.rounded_flashlight_on_24,
+                        iconRes = R.drawable.rounded_blur_on_24,
                         title = "Fade in and out",
                         description = "Smoothly toggle flashlight",
                         isChecked = viewModel.isFlashlightFadeEnabled.value,
                         onCheckedChange = { viewModel.setFlashlightFadeEnabled(it, context) }
                     )
                     IconToggleItem(
-                        iconRes = R.drawable.rounded_flashlight_on_24,
+                        iconRes = R.drawable.rounded_globe_24,
+                        title = "Global controls",
+                        description = "Fade-in flashlight globally",
+                        isChecked = viewModel.isFlashlightGlobalEnabled.value,
+                        onCheckedChange = { viewModel.setFlashlightGlobalEnabled(it, context) }
+                    )
+
+                    IconToggleItem(
+                        iconRes = R.drawable.rounded_upcoming_24,
                         title = "Adjust intensity",
                         description = "Volume + - adjusts flashlight intensity",
                         isChecked = viewModel.isFlashlightAdjustEnabled.value,
                         onCheckedChange = { viewModel.setFlashlightAdjustEnabled(it, context) }
                     )
+                }
+
+
+                Text(
+                    text = "Other",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                
+                RoundedCardContainer(spacing = 2.dp) {
 
                     IconToggleItem(
                         iconRes = R.drawable.rounded_flashlight_on_24,
@@ -271,7 +294,7 @@ fun ButtonRemapSettingsUI(
                         HapticUtil.performVirtualKeyHaptic(view)
                         showFlashlightOptions = false
                     },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                     shape = MaterialTheme.shapes.extraLarge
                 ) {
                     Text("Done")
