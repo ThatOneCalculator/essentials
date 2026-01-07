@@ -215,7 +215,7 @@ class ScreenOffAccessibilityService : AccessibilityService() {
             val intent = Intent().apply {
                 component = ComponentName(this@ScreenOffAccessibilityService, "com.sameerasw.essentials.AppLockActivity")
                 putExtra("package_to_lock", packageName)
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_ANIMATION
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_MULTIPLE_TASK or Intent.FLAG_ACTIVITY_NO_ANIMATION
             }
             startActivity(intent)
         }
