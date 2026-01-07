@@ -41,6 +41,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.Job
 
 
 class ScreenOffAccessibilityService : AccessibilityService() {
@@ -48,6 +49,8 @@ class ScreenOffAccessibilityService : AccessibilityService() {
     private val serviceScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     private var currentTorchId: String? = null
     private var currentIntensityLevel: Int = 1
+    private var flashlightJob: Job? = null
+
 
     private var windowManager: WindowManager? = null
     private val overlayViews = mutableListOf<View>()
@@ -648,17 +651,29 @@ class ScreenOffAccessibilityService : AccessibilityService() {
                 return
             }
 
-            if (increase) {
-                currentIntensityLevel = (currentSystemLevel + step).coerceAtMost(maxLevel)
+            val targetLevel = if (increase) {
+                (currentSystemLevel + step).coerceAtMost(maxLevel)
             } else {
-                currentIntensityLevel = (currentSystemLevel - step).coerceAtLeast(1)
+                (currentSystemLevel - step).coerceAtLeast(1)
             }
             
-            Log.d("Flashlight", "Adjusting intensity to $currentIntensityLevel (system was $currentSystemLevel, max $maxLevel, step $step)")
-            cameraManager.turnOnTorchWithStrengthLevel(cameraId, currentIntensityLevel)
+            Log.d("Flashlight", "Smoothly adjusting intensity to $targetLevel (from $currentSystemLevel)")
+            
+            flashlightJob?.cancel()
+            flashlightJob = serviceScope.launch {
+                com.sameerasw.essentials.utils.FlashlightUtil.fadeFlashlight(
+                    this@ScreenOffAccessibilityService,
+                    cameraId,
+                    fromLevel = currentSystemLevel,
+                    toLevel = targetLevel,
+                    durationMs = 150L,
+                    steps = 5
+                )
+            }
+
             
             // Give stronger feedback if we just reached the limit
-            if (currentIntensityLevel == maxLevel || currentIntensityLevel == 1) {
+            if (targetLevel == maxLevel || targetLevel == 1) {
                 triggerHapticFeedback(specificType = com.sameerasw.essentials.utils.HapticFeedbackType.DOUBLE)
             } else {
                 triggerHapticFeedback(specificType = com.sameerasw.essentials.utils.HapticFeedbackType.SUBTLE)
@@ -761,7 +776,8 @@ class ScreenOffAccessibilityService : AccessibilityService() {
                     if (targetState) {
                         currentIntensityLevel = defaultLevel
                     }
-                    serviceScope.launch {
+                    flashlightJob?.cancel()
+                    flashlightJob = serviceScope.launch {
                         com.sameerasw.essentials.utils.FlashlightUtil.fadeFlashlight(
                             this@ScreenOffAccessibilityService,
                             finalCameraId,
@@ -770,9 +786,11 @@ class ScreenOffAccessibilityService : AccessibilityService() {
                         )
                     }
                 } else {
+                    flashlightJob?.cancel()
                     cameraManager.setTorchMode(finalCameraId, !isTorchOn)
                     currentIntensityLevel = defaultLevel
                 }
+
                 triggerHapticFeedback()
             } else {
 

@@ -56,7 +56,51 @@ object FlashlightUtil {
     }
 
     /**
-     * Smoothly transitions the flashlight intensity.
+     * Smoothly transitions the flashlight intensity between two levels.
+     * Level 0 means the torch is OFF.
+     */
+    suspend fun fadeFlashlight(
+        context: Context,
+        cameraId: String,
+        fromLevel: Int,
+        toLevel: Int,
+        durationMs: Long = 250L,
+        steps: Int = 10
+    ) {
+        Log.d(TAG, "fadeFlashlight: from=$fromLevel, to=$toLevel, duration=${durationMs}ms, steps=$steps")
+        val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+        
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            cameraManager.setTorchMode(cameraId, toLevel > 0)
+            return
+        }
+
+        val delayPerStep = durationMs / steps
+        try {
+            for (i in 1..steps) {
+                val level = fromLevel + ((toLevel - fromLevel) * i / steps)
+                if (level > 0) {
+                    cameraManager.turnOnTorchWithStrengthLevel(cameraId, level)
+                } else if (i == steps) {
+                    // Final step and target is 0, so turn off
+                    cameraManager.setTorchMode(cameraId, false)
+                }
+                delay(delayPerStep)
+            }
+            
+            if (toLevel > 0) {
+                cameraManager.turnOnTorchWithStrengthLevel(cameraId, toLevel)
+            } else {
+                cameraManager.setTorchMode(cameraId, false)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error during flashlight fade", e)
+            cameraManager.setTorchMode(cameraId, toLevel > 0)
+        }
+    }
+
+    /**
+     * Legacy wrapper for backward compatibility or simpler calls.
      */
     suspend fun fadeFlashlight(
         context: Context,
@@ -66,41 +110,9 @@ object FlashlightUtil {
         durationMs: Long = 400L,
         steps: Int = 20
     ) {
-        Log.d(TAG, "fadeFlashlight: targetOn=$targetOn, maxLevel=$maxLevel, steps=$steps")
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU || maxLevel <= 1) {
-            Log.d(TAG, "Intensity not supported, basic toggle")
-            val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
-            cameraManager.setTorchMode(cameraId, targetOn)
-            return
-        }
-
-        val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
-        val delayPerStep = durationMs / steps
-
-        try {
-            if (targetOn) {
-                // Fade In
-                for (i in 1..steps) {
-                    val level = (maxLevel * i) / steps
-                    val finalLevel = if (level < 1) 1 else level
-                    cameraManager.turnOnTorchWithStrengthLevel(cameraId, finalLevel)
-                    delay(delayPerStep)
-                }
-            } else {
-                // Fade Out
-                for (i in steps downTo 1) {
-                    val level = (maxLevel * i) / steps
-                    if (level < 1) break
-                    cameraManager.turnOnTorchWithStrengthLevel(cameraId, level)
-                    delay(delayPerStep)
-                }
-                cameraManager.setTorchMode(cameraId, false)
-            }
-            Log.d(TAG, "fadeFlashlight completed")
-        } catch (e: Exception) {
-            Log.e(TAG, "Error during flashlight fade", e)
-            cameraManager.setTorchMode(cameraId, targetOn)
-        }
+        val currentLevel = if (targetOn) 0 else getCurrentLevel(context, cameraId)
+        val targetLevel = if (targetOn) maxLevel else 0
+        fadeFlashlight(context, cameraId, currentLevel, targetLevel, durationMs, steps)
     }
 
 }
