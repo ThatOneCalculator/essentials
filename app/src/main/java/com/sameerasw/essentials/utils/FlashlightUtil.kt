@@ -45,6 +45,16 @@ object FlashlightUtil {
         }
     }
 
+    fun getCurrentLevel(context: Context, cameraId: String): Int {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return 1
+        val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+        return try {
+            cameraManager.getTorchStrengthLevel(cameraId)
+        } catch (e: Exception) {
+            1
+        }
+    }
+
     /**
      * Smoothly transitions the flashlight intensity.
      */

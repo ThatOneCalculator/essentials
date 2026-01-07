@@ -46,6 +46,8 @@ import kotlinx.coroutines.cancel
 class ScreenOffAccessibilityService : AccessibilityService() {
 
     private val serviceScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+    private var currentTorchId: String? = null
+    private var currentIntensityLevel: Int = 1
 
     private var windowManager: WindowManager? = null
     private val overlayViews = mutableListOf<View>()
@@ -75,6 +77,11 @@ class ScreenOffAccessibilityService : AccessibilityService() {
             override fun onTorchModeChanged(cameraId: String, enabled: Boolean) {
                 super.onTorchModeChanged(cameraId, enabled)
                 isTorchOn = enabled
+                if (enabled) {
+                    currentTorchId = cameraId
+                    // Initialize intensity level when turned on
+                    currentIntensityLevel = com.sameerasw.essentials.utils.FlashlightUtil.getDefaultLevel(this@ScreenOffAccessibilityService, cameraId)
+                }
             }
         }
 
@@ -139,10 +146,12 @@ class ScreenOffAccessibilityService : AccessibilityService() {
         try { unregisterReceiver(screenReceiver) } catch (_: Exception) {}
         val cameraManager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
         torchCallback.let { cameraManager.unregisterTorchCallback(it) }
+        currentTorchId = null
         restoreAnimationScale()
         removeOverlay()
         serviceScope.cancel()
         super.onDestroy()
+
 
 
     }
@@ -537,39 +546,58 @@ class ScreenOffAccessibilityService : AccessibilityService() {
     }
 
     override fun onKeyEvent(event: KeyEvent): Boolean {
-        if (event.keyCode != KeyEvent.KEYCODE_VOLUME_UP && event.keyCode != KeyEvent.KEYCODE_VOLUME_DOWN) {
+        val keyCode = event.keyCode
+        if (keyCode != KeyEvent.KEYCODE_VOLUME_UP && keyCode != KeyEvent.KEYCODE_VOLUME_DOWN) {
             return super.onKeyEvent(event)
         }
 
         val prefs = getSharedPreferences("essentials_prefs", MODE_PRIVATE)
-        val isEnabled = prefs.getBoolean("button_remap_enabled", false)
-        if (!isEnabled) return super.onKeyEvent(event)
+        val isButtonRemapEnabled = prefs.getBoolean("button_remap_enabled", false)
+        val isAdjustEnabled = prefs.getBoolean("flashlight_adjust_intensity_enabled", false)
+
+        if (isTorchOn && isAdjustEnabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (event.action == KeyEvent.ACTION_DOWN) {
+                if (event.repeatCount == 0) {
+                    isLongPressTriggered = false
+                    lastPressedKeyCode = keyCode
+                    // We still allow long press to turn off the flashlight
+                    lastPendingAction = "Toggle flashlight" 
+                    handler.postDelayed(longPressRunnable, longPressTimeout)
+                }
+                return true
+            } else if (event.action == KeyEvent.ACTION_UP) {
+                handler.removeCallbacks(longPressRunnable)
+                if (!isLongPressTriggered) {
+                    adjustFlashlightIntensity(keyCode == KeyEvent.KEYCODE_VOLUME_UP)
+                }
+                return true
+            }
+        }
+
+        if (!isButtonRemapEnabled) return super.onKeyEvent(event)
 
         val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
-        val isScreenOn =
-            powerManager.isInteractive
+        val isScreenOn = powerManager.isInteractive
 
         val actionKeySuffix = if (isScreenOn) "_on" else "_off"
-        val actionKey = if (event.keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+        val actionKey = if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
             "button_remap_vol_up_action$actionKeySuffix"
         } else {
             "button_remap_vol_down_action$actionKeySuffix"
         }
         
         val action = prefs.getString(actionKey, "None") ?: "None"
-        
         val isAlwaysTurnOffEnabled = prefs.getBoolean("flashlight_always_turn_off_enabled", false)
         
-        // Check if the pressed button is assigned to flashlight in ANY state (screen on or off)
+        // Check if the pressed button is assigned to flashlight in ANY state
         val isVolUpFlashlight = prefs.getString("button_remap_vol_up_action_off", "None") == "Toggle flashlight" ||
                                 prefs.getString("button_remap_vol_up_action_on", "None") == "Toggle flashlight"
         val isVolDownFlashlight = prefs.getString("button_remap_vol_down_action_off", "None") == "Toggle flashlight" ||
                                   prefs.getString("button_remap_vol_down_action_on", "None") == "Toggle flashlight"
         
-        val isFlashlightCapableButton = (event.keyCode == KeyEvent.KEYCODE_VOLUME_UP && isVolUpFlashlight) ||
-                                       (event.keyCode == KeyEvent.KEYCODE_VOLUME_DOWN && isVolDownFlashlight)
+        val isFlashlightCapableButton = (keyCode == KeyEvent.KEYCODE_VOLUME_UP && isVolUpFlashlight) ||
+                                       (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN && isVolDownFlashlight)
 
-        // Always prioritize turning OFF flashlight if it's already ON and the setting is enabled
         var finalAction = action
         if (isTorchOn && isAlwaysTurnOffEnabled && isFlashlightCapableButton) {
             finalAction = "Toggle flashlight"
@@ -577,32 +605,55 @@ class ScreenOffAccessibilityService : AccessibilityService() {
 
         if (finalAction == "None") return super.onKeyEvent(event)
 
-        // Intercept if screen is off, OR if an action is assigned to this button while screen is on.
-        // The override above ensures that if flashlight turn-off is needed, it will have an action and thus be intercepted.
-        val shouldIntercept = true
-
-        if (shouldIntercept) {
-            if (event.action == KeyEvent.ACTION_DOWN) {
-                if (event.repeatCount == 0) {
-                    lastPressedKeyCode = event.keyCode
-                    lastPendingAction = finalAction
-                    isLongPressTriggered = false
-                    handler.postDelayed(longPressRunnable, longPressTimeout)
-                }
-                return true // Consume event
-            } else if (event.action == KeyEvent.ACTION_UP) {
-                handler.removeCallbacks(longPressRunnable)
-                if (!isLongPressTriggered) {
-                    // It was a short press, re-simulate the volume button behavior
-                    val am = getSystemService(Context.AUDIO_SERVICE) as AudioManager
-                    val direction = if (event.keyCode == KeyEvent.KEYCODE_VOLUME_UP) AudioManager.ADJUST_RAISE else AudioManager.ADJUST_LOWER
-                    am.adjustStreamVolume(AudioManager.STREAM_MUSIC, direction, AudioManager.FLAG_SHOW_UI)
-                }
-                return true // Consume event
+        if (event.action == KeyEvent.ACTION_DOWN) {
+            if (event.repeatCount == 0) {
+                lastPressedKeyCode = keyCode
+                lastPendingAction = finalAction
+                isLongPressTriggered = false
+                handler.postDelayed(longPressRunnable, longPressTimeout)
             }
+            return true
+        } else if (event.action == KeyEvent.ACTION_UP) {
+            handler.removeCallbacks(longPressRunnable)
+            if (!isLongPressTriggered) {
+                // Short press - re-simulate volume behavior
+                val am = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                val direction = if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) AudioManager.ADJUST_RAISE else AudioManager.ADJUST_LOWER
+                am.adjustStreamVolume(AudioManager.STREAM_MUSIC, direction, AudioManager.FLAG_SHOW_UI)
+            }
+            return true
         }
         
         return super.onKeyEvent(event)
+    }
+
+    private fun adjustFlashlightIntensity(increase: Boolean) {
+        val cameraId = currentTorchId ?: return
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+
+        try {
+            val cameraManager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
+            val maxLevel = com.sameerasw.essentials.utils.FlashlightUtil.getMaxLevel(this, cameraId)
+            
+            // Try to get current system level to stay in sync
+            val currentSystemLevel = com.sameerasw.essentials.utils.FlashlightUtil.getCurrentLevel(this, cameraId)
+            
+            val step = maxOf(1, maxLevel / 5)
+            
+            if (increase) {
+                currentIntensityLevel = (currentSystemLevel + step).coerceAtMost(maxLevel)
+            } else {
+                currentIntensityLevel = (currentSystemLevel - step).coerceAtLeast(1)
+            }
+            
+            Log.d("Flashlight", "Adjusting intensity to $currentIntensityLevel (system was $currentSystemLevel, max $maxLevel, step $step)")
+            cameraManager.turnOnTorchWithStrengthLevel(cameraId, currentIntensityLevel)
+            
+            // Subtle haptic feedback for adjustment
+            triggerHapticFeedback(specificType = com.sameerasw.essentials.utils.HapticFeedbackType.SUBTLE)
+        } catch (e: Exception) {
+            Log.e("Flashlight", "Error adjusting intensity", e)
+        }
     }
 
     private fun handleLongPress(action: String) {
@@ -689,20 +740,30 @@ class ScreenOffAccessibilityService : AccessibilityService() {
 
             if (targetCameraId != null) {
                 val finalCameraId = targetCameraId
+                currentTorchId = finalCameraId
+                val maxLevel = com.sameerasw.essentials.utils.FlashlightUtil.getMaxLevel(this, finalCameraId)
+                val defaultLevel = com.sameerasw.essentials.utils.FlashlightUtil.getDefaultLevel(this, finalCameraId)
+                
                 if (isFadeEnabled && com.sameerasw.essentials.utils.FlashlightUtil.isIntensitySupported(this, finalCameraId)) {
                     val targetState = !isTorchOn
+                    if (targetState) {
+                        currentIntensityLevel = defaultLevel
+                    }
                     serviceScope.launch {
                         com.sameerasw.essentials.utils.FlashlightUtil.fadeFlashlight(
                             this@ScreenOffAccessibilityService,
                             finalCameraId,
-                            targetState
+                            targetState,
+                            maxLevel = if (targetState) defaultLevel else currentIntensityLevel
                         )
                     }
                 } else {
                     cameraManager.setTorchMode(finalCameraId, !isTorchOn)
+                    currentIntensityLevel = defaultLevel
                 }
                 triggerHapticFeedback()
             } else {
+
                 Log.w("Flashlight", "No camera with flash found")
             }
         } catch (e: Exception) {

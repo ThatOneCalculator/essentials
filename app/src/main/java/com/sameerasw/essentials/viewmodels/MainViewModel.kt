@@ -73,6 +73,8 @@ class MainViewModel : ViewModel() {
     val isSnoozeChargingEnabled = mutableStateOf(false)
     val isFlashlightAlwaysTurnOffEnabled = mutableStateOf(false)
     val isFlashlightFadeEnabled = mutableStateOf(false)
+    val isFlashlightAdjustEnabled = mutableStateOf(false)
+
 
 
     val isScreenLockedSecurityEnabled = mutableStateOf(false)
@@ -191,6 +193,8 @@ class MainViewModel : ViewModel() {
         isSnoozeChargingEnabled.value = prefs.getBoolean("snooze_charging_enabled", false)
         isFlashlightAlwaysTurnOffEnabled.value = prefs.getBoolean("flashlight_always_turn_off_enabled", false)
         isFlashlightFadeEnabled.value = prefs.getBoolean("flashlight_fade_enabled", false)
+        isFlashlightAdjustEnabled.value = prefs.getBoolean("flashlight_adjust_intensity_enabled", false)
+
 
 
         isScreenLockedSecurityEnabled.value = prefs.getBoolean("screen_locked_security_enabled", false)
@@ -844,6 +848,14 @@ class MainViewModel : ViewModel() {
             putBoolean("flashlight_fade_enabled", enabled)
         }
     }
+
+    fun setFlashlightAdjustEnabled(enabled: Boolean, context: Context) {
+        isFlashlightAdjustEnabled.value = enabled
+        context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
+            putBoolean("flashlight_adjust_intensity_enabled", enabled)
+        }
+    }
+
 
 
 

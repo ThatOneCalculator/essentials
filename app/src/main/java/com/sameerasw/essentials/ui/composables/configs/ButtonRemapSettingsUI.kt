@@ -251,6 +251,14 @@ fun ButtonRemapSettingsUI(
                     )
                     IconToggleItem(
                         iconRes = R.drawable.rounded_flashlight_on_24,
+                        title = "Adjust intensity",
+                        description = "Volume + - adjusts flashlight intensity",
+                        isChecked = viewModel.isFlashlightAdjustEnabled.value,
+                        onCheckedChange = { viewModel.setFlashlightAdjustEnabled(it, context) }
+                    )
+
+                    IconToggleItem(
+                        iconRes = R.drawable.rounded_flashlight_on_24,
                         title = "Always turn off flashlight",
                         description = "Even while display is on",
                         isChecked = viewModel.isFlashlightAlwaysTurnOffEnabled.value,
