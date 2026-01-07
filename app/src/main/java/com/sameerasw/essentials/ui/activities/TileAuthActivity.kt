@@ -19,7 +19,7 @@ class TileAuthActivity : FragmentActivity() {
         // This activity should only be launched if we need to authenticate
         val feature = intent.getStringExtra("feature_pref_key")
         
-        if (feature == "screen_locked_security_enabled") {
+        if (feature != null) {
             val title = intent.getStringExtra("auth_title") ?: "Authentication Required"
             val subtitle = intent.getStringExtra("auth_subtitle") ?: "Confirm your identity"
             

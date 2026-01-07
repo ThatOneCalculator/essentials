@@ -271,6 +271,16 @@
             </intent-filter>
         </service>
         <service
+            android:name=".services.AppLockTileService"
+            android:exported="true"
+            android:icon="@drawable/rounded_shield_lock_24"
+            android:label="App Lock"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+        <service
             android:name=".services.EdgeLightingService"
             android:exported="false"
             android:foregroundServiceType="specialUse" />

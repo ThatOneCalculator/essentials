@@ -63,6 +63,7 @@ fun QuickSettingsTilesSettingsUI(
         QSTileInfo("Edge Lighting", R.drawable.rounded_blur_linear_24, EdgeLightingTileService::class.java),
         QSTileInfo("Dynamic Night Light", R.drawable.rounded_nightlight_24, DynamicNightLightTileService::class.java),
         QSTileInfo("Locked Security", R.drawable.rounded_security_24, ScreenLockedSecurityTileService::class.java),
+        QSTileInfo("App Lock", R.drawable.rounded_shield_lock_24, com.sameerasw.essentials.services.AppLockTileService::class.java),
         QSTileInfo("Mono Audio", R.drawable.rounded_headphones_24, MonoAudioTileService::class.java)
     )
 
