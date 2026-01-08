@@ -39,6 +39,7 @@ import com.sameerasw.essentials.utils.PermissionUtils
 import com.sameerasw.essentials.utils.ShizukuUtils
 import com.sameerasw.essentials.utils.UpdateNotificationHelper
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.net.URL
@@ -984,10 +985,11 @@ class MainViewModel : ViewModel() {
                     return@launch
                 }
                 
-                val allApps = AppUtil.getInstalledApps(context)
-                val merged = AppUtil.mergeWithSavedApps(allApps, selections)
-                // Only keep apps that are in the selection list
-                val pickedPkgNames = selections.map { it.packageName }.toSet()
+                // Efficiently load only the apps that are actually marked as secondary selected (picked)
+                val pickedPkgNames = selections.map { it.packageName }
+                val relevantApps = AppUtil.getAppsByPackageNames(context, pickedPkgNames)
+                
+                val merged = AppUtil.mergeWithSavedApps(relevantApps, selections)
                 val currentExcluded = freezeAutoExcludedApps.value
                 
                 // Cleanup: remove package names that are no longer picked
@@ -1001,8 +1003,7 @@ class MainViewModel : ViewModel() {
                         .apply()
                 }
                 
-                freezePickedApps.value = merged.filter { pickedPkgNames.contains(it.packageName) }
-                    .map { it.copy(isEnabled = !filteredExcluded.contains(it.packageName)) }
+                freezePickedApps.value = merged.map { it.copy(isEnabled = !filteredExcluded.contains(it.packageName)) }
                     .sortedBy { it.appName.lowercase() }
             } finally {
                 isFreezePickedAppsLoading.value = false
@@ -1031,6 +1032,23 @@ class MainViewModel : ViewModel() {
     fun unfreezeAllManual(context: Context) {
         viewModelScope.launch(Dispatchers.IO) {
             com.sameerasw.essentials.utils.FreezeManager.unfreezeAllManual(context)
+        }
+    }
+
+    fun launchAndUnfreezeApp(context: Context, packageName: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val isFrozen = com.sameerasw.essentials.utils.FreezeManager.isAppFrozen(context, packageName)
+            if (isFrozen) {
+                com.sameerasw.essentials.utils.FreezeManager.unfreezeApp(packageName)
+                // Small delay to ensure system registers the change before launch
+                delay(100)
+            }
+            
+            val launchIntent = context.packageManager.getLaunchIntentForPackage(packageName)
+            if (launchIntent != null) {
+                launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(launchIntent)
+            }
         }
     }
 

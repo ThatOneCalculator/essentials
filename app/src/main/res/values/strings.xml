@@ -2,4 +2,8 @@
     <string name="app_name">Essentials</string>
     <string name="accessibility_service_description">Allows the app to turn off the screen via widget.</string>
     <string name="app_icon">App icon</string>
+    <string name="freeze_activity_title">App Freezing</string>
+    <string name="freeze_activity_subtitle">Disable apps that are rarely used</string>
+    <string name="freeze_shortcut_short_label">App Freezing</string>
+    <string name="freeze_shortcut_long_label">Open App Freezing</string>
 </resources>

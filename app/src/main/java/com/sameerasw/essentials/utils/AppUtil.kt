@@ -67,6 +67,39 @@ object AppUtil {
         }
     }
 
+/**
+ * Get specific apps by package names (more efficient for picked lists)
+ */
+suspend fun getAppsByPackageNames(context: Context, packageNames: List<String>): List<NotificationApp> = withContext(Dispatchers.IO) {
+    try {
+        val pm = context.packageManager
+        val apps = packageNames.mapNotNull { packageName ->
+            try {
+                val appInfo = pm.getApplicationInfo(packageName, 0)
+                val flags = appInfo.flags
+                val isSystemApp = (flags and ApplicationInfo.FLAG_SYSTEM) != 0 &&
+                                 (flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) == 0
+
+                NotificationApp(
+                    packageName = appInfo.packageName,
+                    appName = pm.getApplicationLabel(appInfo).toString(),
+                    isEnabled = false,
+                    icon = pm.getApplicationIcon(appInfo),
+                    isSystemApp = isSystemApp,
+                    lastUpdated = System.currentTimeMillis()
+                )
+            } catch (e: Exception) {
+                Log.w(TAG, "Error loading app $packageName: ${e.message}")
+                null
+            }
+        }
+        apps.sortedBy { it.appName.lowercase() }
+    } catch (e: Exception) {
+        Log.e(TAG, "Error getting apps by package name: ${e.message}")
+        emptyList()
+    }
+}
+
     /**
      * Merge installed apps with saved app selections, keeping user settings and adding new apps
      */

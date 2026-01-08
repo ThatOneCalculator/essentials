@@ -236,7 +236,7 @@ object FeatureRegistry {
 
         object : Feature(
             id = "Freeze",
-            title = "Freeze",
+            title = "Freeze β",
             iconRes = R.drawable.rounded_mode_cool_24,
             category = "Tools",
             description = "Disable apps to save battery",

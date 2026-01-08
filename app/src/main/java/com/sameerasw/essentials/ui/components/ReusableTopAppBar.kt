@@ -3,6 +3,7 @@ package com.sameerasw.essentials.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -42,7 +43,8 @@ fun ReusableTopAppBar(
     onUpdateClick: (() -> Unit)? = null,
     hasUpdateAvailable: Boolean = false,
     scrollBehavior: TopAppBarScrollBehavior? = null,
-    subtitle: String? = null
+    subtitle: String? = null,
+    actions: @Composable RowScope.() -> Unit = {}
 ) {
     val collapsedFraction = scrollBehavior?.state?.collapsedFraction ?: 0f
     collapsedFraction > 0.5f
@@ -103,6 +105,8 @@ fun ReusableTopAppBar(
             }
         },
         actions = {
+            actions()
+            
             if (hasUpdateAvailable) {
                 val view = LocalView.current
                 IconButton(
@@ -149,7 +153,7 @@ fun ReusableTopAppBar(
                     modifier = Modifier.size(48.dp)
                 ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.ic_stat_name),
+                        painter = painterResource(id = R.drawable.rounded_settings_24),
                         contentDescription = "Settings",
                         modifier = Modifier.size(32.dp)
                     )
