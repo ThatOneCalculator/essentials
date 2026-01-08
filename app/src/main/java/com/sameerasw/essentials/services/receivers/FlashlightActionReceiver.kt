@@ -11,6 +11,8 @@ class FlashlightActionReceiver : BroadcastReceiver() {
         const val ACTION_DECREASE = "com.sameerasw.essentials.ACTION_FLASHLIGHT_DECREASE"
         const val ACTION_OFF = "com.sameerasw.essentials.ACTION_FLASHLIGHT_OFF"
         const val ACTION_TOGGLE = "com.sameerasw.essentials.ACTION_FLASHLIGHT_TOGGLE"
+        const val ACTION_SET_INTENSITY = "com.sameerasw.essentials.ACTION_SET_INTENSITY"
+        const val EXTRA_INTENSITY = "intensity"
     }
 
     override fun onReceive(context: Context, intent: Intent) {
@@ -19,6 +21,9 @@ class FlashlightActionReceiver : BroadcastReceiver() {
         
         val serviceIntent = Intent(context, com.sameerasw.essentials.services.ScreenOffAccessibilityService::class.java).apply {
             this.action = action
+            if (intent.hasExtra(EXTRA_INTENSITY)) {
+                putExtra(EXTRA_INTENSITY, intent.getIntExtra(EXTRA_INTENSITY, 1))
+            }
         }
         context.startService(serviceIntent)
     }

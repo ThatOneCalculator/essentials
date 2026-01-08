@@ -51,6 +51,7 @@ import com.sameerasw.essentials.services.receivers.FlashlightActionReceiver
 import android.app.Notification
 import android.graphics.Color
 import android.graphics.drawable.Icon
+import com.sameerasw.essentials.utils.FlashlightUtil
 
 
 class ScreenOffAccessibilityService : AccessibilityService() {
@@ -60,6 +61,7 @@ class ScreenOffAccessibilityService : AccessibilityService() {
     private var currentIntensityLevel: Int = 1
     private var flashlightJob: Job? = null
     private var isInternalToggle = false
+    private val cameraManager by lazy { getSystemService(Context.CAMERA_SERVICE) as CameraManager }
     
     private val NOTIFICATION_ID_FLASHLIGHT = 1001
     private val CHANNEL_ID_FLASHLIGHT = "flashlight_live_update"
@@ -94,6 +96,7 @@ class ScreenOffAccessibilityService : AccessibilityService() {
             override fun onTorchModeChanged(cameraId: String, enabled: Boolean) {
                 super.onTorchModeChanged(cameraId, enabled)
                 isTorchOn = enabled
+                currentTorchId = cameraId
                 
                 val prefs = getSharedPreferences("essentials_prefs", MODE_PRIVATE)
                 val isGlobalEnabled = prefs.getBoolean("flashlight_global_enabled", false)
@@ -486,6 +489,25 @@ class ScreenOffAccessibilityService : AccessibilityService() {
             }
             FlashlightActionReceiver.ACTION_TOGGLE -> {
                 toggleFlashlight()
+            }
+            FlashlightActionReceiver.ACTION_SET_INTENSITY -> {
+                val level = intent.getIntExtra(FlashlightActionReceiver.EXTRA_INTENSITY, 1)
+                currentIntensityLevel = level
+                if (!isTorchOn) {
+                    toggleFlashlight(overrideIntensity = level)
+                } else {
+                    currentTorchId?.let { id ->
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && 
+                            FlashlightUtil.isIntensitySupported(this, id)) {
+                            try {
+                                cameraManager.turnOnTorchWithStrengthLevel(id, level)
+                                updateFlashlightNotification(level)
+                            } catch (e: Exception) {
+                                Log.e("Flashlight", "Error setting intensity level", e)
+                            }
+                        }
+                    }
+                }
             }
         }
         return super.onStartCommand(intent, flags, startId)
@@ -932,13 +954,12 @@ class ScreenOffAccessibilityService : AccessibilityService() {
         }
     }
 
-    private fun toggleFlashlight() {
+    private fun toggleFlashlight(overrideIntensity: Int? = null) {
         Log.d("Flashlight", "Toggling flashlight, current state: $isTorchOn")
         val prefs = getSharedPreferences("essentials_prefs", MODE_PRIVATE)
         val isFadeEnabled = prefs.getBoolean("flashlight_fade_enabled", false)
 
         try {
-            val cameraManager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
             var targetCameraId: String? = null
 
             for (id in cameraManager.cameraIdList) {
@@ -971,7 +992,7 @@ class ScreenOffAccessibilityService : AccessibilityService() {
                 if (isFadeEnabled && com.sameerasw.essentials.utils.FlashlightUtil.isIntensitySupported(this, finalCameraId)) {
                     val targetState = !isTorchOn
                     if (targetState) {
-                        currentIntensityLevel = if (prefs.getBoolean("flashlight_global_enabled", false)) {
+                        currentIntensityLevel = overrideIntensity ?: if (prefs.getBoolean("flashlight_global_enabled", false)) {
                             prefs.getInt("flashlight_last_intensity", defaultLevel)
                         } else {
                             defaultLevel
@@ -996,7 +1017,7 @@ class ScreenOffAccessibilityService : AccessibilityService() {
                     isInternalToggle = true
                     flashlightJob?.cancel()
                     cameraManager.setTorchMode(finalCameraId, !isTorchOn)
-                    currentIntensityLevel = if (prefs.getBoolean("flashlight_global_enabled", false)) {
+                    currentIntensityLevel = overrideIntensity ?: if (prefs.getBoolean("flashlight_global_enabled", false)) {
                         prefs.getInt("flashlight_last_intensity", defaultLevel)
                     } else {
                         defaultLevel

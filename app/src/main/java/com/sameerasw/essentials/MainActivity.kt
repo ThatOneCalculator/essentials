@@ -124,9 +124,16 @@ class MainActivity : FragmentActivity() {
             Log.d("MainActivity", "QS_TILE_PREFERENCES received, component: ${componentName?.className}")
             if (componentName?.className == "com.sameerasw.essentials.services.SoundModeTileService") {
                 Log.d("MainActivity", "Launching volume panel")
-                // Launch the volume settings panel
                 val volumeIntent = Intent("android.settings.panel.action.VOLUME")
                 startActivity(volumeIntent)
+                finish()
+                return
+            }
+            if (componentName?.className == "com.sameerasw.essentials.services.FlashlightTileService") {
+                val intensityIntent = Intent(this, com.sameerasw.essentials.ui.activities.FlashlightIntensityActivity::class.java).apply {
+                    putExtra("android.intent.extra.COMPONENT_NAME", componentName)
+                }
+                startActivity(intensityIntent)
                 finish()
                 return
             }
@@ -217,9 +224,16 @@ class MainActivity : FragmentActivity() {
             Log.d("MainActivity", "QS_TILE_PREFERENCES received in onNewIntent, component: ${componentName?.className}")
             if (componentName?.className == "com.sameerasw.essentials.services.SoundModeTileService") {
                 Log.d("MainActivity", "Launching volume panel from onNewIntent")
-                // Launch the volume settings panel
                 val volumeIntent = Intent("android.settings.panel.action.VOLUME")
                 startActivity(volumeIntent)
+                finish()
+                return
+            }
+            if (componentName?.className == "com.sameerasw.essentials.services.FlashlightTileService") {
+                val intensityIntent = Intent(this, com.sameerasw.essentials.ui.activities.FlashlightIntensityActivity::class.java).apply {
+                    putExtra("android.intent.extra.COMPONENT_NAME", componentName)
+                }
+                startActivity(intensityIntent)
                 finish()
                 return
             }
