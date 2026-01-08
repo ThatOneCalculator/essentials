@@ -134,6 +134,7 @@
             android:label="@string/frozen_app_shortcut_label"
             android:excludeFromRecents="true"
             android:noHistory="true"
+            android:taskAffinity=""
             android:theme="@style/Theme.Essentials.Translucent">
             <intent-filter>
                 <action android:name="android.intent.action.CREATE_SHORTCUT" />
