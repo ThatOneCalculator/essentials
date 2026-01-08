@@ -15,10 +15,16 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.material3.ToggleFloatingActionButtonDefaults.animateIcon
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,6 +41,10 @@ import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -70,6 +80,7 @@ class AppFreezingActivity : ComponentActivity() {
                 val viewModel: MainViewModel = viewModel()
                 val pickedApps by viewModel.freezePickedApps
                 val isPickedAppsLoading by viewModel.isFreezePickedAppsLoading
+                val gridState = rememberLazyGridState()
                 val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
                 val frozenStates = remember { mutableStateMapOf<String, Boolean>() }
                 val lifecycleOwner = LocalLifecycleOwner.current
@@ -122,6 +133,13 @@ class AppFreezingActivity : ComponentActivity() {
                                 }
                             }
                         )
+                    },
+                    floatingActionButton = {
+                        ExpandableFreezeFab(
+                            onUnfreezeAll = { viewModel.unfreezeAllApps(context) },
+                            onFreezeAll = { viewModel.freezeAllApps(context) },
+                            onFreezeAutomatic = { viewModel.freezeAutomaticApps(context) }
+                        )
                     }
                 ) { innerPadding ->
                     Box(
@@ -135,7 +153,9 @@ class AppFreezingActivity : ComponentActivity() {
                             }
                         } else if (pickedApps.isEmpty()) {
                             Column(
-                                modifier = Modifier.fillMaxSize().padding(32.dp),
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(32.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.Center
                             ) {
@@ -156,11 +176,13 @@ class AppFreezingActivity : ComponentActivity() {
                         } else {
                             RoundedCardContainer(
                                 modifier = Modifier
-                                    .padding(12.dp)
+                                    .padding(24.dp)
                             ) {
                                 LazyVerticalGrid(
                                     columns = GridCells.Adaptive(minSize = 88.dp),
+                                    state = gridState,
                                     modifier = Modifier.fillMaxSize(),
+                                    contentPadding = PaddingValues(bottom = 88.dp),
                                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                                     verticalArrangement = Arrangement.spacedBy(4.dp)
                                 ) {
@@ -206,7 +228,7 @@ fun AppGridItem(
             onClick() 
         },
         shape = RoundedCornerShape(4.dp),
-        color = MaterialTheme.colorScheme.surfaceContainer,
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(
@@ -267,5 +289,65 @@ fun AppGridItem(
                 color = if (isFrozen) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
             )
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+fun ExpandableFreezeFab(
+    onUnfreezeAll: () -> Unit,
+    onFreezeAll: () -> Unit,
+    onFreezeAutomatic: () -> Unit
+) {
+    var fabMenuExpanded by rememberSaveable { mutableStateOf(false) }
+
+    BackHandler(fabMenuExpanded) { fabMenuExpanded = false }
+
+    FloatingActionButtonMenu(
+        expanded = fabMenuExpanded,
+        button = {
+            ToggleFloatingActionButton(
+                modifier = Modifier
+                    .semantics {
+                        stateDescription = if (fabMenuExpanded) "Expanded" else "Collapsed"
+                        contentDescription = "Toggle menu"
+                    },
+                checked = fabMenuExpanded,
+                onCheckedChange = { fabMenuExpanded = !fabMenuExpanded },
+            ) {
+                Icon(
+                    painter = painterResource(
+                        id = if (checkedProgress > 0.5f) R.drawable.rounded_close_24 else R.drawable.rounded_mode_cool_24
+                    ),
+                    contentDescription = null,
+                    modifier = Modifier.animateIcon({ checkedProgress }),
+                )
+            }
+        },
+    ) {
+        FloatingActionButtonMenuItem(
+            onClick = {
+                fabMenuExpanded = false
+                onFreezeAll()
+            },
+            icon = { Icon(painterResource(id = R.drawable.rounded_mode_cool_24), contentDescription = null) },
+            text = { Text(text = "Freeze All") },
+        )
+        FloatingActionButtonMenuItem(
+            onClick = { 
+                fabMenuExpanded = false
+                onUnfreezeAll() 
+            },
+            icon = { Icon(painterResource(id = R.drawable.rounded_mode_cool_off_24), contentDescription = null) },
+            text = { Text(text = "Unfreeze All") },
+        )
+        FloatingActionButtonMenuItem(
+            onClick = { 
+                fabMenuExpanded = false
+                onFreezeAutomatic() 
+            },
+            icon = { Icon(painterResource(id = R.drawable.rounded_nest_farsight_cool_24), contentDescription = null) },
+            text = { Text(text = "Freeze Automatic") },
+        )
     }
 }

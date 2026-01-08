@@ -1052,6 +1052,27 @@ class MainViewModel : ViewModel() {
         }
     }
 
+    fun freezeAllApps(context: Context) {
+        viewModelScope.launch(Dispatchers.IO) {
+            com.sameerasw.essentials.utils.FreezeManager.freezeAllManual(context)
+            refreshFreezePickedApps(context)
+        }
+    }
+
+    fun unfreezeAllApps(context: Context) {
+        viewModelScope.launch(Dispatchers.IO) {
+            com.sameerasw.essentials.utils.FreezeManager.unfreezeAllManual(context)
+            refreshFreezePickedApps(context)
+        }
+    }
+
+    fun freezeAutomaticApps(context: Context) {
+        viewModelScope.launch(Dispatchers.IO) {
+            com.sameerasw.essentials.utils.FreezeManager.freezeAll(context)
+            refreshFreezePickedApps(context)
+        }
+    }
+
     fun setSnoozeDebuggingEnabled(enabled: Boolean, context: Context) {
         isSnoozeDebuggingEnabled.value = enabled
         context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {

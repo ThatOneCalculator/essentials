@@ -67,7 +67,7 @@ fun FreezeSettingsUI(
         Text(
             text = "App Control",
             style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp),
+            modifier = Modifier.padding(start = 16.dp, top = 4.dp, bottom = 8.dp),
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
@@ -122,7 +122,7 @@ fun FreezeSettingsUI(
                     shape = ButtonDefaults.shape
                 ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.rounded_play_arrow_24),
+                        painter = painterResource(id = R.drawable.rounded_mode_cool_off_24),
                         contentDescription = null,
                         modifier = Modifier.size(20.dp)
                     )
@@ -156,7 +156,7 @@ fun FreezeSettingsUI(
                             },
                             leadingIcon = {
                                 Icon(
-                                    painter = painterResource(id = R.drawable.rounded_stop_circle_24),
+                                    painter = painterResource(id = R.drawable.rounded_mode_cool_24),
                                     contentDescription = null,
                                     modifier = Modifier.size(18.dp)
                                 )
@@ -171,7 +171,7 @@ fun FreezeSettingsUI(
                             },
                             leadingIcon = {
                                 Icon(
-                                    painter = painterResource(id = R.drawable.rounded_play_arrow_24),
+                                    painter = painterResource(id = R.drawable.rounded_mode_cool_off_24),
                                     contentDescription = null,
                                     modifier = Modifier.size(18.dp)
                                 )
