@@ -10,6 +10,8 @@ import com.sameerasw.essentials.input.VolumeLongPressDetector
 import com.sameerasw.essentials.input.VolumePressEvent
 import com.sameerasw.essentials.shizuku.ShizukuPermissionHelper
 import com.sameerasw.essentials.shizuku.ShizukuStatus
+import android.view.Display
+import android.view.WindowManager
 import kotlinx.coroutines.*
 
 class InputEventListenerService : Service() {
@@ -100,8 +102,17 @@ class InputEventListenerService : Service() {
 
             launch {
                 detector?.events?.collect { event ->
+                    val powerManager = getSystemService(android.content.Context.POWER_SERVICE) as android.os.PowerManager
+                    val isScreenInteractive = try { powerManager.isInteractive } catch(e: Exception) { false }
+                    val isAod = isAodShowing()
+                    
+                    // Only process volume events if screen is fully off (not interactive AND not AOD)
+                    if (isScreenInteractive || isAod) {
+                        return@collect
+                    }
+
                     if (event is VolumePressEvent.LongPress) {
-                        Log.i("InputEventListener", "⭐ LONG PRESS: ${event.direction}")
+                        Log.i("InputEventListener", "# LONG PRESS: ${event.direction}")
                         sendBroadcast(Intent(ACTION_VOLUME_LONG_PRESSED).apply {
                             putExtra(EXTRA_DIRECTION, event.direction.name)
                             putExtra(EXTRA_DURATION_MS, event.durationMs)
@@ -179,6 +190,16 @@ class InputEventListenerService : Service() {
         detector?.stopListening()
         scope?.cancel()
         super.onDestroy()
+    }
+
+    private fun isAodShowing(): Boolean {
+        return if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT_WATCH) {
+            val windowManager = getSystemService(android.content.Context.WINDOW_SERVICE) as android.view.WindowManager
+            val display = windowManager.defaultDisplay
+            display.state == Display.STATE_DOZE || display.state == Display.STATE_DOZE_SUSPEND
+        } else {
+            false
+        }
     }
 
     override fun onBind(intent: Intent?): IBinder? = null

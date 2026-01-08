@@ -11,6 +11,7 @@ import com.sameerasw.essentials.utils.performHapticFeedback
 import com.sameerasw.essentials.domain.model.NotificationLightingColorMode
 import com.sameerasw.essentials.domain.model.NotificationLightingStyle
 import com.sameerasw.essentials.domain.model.NotificationLightingSide
+import android.view.Display
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.IntentFilter
@@ -795,15 +796,19 @@ class ScreenOffAccessibilityService : AccessibilityService(), SensorEventListene
         val isAdjustEnabled = prefs.getBoolean("flashlight_adjust_intensity_enabled", false)
         val isGlobalEnabled = prefs.getBoolean("flashlight_global_enabled", false)
 
-        // If Shizuku method is enabled, skip accessibility event handling for remapping
-        if (isButtonRemapUseShizuku && isButtonRemapEnabled) {
+        val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+        val isScreenInteractive = try { powerManager.isInteractive } catch(e: Exception) { false }
+        val isAod = isAodShowing()
+
+        val shizukuReady = com.sameerasw.essentials.utils.ShizukuUtils.isShizukuAvailable() && 
+                          com.sameerasw.essentials.utils.ShizukuUtils.hasPermission()
+        val devicePathDetected = !prefs.getString("shizuku_detected_device_path", null).isNullOrEmpty()
+
+        if (isButtonRemapUseShizuku && isButtonRemapEnabled && shizukuReady && devicePathDetected && !isScreenInteractive && !isAod) {
              val isTorchControl = isTorchOn && (isAdjustEnabled || isGlobalEnabled) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
              
              // Check user mapping
-             val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
-             val isScreenOn = try { powerManager.isInteractive } catch(e: Exception) { false }
-             val suffix = if (isScreenOn) "_on" else "_off"
-             
+             val suffix = "_off" // Known to be off due to logic above
              val actionKey = if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) "button_remap_vol_up_action$suffix" else "button_remap_vol_down_action$suffix"
              val action = prefs.getString(actionKey, "None")
              val isMapped = action != null && action != "None"
@@ -811,7 +816,6 @@ class ScreenOffAccessibilityService : AccessibilityService(), SensorEventListene
              if (isMapped || isTorchControl) {
                  return true
              }
-             return super.onKeyEvent(event)
         }
 
         if (isTorchOn && (isAdjustEnabled || isGlobalEnabled) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -835,8 +839,7 @@ class ScreenOffAccessibilityService : AccessibilityService(), SensorEventListene
 
         if (!isButtonRemapEnabled) return super.onKeyEvent(event)
 
-        val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
-        val isScreenOn = powerManager.isInteractive
+        val isScreenOn = isScreenInteractive
 
         val actionKeySuffix = if (isScreenOn) "_on" else "_off"
         val actionKey = if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
@@ -1271,11 +1274,19 @@ class ScreenOffAccessibilityService : AccessibilityService(), SensorEventListene
 
                 triggerHapticFeedback()
             } else {
-
                 Log.w("Flashlight", "No camera with flash found")
             }
         } catch (e: Exception) {
             Log.e("Flashlight", "Error toggling flashlight", e)
+        }
+    }
+
+    private fun isAodShowing(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+            val display = (getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay
+            display.state == Display.STATE_DOZE || display.state == Display.STATE_DOZE_SUSPEND
+        } else {
+            false
         }
     }
 
