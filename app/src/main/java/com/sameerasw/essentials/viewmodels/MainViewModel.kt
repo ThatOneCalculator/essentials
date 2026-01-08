@@ -100,6 +100,7 @@ class MainViewModel : ViewModel() {
     val notificationLightingIndicatorY = mutableStateOf(2f)  // 0-100 percentage, default top
     val notificationLightingIndicatorScale = mutableStateOf(1.0f)
     val notificationLightingGlowSides = mutableStateOf(setOf(NotificationLightingSide.LEFT, NotificationLightingSide.RIGHT))
+    val skipPersistentNotifications = mutableStateOf(false)
     val isAppLockEnabled = mutableStateOf(false)
     val isFreezeWhenLockedEnabled = mutableStateOf(false)
     val freezeLockDelayIndex = mutableIntStateOf(1) // Default: 1 minute
@@ -174,6 +175,7 @@ class MainViewModel : ViewModel() {
         isAmbientDisplayEnabled.value = prefs.getBoolean("edge_lighting_ambient_display", false)
         isAmbientShowLockScreenEnabled.value = prefs.getBoolean("edge_lighting_ambient_show_lock_screen", false)
         skipSilentNotifications.value = prefs.getBoolean("edge_lighting_skip_silent", true)
+        skipPersistentNotifications.value = prefs.getBoolean("edge_lighting_skip_persistent", false)
         val styleName = prefs.getString("edge_lighting_style", NotificationLightingStyle.STROKE.name)
         notificationLightingStyle.value = NotificationLightingStyle.valueOf(styleName ?: NotificationLightingStyle.STROKE.name)
         val colorModeName = prefs.getString("edge_lighting_color_mode", NotificationLightingColorMode.SYSTEM.name)
@@ -437,6 +439,13 @@ class MainViewModel : ViewModel() {
         skipSilentNotifications.value = enabled
         context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
             putBoolean("edge_lighting_skip_silent", enabled)
+        }
+    }
+
+    fun setSkipPersistentNotifications(enabled: Boolean, context: Context) {
+        skipPersistentNotifications.value = enabled
+        context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
+            putBoolean("edge_lighting_skip_persistent", enabled)
         }
     }
 

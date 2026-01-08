@@ -94,6 +94,13 @@ class NotificationListener : NotificationListenerService() {
                     }
                 }
             }
+            
+            // Skip persistent notifications if enabled
+            val skipPersistent = prefs.getBoolean("edge_lighting_skip_persistent", false)
+            if (skipPersistent && isPersistentNotification(notification)) {
+                Log.d("NotificationListener", "Skipping notification lighting for persistent notification from $packageName")
+                return
+            }
 
             val enabled = prefs.getBoolean("edge_lighting_enabled", false)
             if (enabled) {

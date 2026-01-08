@@ -99,6 +99,15 @@ fun NotificationLightingSettingsUI(
                 },
                 modifier = Modifier.highlight(highlightSetting == "skip_silent_notifications")
             )
+            IconToggleItem(
+                iconRes = R.drawable.outline_circle_notifications_24,
+                title = "Skip persistent notifications",
+                isChecked = viewModel.skipPersistentNotifications.value,
+                onCheckedChange = { checked ->
+                    viewModel.setSkipPersistentNotifications(checked, context)
+                },
+                modifier = Modifier.highlight(highlightSetting == "skip_persistent_notifications")
+            )
         }
 
 
