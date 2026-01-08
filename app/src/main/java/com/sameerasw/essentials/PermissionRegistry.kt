@@ -30,6 +30,7 @@ fun initPermissionRegistry() {
     // Shizuku permission
     PermissionRegistry.register("SHIZUKU", "Maps power saving mode")
     PermissionRegistry.register("SHIZUKU", "Automatic write secure settings")
+    PermissionRegistry.register("SHIZUKU", "Freeze")
 
     // Notification listener permission
     PermissionRegistry.register("NOTIFICATION_LISTENER", "Maps power saving mode")

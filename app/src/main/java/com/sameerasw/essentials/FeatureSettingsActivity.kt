@@ -101,7 +101,8 @@ class FeatureSettingsActivity : FragmentActivity() {
             "Quick settings tiles" to "All available QS tiles",
             "Button remap" to "Remap hardware buttons",
             "Screen locked security" to "Protect network settings from lock screen",
-            "App lock" to "Secure individual apps with biometrics"
+            "App lock" to "Secure individual apps with biometrics",
+            "Freeze" to "Disable apps to save battery"
         )
         val description = featureDescriptions[feature] ?: ""
         val highlightSetting = intent.getStringExtra("highlight_setting")
@@ -186,6 +187,7 @@ class FeatureSettingsActivity : FragmentActivity() {
                         "Snooze system notifications" -> !isNotificationListenerEnabled
                         "Screen locked security" -> !isAccessibilityEnabled || !isWriteSecureSettingsEnabled || !viewModel.isDeviceAdminEnabled.value
                         "App lock" -> !isAccessibilityEnabled
+                        "Freeze" -> !viewModel.isShizukuAvailable.value || !viewModel.isShizukuPermissionGranted.value
                         else -> false
                     }
                     showPermissionSheet = hasMissingPermissions
@@ -371,6 +373,17 @@ class FeatureSettingsActivity : FragmentActivity() {
                                 isGranted = isAccessibilityEnabled
                             )
                         )
+                        "Freeze" -> listOf(
+                            PermissionItem(
+                                iconRes = R.drawable.rounded_mode_cool_24,
+                                title = "Shizuku Service",
+                                description = "Required to disable/freeze applications",
+                                dependentFeatures = PermissionRegistry.getFeatures("SHIZUKU"),
+                                actionLabel = if (viewModel.isShizukuPermissionGranted.value) "Permission granted" else "Grant Shizuku",
+                                action = { viewModel.requestShizukuPermission() },
+                                isGranted = viewModel.isShizukuPermissionGranted.value
+                            )
+                        )
                         else -> emptyList()
                     }
 
@@ -491,6 +504,13 @@ class FeatureSettingsActivity : FragmentActivity() {
                             "App lock" -> {
                                 AppLockSettingsUI(
                                     viewModel = viewModel,
+                                    highlightKey = highlightSetting
+                                )
+                            }
+                            "Freeze" -> {
+                                com.sameerasw.essentials.ui.composables.configs.FreezeSettingsUI(
+                                    viewModel = viewModel,
+                                    modifier = Modifier.padding(top = 16.dp),
                                     highlightKey = highlightSetting
                                 )
                             }

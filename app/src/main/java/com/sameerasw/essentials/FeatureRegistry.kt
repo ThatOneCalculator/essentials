@@ -232,6 +232,24 @@ object FeatureRegistry {
             override fun isEnabled(viewModel: MainViewModel) = viewModel.isAppLockEnabled.value
             override fun isToggleEnabled(viewModel: MainViewModel, context: Context) = viewModel.isAccessibilityEnabled.value
             override fun onToggle(viewModel: MainViewModel, context: Context, enabled: Boolean) = viewModel.setAppLockEnabled(enabled, context)
+        },
+
+        object : Feature(
+            id = "Freeze",
+            title = "Freeze",
+            iconRes = R.drawable.rounded_mode_cool_24,
+            category = "Tools",
+            description = "Disable apps to save battery",
+            permissionKeys = listOf("SHIZUKU"),
+            searchableSettings = listOf(
+                SearchSetting("Enable Freeze", "Master toggle for app freezing", "freeze_enabled", listOf("disable", "deactivate", "hibernate", "shizuku")),
+                SearchSetting("Select frozen apps", "Choose which apps to freeze", "freeze_selected_apps", listOf("list", "picker", "selection"))
+            )
+        ) {
+            override fun isEnabled(viewModel: MainViewModel) = viewModel.isFreezeEnabled.value
+            override fun isToggleEnabled(viewModel: MainViewModel, context: Context) = 
+                viewModel.isShizukuAvailable.value && viewModel.isShizukuPermissionGranted.value
+            override fun onToggle(viewModel: MainViewModel, context: Context, enabled: Boolean) = viewModel.setFreezeEnabled(enabled, context)
         }
     )
 }
