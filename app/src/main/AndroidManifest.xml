@@ -334,6 +334,28 @@
             android:foregroundServiceType="specialUse" />
 
         <service
+            android:name=".services.AppFreezingTileService"
+            android:icon="@drawable/rounded_mode_cool_24"
+            android:label="@string/app_freezing_tile_label"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".services.FlashlightPulseTileService"
+            android:icon="@drawable/outline_backlight_high_24"
+            android:label="@string/flashlight_pulse_tile_label"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+        <service
             android:name=".services.FlashlightTileService"
             android:exported="true"
             android:icon="@drawable/rounded_flashlight_on_24"

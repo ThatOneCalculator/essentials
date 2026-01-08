@@ -158,7 +158,9 @@ object FeatureRegistry {
                 SearchSetting("Dynamic Night Light", "Night light automation toggle", "Dynamic Night Light", listOf("blue", "filter", "auto", "tile", "qs"), "Quick Settings"),
                 SearchSetting("Locked Security", "Network security on lockscreen toggle", "Locked Security", listOf("wifi", "data", "lock", "tile", "qs"), "Quick Settings"),
                 SearchSetting("Mono Audio", "Force mono audio output toggle", "Mono Audio", listOf("sound", "accessibility", "hear", "tile", "qs"), "Quick Settings"),
-                SearchSetting("Flashlight", "Dedicated flashlight toggle", "Flashlight", listOf("light", "torch", "tile", "qs"), "Quick Settings")
+                SearchSetting("Flashlight", "Dedicated flashlight toggle", "Flashlight", listOf("light", "torch", "tile", "qs"), "Quick Settings"),
+                SearchSetting("App Freezing", "Launch app freezing grid", "App Freezing", listOf("freeze", "shizuku", "tile", "qs"), "Quick Settings"),
+                SearchSetting("Flashlight Pulse", "Toggle notification flashlight pulse", "Flashlight Pulse", listOf("light", "torch", "pulse", "notification", "tile", "qs"), "Quick Settings")
             )
         ) {
             override fun isEnabled(viewModel: MainViewModel) = false

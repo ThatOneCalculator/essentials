@@ -37,6 +37,8 @@ import com.sameerasw.essentials.services.SoundModeTileService
 import com.sameerasw.essentials.services.TapToWakeTileService
 import com.sameerasw.essentials.services.UiBlurTileService
 import com.sameerasw.essentials.services.FlashlightTileService
+import com.sameerasw.essentials.services.AppFreezingTileService
+import com.sameerasw.essentials.services.FlashlightPulseTileService
 import com.sameerasw.essentials.ui.modifiers.highlight
 
 data class QSTileInfo(
@@ -66,7 +68,9 @@ fun QuickSettingsTilesSettingsUI(
         QSTileInfo("Locked Security", R.drawable.rounded_security_24, ScreenLockedSecurityTileService::class.java),
         QSTileInfo("App Lock", R.drawable.rounded_shield_lock_24, com.sameerasw.essentials.services.AppLockTileService::class.java),
         QSTileInfo("Mono Audio", R.drawable.rounded_headphones_24, MonoAudioTileService::class.java),
-        QSTileInfo("Flashlight", R.drawable.rounded_flashlight_on_24, FlashlightTileService::class.java)
+        QSTileInfo("Flashlight", R.drawable.rounded_flashlight_on_24, FlashlightTileService::class.java),
+        QSTileInfo("App Freezing", R.drawable.rounded_mode_cool_24, AppFreezingTileService::class.java),
+        QSTileInfo("Flashlight Pulse", R.drawable.outline_backlight_high_24, FlashlightPulseTileService::class.java)
     )
 
     Column(
