@@ -764,13 +764,13 @@ class ScreenOffAccessibilityService : AccessibilityService() {
                     .setShowWhen(false)
                     .addAction(Notification.Action.Builder(
                         Icon.createWithResource(this, R.drawable.rounded_keyboard_arrow_down_24),
-                        "Decrease", decreaseIntent).build())
+                        "-", decreaseIntent).build())
                     .addAction(Notification.Action.Builder(
                         Icon.createWithResource(this, R.drawable.rounded_power_settings_new_24),
                         "Off", offIntent).build())
                     .addAction(Notification.Action.Builder(
                         Icon.createWithResource(this, R.drawable.rounded_keyboard_arrow_up_24),
-                        "Increase", increaseIntent).build())
+                        "+", increaseIntent).build())
 
                 if (Build.VERSION.SDK_INT >= 36) {
                     try {
@@ -821,9 +821,9 @@ class ScreenOffAccessibilityService : AccessibilityService() {
             .setOnlyAlertOnce(true)
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setCategory(NotificationCompat.CATEGORY_SERVICE)
-            .addAction(R.drawable.rounded_keyboard_arrow_down_24, "Decrease", decreaseIntent)
+            .addAction(R.drawable.rounded_keyboard_arrow_down_24, "-", decreaseIntent)
             .addAction(R.drawable.rounded_power_settings_new_24, "Off", offIntent)
-            .addAction(R.drawable.rounded_keyboard_arrow_up_24, "Increase", increaseIntent)
+            .addAction(R.drawable.rounded_keyboard_arrow_up_24, "+", increaseIntent)
             .addExtras(android.os.Bundle().apply {
                 putBoolean("android.requestPromotedOngoing", true)
                 putString("android.shortCriticalText", "$percentage%")
