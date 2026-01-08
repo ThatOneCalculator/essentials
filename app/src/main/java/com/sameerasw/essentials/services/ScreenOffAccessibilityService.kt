@@ -431,42 +431,59 @@ class ScreenOffAccessibilityService : AccessibilityService() {
 
     @RequiresApi(Build.VERSION_CODES.S)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val action = intent?.action
-        if (action == "LOCK_SCREEN") {
-            triggerHapticFeedback(useWidgetPreference = true)            
-            performGlobalAction(GLOBAL_ACTION_LOCK_SCREEN)
-        } else if (action == "SHOW_EDGE_LIGHTING") {
-            cornerRadiusDp = intent!!.getIntExtra("corner_radius_dp", OverlayHelper.CORNER_RADIUS_DP)
-            strokeThicknessDp = intent.getIntExtra("stroke_thickness_dp", OverlayHelper.STROKE_DP)
-            isPreview = intent.getBooleanExtra("is_preview", false)
-            ignoreScreenState = intent.getBooleanExtra("ignore_screen_state", false)
-            colorMode = EdgeLightingColorMode.valueOf(intent.getStringExtra("color_mode") ?: "SYSTEM")
-            customColor = intent.getIntExtra("custom_color", 0)
-            resolvedColor = if (intent.hasExtra("resolved_color")) intent.getIntExtra("resolved_color", 0) else null
-            pulseCount = intent.getIntExtra("pulse_count", 1)
-            pulseDuration = intent.getLongExtra("pulse_duration", 3000)
-            val styleName = intent.getStringExtra("style")
-            edgeLightingStyle = if (styleName != null) EdgeLightingStyle.valueOf(styleName) else EdgeLightingStyle.STROKE
-            val glowSidesArray = intent.getStringArrayExtra("glow_sides")
-            glowSides = glowSidesArray?.mapNotNull { try { EdgeLightingSide.valueOf(it) } catch(_: Exception) { null } }?.toSet()
-                ?: setOf(EdgeLightingSide.LEFT, EdgeLightingSide.RIGHT)
-            indicatorX = intent.getFloatExtra("indicator_x", 50f)
-            indicatorY = intent.getFloatExtra("indicator_y", 2f)
-            indicatorScale = intent.getFloatExtra("indicator_scale", 1.0f)
-            showEdgeLighting()
-        } else if (action == "APP_AUTHENTICATED") {
-            val packageName = intent!!.getStringExtra("package_name")
-            if (packageName != null) {
-                authenticatedPackages.add(packageName)
+        val action = intent?.action ?: return super.onStartCommand(intent, flags, startId)
+        
+        when (action) {
+            "LOCK_SCREEN" -> {
+                triggerHapticFeedback(useWidgetPreference = true)            
+                performGlobalAction(GLOBAL_ACTION_LOCK_SCREEN)
             }
-        } else if (action == "APP_AUTHENTICATION_FAILED") {
-            performGlobalAction(GLOBAL_ACTION_HOME)
-        } else if (action == FlashlightActionReceiver.ACTION_INCREASE) {
-            adjustFlashlightIntensity(true)
-        } else if (action == FlashlightActionReceiver.ACTION_DECREASE) {
-            adjustFlashlightIntensity(false)
-        } else if (action == FlashlightActionReceiver.ACTION_OFF) {
-            toggleFlashlight()
+            "SHOW_EDGE_LIGHTING" -> {
+                cornerRadiusDp = intent.getIntExtra("corner_radius_dp", OverlayHelper.CORNER_RADIUS_DP)
+                strokeThicknessDp = intent.getIntExtra("stroke_thickness_dp", OverlayHelper.STROKE_DP)
+                isPreview = intent.getBooleanExtra("is_preview", false)
+                ignoreScreenState = intent.getBooleanExtra("ignore_screen_state", false)
+                colorMode = EdgeLightingColorMode.valueOf(intent.getStringExtra("color_mode") ?: "SYSTEM")
+                customColor = intent.getIntExtra("custom_color", 0)
+                resolvedColor = if (intent.hasExtra("resolved_color")) intent.getIntExtra("resolved_color", 0) else null
+                pulseCount = intent.getIntExtra("pulse_count", 1)
+                pulseDuration = intent.getLongExtra("pulse_duration", 3000)
+                val styleName = intent.getStringExtra("style")
+                edgeLightingStyle = if (styleName != null) EdgeLightingStyle.valueOf(styleName) else EdgeLightingStyle.STROKE
+                val glowSidesArray = intent.getStringArrayExtra("glow_sides")
+                glowSides = glowSidesArray?.mapNotNull { try { EdgeLightingSide.valueOf(it) } catch(_: Exception) { null } }?.toSet() 
+                    ?: setOf(EdgeLightingSide.LEFT, EdgeLightingSide.RIGHT)
+                indicatorX = intent.getFloatExtra("indicator_x", 50f)
+                indicatorY = intent.getFloatExtra("indicator_y", 2f)
+                indicatorScale = intent.getFloatExtra("indicator_scale", 1.0f)
+                
+                val removePreview = intent.getBooleanExtra("remove_preview", false)
+                if (removePreview) {
+                    removeOverlay()
+                    return super.onStartCommand(intent, flags, startId)
+                }
+                
+                try {
+                    showEdgeLighting()
+                } catch (e: Exception) {
+                    Log.e("ButtonRemap", "Failed to show edge lighting", e)
+                }
+            }
+            "APP_AUTHENTICATED" -> {
+                intent.getStringExtra("package_name")?.let { authenticatedPackages.add(it) }
+            }
+            "APP_AUTHENTICATION_FAILED" -> {
+                performGlobalAction(GLOBAL_ACTION_HOME)
+            }
+            FlashlightActionReceiver.ACTION_INCREASE -> {
+                adjustFlashlightIntensity(true)
+            }
+            FlashlightActionReceiver.ACTION_DECREASE -> {
+                adjustFlashlightIntensity(false)
+            }
+            FlashlightActionReceiver.ACTION_OFF -> {
+                toggleFlashlight()
+            }
         }
         return super.onStartCommand(intent, flags, startId)
     }
