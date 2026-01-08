@@ -103,6 +103,26 @@ fun EdgeLightingSettingsUI(
                 },
                 modifier = Modifier.highlight(highlightSetting == "skip_silent_notifications")
             )
+            IconToggleItem(
+                iconRes = R.drawable.rounded_flashlight_on_24,
+                title = "Flashlight pulse",
+                isChecked = viewModel.isFlashlightPulseEnabled.value,
+                onCheckedChange = { checked ->
+                    viewModel.setFlashlightPulseEnabled(checked, context)
+                },
+                modifier = Modifier.highlight(highlightSetting == "flashlight_pulse")
+            )
+            if (viewModel.isFlashlightPulseEnabled.value) {
+                IconToggleItem(
+                    iconRes = R.drawable.rounded_keyboard_arrow_down_24,
+                    title = "Only while facing down",
+                    isChecked = viewModel.isFlashlightPulseFacedownOnly.value,
+                    onCheckedChange = { checked ->
+                        viewModel.setFlashlightPulseFacedownOnly(checked, context)
+                    },
+                    modifier = Modifier.highlight(highlightSetting == "flashlight_pulse_facedown")
+                )
+            }
         }
 
         // Style Picker

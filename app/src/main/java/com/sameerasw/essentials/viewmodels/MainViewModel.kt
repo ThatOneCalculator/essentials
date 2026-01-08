@@ -77,6 +77,8 @@ class MainViewModel : ViewModel() {
     val isFlashlightGlobalEnabled = mutableStateOf(false)
     val isFlashlightLiveUpdateEnabled = mutableStateOf(true)
     val flashlightLastIntensity = mutableStateOf(1)
+    val isFlashlightPulseEnabled = mutableStateOf(false)
+    val isFlashlightPulseFacedownOnly = mutableStateOf(true)
 
 
 
@@ -200,6 +202,8 @@ class MainViewModel : ViewModel() {
         isFlashlightGlobalEnabled.value = prefs.getBoolean("flashlight_global_enabled", false)
         isFlashlightLiveUpdateEnabled.value = prefs.getBoolean("flashlight_live_update_enabled", true)
         flashlightLastIntensity.value = prefs.getInt("flashlight_last_intensity", 1)
+        isFlashlightPulseEnabled.value = prefs.getBoolean("flashlight_pulse_enabled", false)
+        isFlashlightPulseFacedownOnly.value = prefs.getBoolean("flashlight_pulse_facedown_only", true)
 
 
 
@@ -478,6 +482,20 @@ class MainViewModel : ViewModel() {
         edgeLightingPulseDuration.value = duration
         context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
             putFloat("edge_lighting_pulse_duration", duration)
+        }
+    }
+
+    fun setFlashlightPulseEnabled(enabled: Boolean, context: Context) {
+        isFlashlightPulseEnabled.value = enabled
+        context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
+            putBoolean("flashlight_pulse_enabled", enabled)
+        }
+    }
+
+    fun setFlashlightPulseFacedownOnly(enabled: Boolean, context: Context) {
+        isFlashlightPulseFacedownOnly.value = enabled
+        context.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE).edit {
+            putBoolean("flashlight_pulse_facedown_only", enabled)
         }
     }
 

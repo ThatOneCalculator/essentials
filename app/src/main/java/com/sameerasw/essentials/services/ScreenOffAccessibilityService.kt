@@ -52,9 +52,13 @@ import android.app.Notification
 import android.graphics.Color
 import android.graphics.drawable.Icon
 import com.sameerasw.essentials.utils.FlashlightUtil
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 
 
-class ScreenOffAccessibilityService : AccessibilityService() {
+class ScreenOffAccessibilityService : AccessibilityService(), SensorEventListener {
 
     private val serviceScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     private var currentTorchId: String? = null
@@ -62,6 +66,9 @@ class ScreenOffAccessibilityService : AccessibilityService() {
     private var flashlightJob: Job? = null
     private var isInternalToggle = false
     private val cameraManager by lazy { getSystemService(Context.CAMERA_SERVICE) as CameraManager }
+    private val sensorManager by lazy { getSystemService(Context.SENSOR_SERVICE) as SensorManager }
+    private var proximitySensor: Sensor? = null
+    private var isProximityBlocked = false
     
     private val NOTIFICATION_ID_FLASHLIGHT = 1001
     private val CHANNEL_ID_FLASHLIGHT = "flashlight_live_update"
@@ -184,6 +191,11 @@ class ScreenOffAccessibilityService : AccessibilityService() {
 
         val cameraManager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
         torchCallback.let { cameraManager.registerTorchCallback(it, handler) }
+
+        proximitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY)
+        proximitySensor?.let {
+            sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_NORMAL)
+        }
     }
 
     override fun onServiceConnected() {
@@ -198,6 +210,7 @@ class ScreenOffAccessibilityService : AccessibilityService() {
         try { unregisterReceiver(screenReceiver) } catch (_: Exception) {}
         val cameraManager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
         torchCallback.let { cameraManager.unregisterTorchCallback(it) }
+        sensorManager.unregisterListener(this)
         currentTorchId = null
         restoreAnimationScale()
         removeOverlay()
@@ -432,6 +445,16 @@ class ScreenOffAccessibilityService : AccessibilityService() {
         // Not used
     }
 
+    override fun onSensorChanged(event: SensorEvent?) {
+        if (event?.sensor?.type == Sensor.TYPE_PROXIMITY) {
+            val distance = event.values[0]
+            val maxRange = event.sensor.maximumRange
+            isProximityBlocked = distance < maxRange && distance < 5f
+        }
+    }
+
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+
     @RequiresApi(Build.VERSION_CODES.S)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val action = intent?.action ?: return super.onStartCommand(intent, flags, startId)
@@ -508,6 +531,9 @@ class ScreenOffAccessibilityService : AccessibilityService() {
                         }
                     }
                 }
+            }
+            FlashlightActionReceiver.ACTION_PULSE_NOTIFICATION -> {
+                pulseFlashlightForNotification()
             }
         }
         return super.onStartCommand(intent, flags, startId)
@@ -830,6 +856,68 @@ class ScreenOffAccessibilityService : AccessibilityService() {
             })
 
         notificationManager.notify(NOTIFICATION_ID_FLASHLIGHT, builder.build())
+    }
+
+    private fun getCameraId(): String? {
+        try {
+            for (id in cameraManager.cameraIdList) {
+                val characteristics = cameraManager.getCameraCharacteristics(id)
+                val hasFlash = characteristics.get(CameraCharacteristics.FLASH_INFO_AVAILABLE) ?: false
+                if (hasFlash) return id
+            }
+        } catch (e: Exception) {
+            Log.e("Flashlight", "Error getting camera ID", e)
+        }
+        return null
+    }
+
+    private fun pulseFlashlightForNotification() {
+        if (isTorchOn) return
+        
+        val prefs = getSharedPreferences("essentials_prefs", MODE_PRIVATE)
+        val pulseEnabled = prefs.getBoolean("flashlight_pulse_enabled", false)
+        if (!pulseEnabled) return
+        
+        val faceDownOnly = prefs.getBoolean("flashlight_pulse_facedown_only", true)
+        if (faceDownOnly && !isProximityBlocked) return
+
+        val cameraId = currentTorchId ?: getCameraId() ?: return
+        
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && 
+            FlashlightUtil.isIntensitySupported(this, cameraId)) {
+                
+                flashlightJob?.cancel()
+                flashlightJob = serviceScope.launch {
+                    val maxLevel = FlashlightUtil.getMaxLevel(this@ScreenOffAccessibilityService, cameraId)
+                    val targetPulseLevel = (maxLevel * 0.2f).toInt().coerceAtLeast(1)
+                    
+                    isInternalToggle = true // To prevent other logic from interfering
+                    
+                    // Fade In
+                    FlashlightUtil.fadeFlashlight(
+                        this@ScreenOffAccessibilityService,
+                        cameraId,
+                        fromLevel = 0,
+                        toLevel = targetPulseLevel,
+                        durationMs = 600L,
+                        steps = 40
+                    )
+                    
+                    kotlinx.coroutines.delay(800L) // Hold
+                    
+                    // Fade Out
+                    FlashlightUtil.fadeFlashlight(
+                        this@ScreenOffAccessibilityService,
+                        cameraId,
+                        fromLevel = targetPulseLevel,
+                        toLevel = 0,
+                        durationMs = 600L,
+                        steps = 40
+                    )
+                    
+                    isInternalToggle = false
+                }
+            }
     }
 
     private fun cancelFlashlightNotification() {

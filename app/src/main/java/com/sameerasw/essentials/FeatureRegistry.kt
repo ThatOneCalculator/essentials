@@ -84,7 +84,9 @@ object FeatureRegistry {
             searchableSettings = listOf(
                 SearchSetting("Edge lighting Style", "Choose between Stroke, Glow, Spinner, and more", "style", listOf("animation", "visual", "look")),
                 SearchSetting("Corner radius", "Adjust the corner radius of the edge lighting", "corner_radius", listOf("round", "shape", "edge")),
-                SearchSetting("Skip silent notifications", "Do not show edge lighting for silent notifications", "skip_silent_notifications", listOf("quiet", "ignore", "filter"))
+                SearchSetting("Skip silent notifications", "Do not show edge lighting for silent notifications", "skip_silent_notifications", listOf("quiet", "ignore", "filter")),
+                SearchSetting("Flashlight pulse", "Slowly pulse flashlight for new notifications", "flashlight_pulse", listOf("light", "torch", "pulse", "notification")),
+                SearchSetting("Only while facing down", "Pulse flashlight only when device is face down", "flashlight_pulse_facedown", listOf("proximity", "sensor", "face", "down"))
             )
         ) {
             override fun isEnabled(viewModel: MainViewModel) = viewModel.isEdgeLightingEnabled.value

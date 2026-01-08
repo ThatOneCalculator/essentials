@@ -12,6 +12,7 @@ class FlashlightActionReceiver : BroadcastReceiver() {
         const val ACTION_OFF = "com.sameerasw.essentials.ACTION_FLASHLIGHT_OFF"
         const val ACTION_TOGGLE = "com.sameerasw.essentials.ACTION_FLASHLIGHT_TOGGLE"
         const val ACTION_SET_INTENSITY = "com.sameerasw.essentials.ACTION_SET_INTENSITY"
+        const val ACTION_PULSE_NOTIFICATION = "com.sameerasw.essentials.ACTION_PULSE_NOTIFICATION"
         const val EXTRA_INTENSITY = "intensity"
     }
 

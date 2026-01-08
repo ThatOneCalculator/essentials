@@ -12,6 +12,7 @@ import androidx.annotation.RequiresApi
 import com.sameerasw.essentials.MapsState
 import com.sameerasw.essentials.domain.model.EdgeLightingColorMode
 import com.sameerasw.essentials.domain.model.EdgeLightingSide
+import com.sameerasw.essentials.services.receivers.FlashlightActionReceiver
 import com.sameerasw.essentials.utils.AppUtil
 
 class NotificationListener : NotificationListenerService() {
@@ -151,6 +152,14 @@ class NotificationListener : NotificationListenerService() {
                         } else {
                             startEdgeLighting()
                         }
+
+                        // Also trigger flashlight pulse if enabled
+                        if (prefs.getBoolean("flashlight_pulse_enabled", false)) {
+                            val pulseIntent = Intent(applicationContext, FlashlightActionReceiver::class.java).apply {
+                                action = FlashlightActionReceiver.ACTION_PULSE_NOTIFICATION
+                            }
+                            applicationContext.sendBroadcast(pulseIntent)
+                        }
                     }
                 }
             }
@@ -237,8 +246,8 @@ class NotificationListener : NotificationListenerService() {
             // If no saved preferences, allow all apps by default
 
             val gson = com.google.gson.Gson()
-            val type = object : com.google.gson.reflect.TypeToken<List<com.sameerasw.essentials.domain.model.NotificationApp>>() {}.type
-            val selectedApps: List<com.sameerasw.essentials.domain.model.NotificationApp> = gson.fromJson(json, type)
+            val type = object : com.google.gson.reflect.TypeToken<List<com.sameerasw.essentials.domain.model.AppSelection>>() {}.type
+            val selectedApps: List<com.sameerasw.essentials.domain.model.AppSelection> = gson.fromJson(json, type)
 
             // Find the app in the saved list
             val app = selectedApps.find { it.packageName == packageName }
