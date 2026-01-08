@@ -36,6 +36,7 @@ import com.sameerasw.essentials.services.ScreenLockedSecurityTileService
 import com.sameerasw.essentials.services.SoundModeTileService
 import com.sameerasw.essentials.services.TapToWakeTileService
 import com.sameerasw.essentials.services.UiBlurTileService
+import com.sameerasw.essentials.services.FlashlightTileService
 import com.sameerasw.essentials.ui.modifiers.highlight
 
 data class QSTileInfo(
@@ -64,7 +65,8 @@ fun QuickSettingsTilesSettingsUI(
         QSTileInfo("Dynamic Night Light", R.drawable.rounded_nightlight_24, DynamicNightLightTileService::class.java),
         QSTileInfo("Locked Security", R.drawable.rounded_security_24, ScreenLockedSecurityTileService::class.java),
         QSTileInfo("App Lock", R.drawable.rounded_shield_lock_24, com.sameerasw.essentials.services.AppLockTileService::class.java),
-        QSTileInfo("Mono Audio", R.drawable.rounded_headphones_24, MonoAudioTileService::class.java)
+        QSTileInfo("Mono Audio", R.drawable.rounded_headphones_24, MonoAudioTileService::class.java),
+        QSTileInfo("Flashlight", R.drawable.rounded_flashlight_on_24, FlashlightTileService::class.java)
     )
 
     Column(

@@ -155,7 +155,8 @@ object FeatureRegistry {
                 SearchSetting("Edge Lighting", "Toggle edge lighting service", "Edge Lighting", listOf("glow", "notification", "led", "tile", "qs"), "Quick Settings"),
                 SearchSetting("Dynamic Night Light", "Night light automation toggle", "Dynamic Night Light", listOf("blue", "filter", "auto", "tile", "qs"), "Quick Settings"),
                 SearchSetting("Locked Security", "Network security on lockscreen toggle", "Locked Security", listOf("wifi", "data", "lock", "tile", "qs"), "Quick Settings"),
-                SearchSetting("Mono Audio", "Force mono audio output toggle", "Mono Audio", listOf("sound", "accessibility", "hear", "tile", "qs"), "Quick Settings")
+                SearchSetting("Mono Audio", "Force mono audio output toggle", "Mono Audio", listOf("sound", "accessibility", "hear", "tile", "qs"), "Quick Settings"),
+                SearchSetting("Flashlight", "Dedicated flashlight toggle", "Flashlight", listOf("light", "torch", "tile", "qs"), "Quick Settings")
             )
         ) {
             override fun isEnabled(viewModel: MainViewModel) = false

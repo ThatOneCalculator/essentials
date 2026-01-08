@@ -10,6 +10,7 @@ class FlashlightActionReceiver : BroadcastReceiver() {
         const val ACTION_INCREASE = "com.sameerasw.essentials.ACTION_FLASHLIGHT_INCREASE"
         const val ACTION_DECREASE = "com.sameerasw.essentials.ACTION_FLASHLIGHT_DECREASE"
         const val ACTION_OFF = "com.sameerasw.essentials.ACTION_FLASHLIGHT_OFF"
+        const val ACTION_TOGGLE = "com.sameerasw.essentials.ACTION_FLASHLIGHT_TOGGLE"
     }
 
     override fun onReceive(context: Context, intent: Intent) {

@@ -482,6 +482,9 @@ class ScreenOffAccessibilityService : AccessibilityService() {
                 adjustFlashlightIntensity(false)
             }
             FlashlightActionReceiver.ACTION_OFF -> {
+                if (isTorchOn) toggleFlashlight()
+            }
+            FlashlightActionReceiver.ACTION_TOGGLE -> {
                 toggleFlashlight()
             }
         }
