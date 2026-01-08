@@ -103,6 +103,21 @@ fun EdgeLightingSettingsUI(
                 },
                 modifier = Modifier.highlight(highlightSetting == "skip_silent_notifications")
             )
+        }
+
+        // Style Picker
+        Text(
+            text = "Flashlight Pulse",
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp),
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        RoundedCardContainer(
+            modifier = Modifier.padding(top = 8.dp),
+            spacing = 2.dp,
+            cornerRadius = 24.dp
+        ) {
             IconToggleItem(
                 iconRes = R.drawable.rounded_flashlight_on_24,
                 title = "Flashlight pulse",
@@ -114,7 +129,7 @@ fun EdgeLightingSettingsUI(
             )
             if (viewModel.isFlashlightPulseEnabled.value) {
                 IconToggleItem(
-                    iconRes = R.drawable.rounded_keyboard_arrow_down_24,
+                    iconRes = R.drawable.rounded_mobile_text_24,
                     title = "Only while facing down",
                     isChecked = viewModel.isFlashlightPulseFacedownOnly.value,
                     onCheckedChange = { checked ->
