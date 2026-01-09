@@ -14,11 +14,11 @@ import com.sameerasw.essentials.R
  */
 data class StatusBarIcon(
     val id: String,
-    val displayName: String,
+    val displayNameRes: Int,
     val blacklistNames: List<String>,
     val defaultVisible: Boolean = true,
     val preferencesKey: String = "icon_${id}_visible",
-    val category: String = "Other",
+    val categoryRes: Int = R.string.status_bar_category_oem_specific,
     val iconRes: Int? = null
 )
 
@@ -28,255 +28,255 @@ data class StatusBarIcon(
  */
 object StatusBarIconRegistry {
 
-    const val CAT_CONNECTIVITY = "Connectivity"
-    const val CAT_PHONE_NETWORK = "Phone & Network"
-    const val CAT_AUDIO_MEDIA = "Audio & Media"
-    const val CAT_SYSTEM_STATUS = "System Status"
-    const val CAT_OEM_SPECIFIC = "OEM Specific"
+    val CAT_CONNECTIVITY = R.string.status_bar_category_connectivity
+    val CAT_PHONE_NETWORK = R.string.status_bar_category_phone_network
+    val CAT_AUDIO_MEDIA = R.string.status_bar_category_audio_media
+    val CAT_SYSTEM_STATUS = R.string.status_bar_category_system_status
+    val CAT_OEM_SPECIFIC = R.string.status_bar_category_oem_specific
 
     // Build the complete list of all supported icons
     val ALL_ICONS = listOf(
         // --- Connectivity ---
         StatusBarIcon(
             id = "wifi",
-            displayName = "WiFi",
+            displayNameRes = R.string.icon_wifi,
             blacklistNames = listOf("wifi", "wifi_oxygen", "wifi_p2p"),
-            category = CAT_CONNECTIVITY,
+            categoryRes = CAT_CONNECTIVITY,
             iconRes = R.drawable.rounded_android_wifi_3_bar_24
         ),
         StatusBarIcon(
             id = "bluetooth",
-            displayName = "Bluetooth",
+            displayNameRes = R.string.icon_bluetooth,
             blacklistNames = listOf("bluetooth", "bluetooth_handsfree_battery", "ble_unlock_mode"),
-            category = CAT_CONNECTIVITY,
+            categoryRes = CAT_CONNECTIVITY,
             iconRes = R.drawable.rounded_bluetooth_24
         ),
         StatusBarIcon(
             id = "nfc",
-            displayName = "NFC / Felica",
+            displayNameRes = R.string.icon_nfc,
             blacklistNames = listOf("nfc", "nfc_on", "nfclock", "felica_lock"),
-            category = CAT_CONNECTIVITY,
+            categoryRes = CAT_CONNECTIVITY,
             iconRes = R.drawable.rounded_nfc_24
         ),
         StatusBarIcon(
             id = "vpn",
-            displayName = "VPN",
+            displayNameRes = R.string.icon_vpn,
             blacklistNames = listOf("vpn"),
-            category = CAT_CONNECTIVITY,
+            categoryRes = CAT_CONNECTIVITY,
             iconRes = R.drawable.rounded_vpn_key_24
         ),
         StatusBarIcon(
             id = "airplane_mode",
-            displayName = "Airplane Mode",
+            displayNameRes = R.string.icon_airplane_mode,
             blacklistNames = listOf("airplane", "airplane_mode"),
-            category = CAT_CONNECTIVITY,
+            categoryRes = CAT_CONNECTIVITY,
             iconRes = R.drawable.rounded_flight_24
         ),
         StatusBarIcon(
             id = "hotspot",
-            displayName = "Hotspot",
+            displayNameRes = R.string.icon_hotspot,
             blacklistNames = listOf("hotspot", "wifi_ap"),
-            category = CAT_CONNECTIVITY,
+            categoryRes = CAT_CONNECTIVITY,
             iconRes = R.drawable.rounded_wifi_tethering_24
         ),
         StatusBarIcon(
             id = "cast",
-            displayName = "Cast",
+            displayNameRes = R.string.icon_cast,
             blacklistNames = listOf("cast"),
-            category = CAT_CONNECTIVITY,
+            categoryRes = CAT_CONNECTIVITY,
             iconRes = R.drawable.rounded_cast_24
         ),
 
         // --- Phone & Network ---
         StatusBarIcon(
             id = "mobile_data",
-            displayName = "Mobile Data",
+            displayNameRes = R.string.icon_mobile_data,
             blacklistNames = listOf("mobile", "data_connection"),
-            category = CAT_PHONE_NETWORK,
+            categoryRes = CAT_PHONE_NETWORK,
             iconRes = R.drawable.rounded_android_cell_dual_4_bar_24
         ),
         StatusBarIcon(
             id = "phone_signal",
-            displayName = "Phone Signal",
+            displayNameRes = R.string.icon_phone_signal,
             blacklistNames = listOf("phone_signal", "phone_signal_second_stub", "phone_evdo_signal", "cdma_eri", "wimax"),
-            category = CAT_PHONE_NETWORK,
+            categoryRes = CAT_PHONE_NETWORK,
             iconRes = R.drawable.rounded_signal_cellular_alt_24
         ),
         StatusBarIcon(
             id = "volte",
-            displayName = "VoLTE / VoNR",
+            displayNameRes = R.string.icon_volte,
             blacklistNames = listOf("volte", "ims_volte", "volte_call", "unicom_call"),
-            category = CAT_PHONE_NETWORK,
+            categoryRes = CAT_PHONE_NETWORK,
             iconRes = R.drawable.rounded_wifi_calling_bar_3_24
         ),
         StatusBarIcon(
             id = "wifi_calling",
-            displayName = "WiFi Calling / VoWiFi",
+            displayNameRes = R.string.icon_wifi_calling,
             blacklistNames = listOf("wifi_calling", "vowifi"),
-            category = CAT_PHONE_NETWORK,
+            categoryRes = CAT_PHONE_NETWORK,
             iconRes = R.drawable.rounded_wifi_calling_bar_3_24
         ),
         StatusBarIcon(
             id = "remote_call",
-            displayName = "Call Status / Sync",
+            displayNameRes = R.string.icon_call_status,
             blacklistNames = listOf("remote_call", "call_record", "answering_memo", "missed_call"),
-            category = CAT_PHONE_NETWORK,
+            categoryRes = CAT_PHONE_NETWORK,
             iconRes = R.drawable.rounded_call_log_24
         ),
         StatusBarIcon(
             id = "tty",
-            displayName = "TTY",
+            displayNameRes = R.string.icon_tty,
             blacklistNames = listOf("tty"),
-            category = CAT_PHONE_NETWORK,
+            categoryRes = CAT_PHONE_NETWORK,
             iconRes = R.drawable.rounded_settings_accessibility_24
         ),
 
         // --- Audio & Media ---
         StatusBarIcon(
             id = "volume",
-            displayName = "Volume",
+            displayNameRes = R.string.icon_volume,
             blacklistNames = listOf("volume", "mute", "quiet"),
-            category = CAT_AUDIO_MEDIA,
+            categoryRes = CAT_AUDIO_MEDIA,
             iconRes = R.drawable.rounded_volume_up_24
         ),
         StatusBarIcon(
             id = "headset",
-            displayName = "Headset",
+            displayNameRes = R.string.icon_headset,
             blacklistNames = listOf("headset", "earphone"),
             defaultVisible = false,
-            category = CAT_AUDIO_MEDIA,
+            categoryRes = CAT_AUDIO_MEDIA,
             iconRes = R.drawable.rounded_headset_mic_24
         ),
         StatusBarIcon(
             id = "speakerphone",
-            displayName = "Speakerphone",
+            displayNameRes = R.string.icon_speakerphone,
             blacklistNames = listOf("speakerphone"),
-            category = CAT_AUDIO_MEDIA,
+            categoryRes = CAT_AUDIO_MEDIA,
             iconRes = R.drawable.rounded_volume_up_24
         ),
         StatusBarIcon(
             id = "dmb",
-            displayName = "DMB",
+            displayNameRes = R.string.icon_dmb,
             blacklistNames = listOf("dmb"),
-            category = CAT_AUDIO_MEDIA,
+            categoryRes = CAT_AUDIO_MEDIA,
             iconRes = R.drawable.rounded_play_arrow_24
         ),
 
         // --- System Status ---
         StatusBarIcon(
             id = "clock",
-            displayName = "Clock",
+            displayNameRes = R.string.icon_clock,
             blacklistNames = listOf("clock"),
-            category = CAT_SYSTEM_STATUS,
+            categoryRes = CAT_SYSTEM_STATUS,
             iconRes = R.drawable.rounded_nest_clock_farsight_analog_24
         ),
         StatusBarIcon(
             id = "ime",
-            displayName = "Input Method (IME)",
+            displayNameRes = R.string.icon_ime,
             blacklistNames = listOf("ime"),
-            category = CAT_SYSTEM_STATUS,
+            categoryRes = CAT_SYSTEM_STATUS,
             iconRes = R.drawable.rounded_settings_accessibility_24
         ),
         StatusBarIcon(
             id = "alarm",
-            displayName = "Alarm",
+            displayNameRes = R.string.icon_alarm,
             blacklistNames = listOf("alarm", "alarm_clock"),
             defaultVisible = false,
-            category = CAT_SYSTEM_STATUS,
+            categoryRes = CAT_SYSTEM_STATUS,
             iconRes = R.drawable.rounded_alarm_24
         ),
         StatusBarIcon(
             id = "battery",
-            displayName = "Battery",
+            displayNameRes = R.string.icon_battery,
             blacklistNames = listOf("battery"),
-            category = CAT_SYSTEM_STATUS,
+            categoryRes = CAT_SYSTEM_STATUS,
             iconRes = R.drawable.rounded_battery_android_frame_6_24
         ),
         StatusBarIcon(
             id = "power_saver",
-            displayName = "Power Saving",
+            displayNameRes = R.string.icon_power_saving,
             blacklistNames = listOf("power_saver", "powersavingmode"),
-            category = CAT_SYSTEM_STATUS,
+            categoryRes = CAT_SYSTEM_STATUS,
             iconRes = R.drawable.rounded_battery_android_frame_plus_24
         ),
         StatusBarIcon(
             id = "data_saver",
-            displayName = "Data Saver",
+            displayNameRes = R.string.icon_data_saver,
             blacklistNames = listOf("data_saver"),
-            category = CAT_SYSTEM_STATUS,
+            categoryRes = CAT_SYSTEM_STATUS,
             iconRes = R.drawable.rounded_data_saver_on_24
         ),
         StatusBarIcon(
             id = "rotate",
-            displayName = "Rotation Lock",
+            displayNameRes = R.string.icon_rotation_lock,
             blacklistNames = listOf("rotate"),
             defaultVisible = false,
-            category = CAT_SYSTEM_STATUS,
+            categoryRes = CAT_SYSTEM_STATUS,
             iconRes = R.drawable.rounded_mobile_rotate_24
         ),
         StatusBarIcon(
             id = "location",
-            displayName = "Location / GPS",
+            displayNameRes = R.string.icon_location,
             blacklistNames = listOf("location", "gps", "lbs"),
-            category = CAT_SYSTEM_STATUS,
+            categoryRes = CAT_SYSTEM_STATUS,
             iconRes = R.drawable.rounded_navigation_24
         ),
         StatusBarIcon(
             id = "sync",
-            displayName = "Sync",
+            displayNameRes = R.string.icon_sync,
             blacklistNames = listOf("sync_active", "sync_failing"),
-            category = CAT_SYSTEM_STATUS,
+            categoryRes = CAT_SYSTEM_STATUS,
             iconRes = R.drawable.rounded_sync_24
         ),
         StatusBarIcon(
             id = "managed_profile",
-            displayName = "Managed Profile",
+            displayNameRes = R.string.icon_managed_profile,
             blacklistNames = listOf("managed_profile"),
-            category = CAT_SYSTEM_STATUS,
+            categoryRes = CAT_SYSTEM_STATUS,
             iconRes = R.drawable.rounded_security_24
         ),
         StatusBarIcon(
             id = "dnd",
-            displayName = "Do Not Disturb",
+            displayNameRes = R.string.icon_dnd,
             blacklistNames = listOf("do_not_disturb", "dnd", "zen"),
-            category = CAT_SYSTEM_STATUS,
+            categoryRes = CAT_SYSTEM_STATUS,
             iconRes = R.drawable.rounded_do_not_disturb_on_24
         ),
         StatusBarIcon(
             id = "privacy",
-            displayName = "Privacy & Secure Folder",
+            displayNameRes = R.string.icon_privacy,
             blacklistNames = listOf("privacy_mode", "private_mode", "knox_container"),
-            category = CAT_SYSTEM_STATUS,
+            categoryRes = CAT_SYSTEM_STATUS,
             iconRes = R.drawable.rounded_security_24
         ),
         StatusBarIcon(
             id = "secure",
-            displayName = "Security Status (SU)",
+            displayNameRes = R.string.icon_security_status,
             blacklistNames = listOf("secure", "su"),
-            category = CAT_SYSTEM_STATUS,
+            categoryRes = CAT_SYSTEM_STATUS,
             iconRes = R.drawable.rounded_security_24
         ),
 
         // --- OEM Specific ---
         StatusBarIcon(
             id = "otg",
-            displayName = "OTG Mouse / Keyboard",
+            displayNameRes = R.string.icon_otg,
             blacklistNames = listOf("otg_mouse", "otg_keyboard"),
-            category = CAT_OEM_SPECIFIC,
+            categoryRes = CAT_OEM_SPECIFIC,
             iconRes = R.drawable.rounded_settings_accessibility_24
         ),
         StatusBarIcon(
             id = "samsung_smart",
-            displayName = "Samsung Smart Features",
+            displayNameRes = R.string.icon_samsung_smart,
             blacklistNames = listOf("glove", "gesture", "smart_scroll", "face", "smart_network", "smart_bonding"),
-            category = CAT_OEM_SPECIFIC,
+            categoryRes = CAT_OEM_SPECIFIC,
             iconRes = R.drawable.rounded_fiber_smart_record_24
         ),
         StatusBarIcon(
             id = "samsung_services",
-            displayName = "Samsung Services",
+            displayNameRes = R.string.icon_samsung_services,
             blacklistNames = listOf("wearable_gear", "femtoicon", "com.samsung.rcs", "toddler", "keyguard_wakeup", "safezone"),
-            category = CAT_OEM_SPECIFIC,
+            categoryRes = CAT_OEM_SPECIFIC,
             iconRes = R.drawable.rounded_interests_24
         )
     )

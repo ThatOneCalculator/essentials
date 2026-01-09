@@ -38,6 +38,7 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import com.sameerasw.essentials.R
 import com.sameerasw.essentials.ui.components.cards.FeatureCard
 import com.sameerasw.essentials.ui.components.cards.IconToggleItem
@@ -72,7 +73,7 @@ fun ButtonRemapSettingsUI(
     var selectedButtonTab by remember { mutableIntStateOf(0) } // 0: Up, 1: Down
     var showFlashlightOptions by remember { mutableStateOf(false) }
     
-    val lifecycleOwner = LocalLifecycleOwner.current
+    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
     var shizukuStatus by remember { mutableStateOf(ShizukuStatus.NOT_RUNNING) }
     val shizukuHelper = remember { ShizukuPermissionHelper(context) }
     
@@ -104,7 +105,7 @@ fun ButtonRemapSettingsUI(
             RoundedCardContainer(spacing = 2.dp) {
             IconToggleItem(
                 iconRes = R.drawable.rounded_switch_access_3_24,
-                title = "Enable Button Remap",
+                title = stringResource(R.string.button_remap_enable_title),
                 isChecked = viewModel.isButtonRemapEnabled.value,
                 onCheckedChange = { viewModel.setButtonRemapEnabled(it, context) },
                 modifier = Modifier.highlight(highlightSetting == "enable_remap")
@@ -112,8 +113,8 @@ fun ButtonRemapSettingsUI(
 
                 IconToggleItem(
                     iconRes = R.drawable.rounded_adb_24,
-                    title = "Use Shizuku",
-                    description = "Works with screen off (Recommended)",
+                    title = stringResource(R.string.button_remap_use_shizuku_title),
+                    description = stringResource(R.string.button_remap_use_shizuku_desc),
                     isChecked = viewModel.isButtonRemapUseShizuku.value,
                     onCheckedChange = {  enabled ->
                         if (enabled) {
@@ -130,7 +131,7 @@ fun ButtonRemapSettingsUI(
                             } else {
                                 // Shizuku not running
                                 viewModel.setButtonRemapUseShizuku(true, context)
-                                android.widget.Toast.makeText(context, "Shizuku is not running", android.widget.Toast.LENGTH_SHORT).show()
+                                android.widget.Toast.makeText(context, context.getString(R.string.shizuku_not_running_toast), android.widget.Toast.LENGTH_SHORT).show()
                             }
                         } else {
                             viewModel.setButtonRemapUseShizuku(false, context)
@@ -154,9 +155,9 @@ fun ButtonRemapSettingsUI(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         val statusText = if (viewModel.shizukuDetectedDevicePath.value != null && shizukuStatus == ShizukuStatus.READY) {
-                            "Detected ${viewModel.shizukuDetectedDevicePath.value}"
+                            stringResource(R.string.shizuku_detected_prefix, viewModel.shizukuDetectedDevicePath.value ?: "")
                         } else {
-                            "Status: ${shizukuStatus.name}"
+                            stringResource(R.string.shizuku_status_prefix, shizukuStatus.name)
                         }
 
                         Text(
@@ -178,7 +179,7 @@ fun ButtonRemapSettingsUI(
                                 modifier = Modifier.height(32.dp),
                                 contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 0.dp)
                             ) {
-                                Text("Open Shizuku", style = MaterialTheme.typography.labelSmall)
+                                Text(stringResource(R.string.shizuku_open_button), style = MaterialTheme.typography.labelSmall)
                             }
                         }
                     }
@@ -194,15 +195,15 @@ fun ButtonRemapSettingsUI(
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 // Flashlight Options
                 Text(
-                    text = "Flashlight",
+                    text = stringResource(R.string.settings_section_flashlight),
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(start = 16.dp),
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 RoundedCardContainer(spacing = 0.dp) {
                     FeatureCard(
-                        title = "Flashlight options",
-                        description = "Adjust fading and other settings",
+                        title = stringResource(R.string.flashlight_options_title),
+                        description = stringResource(R.string.flashlight_options_desc),
                         iconRes = R.drawable.rounded_flashlight_on_24,
                         isEnabled = true,
                         showToggle = false,
@@ -218,7 +219,7 @@ fun ButtonRemapSettingsUI(
 
                 // Haptic Feedback (Common)
                 Text(
-                    text = "Haptic Feedback",
+                    text = stringResource(R.string.settings_section_haptic),
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(start = 16.dp),
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -228,16 +229,16 @@ fun ButtonRemapSettingsUI(
                         selectedFeedback = viewModel.remapHapticType.value,
                         onFeedbackSelected = { viewModel.setRemapHapticType(it, context) },
                         options = listOf(
-                            "None" to HapticFeedbackType.NONE,
-                            "Tick" to HapticFeedbackType.TICK,
-                            "Double" to HapticFeedbackType.DOUBLE
+                            R.string.haptic_none to HapticFeedbackType.NONE,
+                            R.string.haptic_tick to HapticFeedbackType.TICK,
+                            R.string.haptic_double to HapticFeedbackType.DOUBLE
                         ),
                         modifier = Modifier.highlight(highlightSetting == "remap_haptic")
                     )
                 }
 
                 Text(
-                    text = "Remap Long Press",
+                    text = stringResource(R.string.button_remap_section_long_press),
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(start = 16.dp),
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -245,21 +246,23 @@ fun ButtonRemapSettingsUI(
 
                 // Button Picker & Actions
                 RoundedCardContainer(spacing = 2.dp) {
+                    val screenOptions = listOf(stringResource(R.string.screen_off), stringResource(R.string.screen_on))
                     SegmentedPicker(
-                        items = listOf("Screen Off", "Screen On"),
-                        selectedItem = if (selectedScreenTab == 0) "Screen Off" else "Screen On",
+                        items = screenOptions,
+                        selectedItem = if (selectedScreenTab == 0) screenOptions[0] else screenOptions[1],
                         onItemSelected = { 
                             HapticUtil.performUIHaptic(view)
-                            selectedScreenTab = if (it == "Screen Off") 0 else 1 
+                            selectedScreenTab = screenOptions.indexOf(it)
                         },
                         labelProvider = { it }
                     )
+                    val buttonOptions = listOf(stringResource(R.string.volume_up), stringResource(R.string.volume_down))
                     SegmentedPicker(
-                        items = listOf("Volume Up", "Volume Down"),
-                        selectedItem = if (selectedButtonTab == 0) "Volume Up" else "Volume Down",
+                        items = buttonOptions,
+                        selectedItem = if (selectedButtonTab == 0) buttonOptions[0] else buttonOptions[1],
                         onItemSelected = { 
                             HapticUtil.performUIHaptic(view)
-                            selectedButtonTab = if (it == "Volume Up") 0 else 1 
+                            selectedButtonTab = buttonOptions.indexOf(it)
                         },
                         labelProvider = { it }
                     )
@@ -281,13 +284,13 @@ fun ButtonRemapSettingsUI(
                     }
 
                     RemapActionItem(
-                        title = "None",
+                        title = stringResource(R.string.action_none),
                         isSelected = currentAction == "None",
                         onClick = { onActionSelected("None") },
                         iconRes = R.drawable.rounded_do_not_disturb_on_24,
                     )
                     RemapActionItem(
-                        title = "Toggle flashlight",
+                        title = stringResource(R.string.action_toggle_flashlight),
                         isSelected = currentAction == "Toggle flashlight",
                         onClick = { onActionSelected("Toggle flashlight") },
                         hasSettings = true,
@@ -296,44 +299,44 @@ fun ButtonRemapSettingsUI(
                         modifier = Modifier.highlight(highlightSetting == "flashlight_toggle")
                     )
                     RemapActionItem(
-                        title = "Media play/pause",
+                        title = stringResource(R.string.action_media_play_pause),
                         isSelected = currentAction == "Media play/pause",
                         onClick = { onActionSelected("Media play/pause") },
                         iconRes = R.drawable.rounded_play_pause_24,
                     )
                     RemapActionItem(
-                        title = "Media next",
+                        title = stringResource(R.string.action_media_next),
                         isSelected = currentAction == "Media next",
                         onClick = { onActionSelected("Media next") },
                         iconRes = R.drawable.rounded_skip_next_24,
                     )
                     RemapActionItem(
-                        title = "Media previous",
+                        title = stringResource(R.string.action_media_previous),
                         isSelected = currentAction == "Media previous",
                         onClick = { onActionSelected("Media previous") },
                         iconRes = R.drawable.rounded_skip_previous_24,
                     )
                     RemapActionItem(
-                        title = "Toggle vibrate",
+                        title = stringResource(R.string.action_toggle_vibrate),
                         isSelected = currentAction == "Toggle vibrate",
                         onClick = { onActionSelected("Toggle vibrate") },
                         iconRes = R.drawable.rounded_mobile_vibrate_24,
                     )
                     RemapActionItem(
-                        title = "Toggle mute",
+                        title = stringResource(R.string.action_toggle_mute),
                         isSelected = currentAction == "Toggle mute",
                         onClick = { onActionSelected("Toggle mute") },
                         iconRes = R.drawable.rounded_volume_off_24,
                     )
                     RemapActionItem(
-                        title = "AI assistant",
+                        title = stringResource(R.string.action_ai_assistant),
                         isSelected = currentAction == "AI assistant",
                         onClick = { onActionSelected("AI assistant") },
                         iconRes = R.drawable.rounded_bubble_chart_24,
                     )
                     if (selectedScreenTab == 1) {
                         RemapActionItem(
-                            title = "Take screenshot",
+                            title = stringResource(R.string.action_take_screenshot),
                             isSelected = currentAction == "Take screenshot",
                             onClick = { onActionSelected("Take screenshot") },
                             iconRes = R.drawable.rounded_screenshot_region_24,
@@ -347,8 +350,8 @@ fun ButtonRemapSettingsUI(
         RoundedCardContainer {
             Text(
                 text = if (selectedScreenTab == 0) 
-                    "When the screen is off, long-press the selected button to trigger its assigned action. On Pixel devices, this action only gets triggered if the AOD is on due to system limitations."
-                    else "When the screen is on, long-press the selected button to trigger its assigned action.",
+                    stringResource(R.string.button_remap_screen_off_hint)
+                    else stringResource(R.string.button_remap_screen_on_hint),
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(16.dp),
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -370,7 +373,7 @@ fun ButtonRemapSettingsUI(
             ) {
 
                 Text(
-                    text = "Flashlight Intensity",
+                    text = stringResource(R.string.flashlight_intensity_title),
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 8.dp),
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -379,30 +382,30 @@ fun ButtonRemapSettingsUI(
                 RoundedCardContainer(spacing = 2.dp) {
                     IconToggleItem(
                         iconRes = R.drawable.rounded_blur_on_24,
-                        title = "Fade in and out",
-                        description = "Smoothly toggle flashlight",
+                        title = stringResource(R.string.flashlight_fade_title),
+                        description = stringResource(R.string.flashlight_fade_desc),
                         isChecked = viewModel.isFlashlightFadeEnabled.value,
                         onCheckedChange = { viewModel.setFlashlightFadeEnabled(it, context) }
                     )
                     IconToggleItem(
                         iconRes = R.drawable.rounded_globe_24,
-                        title = "Global controls",
-                        description = "Fade-in flashlight globally",
+                        title = stringResource(R.string.flashlight_global_title),
+                        description = stringResource(R.string.flashlight_global_desc),
                         isChecked = viewModel.isFlashlightGlobalEnabled.value,
                         onCheckedChange = { viewModel.setFlashlightGlobalEnabled(it, context) }
                     )
 
                     IconToggleItem(
                         iconRes = R.drawable.rounded_upcoming_24,
-                        title = "Adjust intensity",
-                        description = "Volume + - adjusts flashlight intensity",
+                        title = stringResource(R.string.flashlight_adjust_intensity_title),
+                        description = stringResource(R.string.flashlight_adjust_intensity_desc),
                         isChecked = viewModel.isFlashlightAdjustEnabled.value,
                         onCheckedChange = { viewModel.setFlashlightAdjustEnabled(it, context) }
                     )
                     IconToggleItem(
                         iconRes = R.drawable.rounded_flashlight_on_24,
-                        title = "Live update",
-                        description = "Show brightness in status bar",
+                        title = stringResource(R.string.flashlight_live_update_title),
+                        description = stringResource(R.string.flashlight_live_update_desc),
                         isChecked = viewModel.isFlashlightLiveUpdateEnabled.value,
                         onCheckedChange = { viewModel.setFlashlightLiveUpdateEnabled(it, context) }
                     )
@@ -410,7 +413,7 @@ fun ButtonRemapSettingsUI(
 
 
                 Text(
-                    text = "Other",
+                    text = stringResource(R.string.settings_section_other),
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp),
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -421,8 +424,8 @@ fun ButtonRemapSettingsUI(
 
                     IconToggleItem(
                         iconRes = R.drawable.rounded_flashlight_on_24,
-                        title = "Always turn off flashlight",
-                        description = "Even while display is on",
+                        title = stringResource(R.string.flashlight_always_off_title),
+                        description = stringResource(R.string.flashlight_always_off_desc),
                         isChecked = viewModel.isFlashlightAlwaysTurnOffEnabled.value,
                         onCheckedChange = { viewModel.setFlashlightAlwaysTurnOffEnabled(it, context) }
                     )
@@ -436,7 +439,7 @@ fun ButtonRemapSettingsUI(
                     modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                     shape = MaterialTheme.shapes.extraLarge
                 ) {
-                    Text("Done")
+                    Text(stringResource(R.string.action_done))
                 }
             }
         }
@@ -445,7 +448,7 @@ fun ButtonRemapSettingsUI(
 
 @Composable
 fun RemapActionItem(
-    title: String,
+    title: Any, // Can be Int or String
     iconRes: Int,
     isSelected: Boolean,
     onClick: () -> Unit,
@@ -474,15 +477,21 @@ fun RemapActionItem(
             onClick = onClick
         )
 
+        val resolvedTitle = when (title) {
+            is Int -> stringResource(id = title)
+            is String -> title
+            else -> ""
+        }
+
         Icon(
             painter = painterResource(id = iconRes),
-            contentDescription = title,
+            contentDescription = resolvedTitle,
             modifier = Modifier.size(24.dp),
             tint = MaterialTheme.colorScheme.primary
         )
 
         Text(
-            text = title,
+            text = resolvedTitle,
             style = MaterialTheme.typography.bodyLarge,
             modifier = Modifier.weight(1f),
             color = if (isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
@@ -491,7 +500,7 @@ fun RemapActionItem(
             IconButton(onClick = onSettingsClick) {
                 Icon(
                     painter = painterResource(id = R.drawable.rounded_settings_24),
-                    contentDescription = "Settings",
+                    contentDescription = stringResource(R.string.content_desc_settings),
                     tint = MaterialTheme.colorScheme.primary
                 )
             }

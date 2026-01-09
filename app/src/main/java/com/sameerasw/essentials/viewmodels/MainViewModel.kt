@@ -14,6 +14,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sameerasw.essentials.R
 import com.sameerasw.essentials.domain.MapsState
 import com.sameerasw.essentials.domain.registry.SearchRegistry
 import com.sameerasw.essentials.data.repository.SettingsRepository
@@ -263,7 +264,7 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    fun onSearchQueryChanged(query: String) {
+    fun onSearchQueryChanged(query: String, context: Context) {
         searchQuery.value = query
         if (query.isBlank()) {
             searchResults.value = emptyList()
@@ -272,7 +273,7 @@ class MainViewModel : ViewModel() {
         }
 
         isSearching.value = true
-        searchResults.value = SearchRegistry.search(query)
+        searchResults.value = SearchRegistry.search(context, query)
         isSearching.value = false
     }
 
@@ -306,6 +307,7 @@ class MainViewModel : ViewModel() {
         }
 
         isCheckingUpdate.value = true
+        updateInfo.value = null // Clear stale data before checking
         viewModelScope.launch {
             try {
                 val currentVersion = try {
@@ -345,7 +347,7 @@ class MainViewModel : ViewModel() {
         val adminComponent = ComponentName(context, SecurityDeviceAdminReceiver::class.java)
         val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN).apply {
             putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, adminComponent)
-            putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "Required to hard-lock the device when unauthorized network changes are attempted on lock screen.")
+            putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, context.getString(R.string.perm_device_admin_explanation))
         }
         if (context is Activity) {
             context.startActivity(intent)
@@ -569,7 +571,7 @@ class MainViewModel : ViewModel() {
 
             // Also remove from ScreenOffAccessibilityService if it's running
             val intent2 = Intent(context, ScreenOffAccessibilityService::class.java).apply {
-                action = "SHOW_EDGE_LIGHTING"
+                action = "SHOW_NOTIFICATION_LIGHTING"
                 putExtra("remove_preview", true)
             }
             context.startService(intent2)

@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
+import androidx.compose.ui.res.stringResource
 import com.sameerasw.essentials.R
 import com.sameerasw.essentials.domain.StatusBarIconRegistry
 import com.sameerasw.essentials.ui.components.cards.IconToggleItem
@@ -58,14 +59,14 @@ fun StatusBarIconSettingsUI(
     if (showPermissionSheet) {
         PermissionsBottomSheet(
             onDismissRequest = { showPermissionSheet = false },
-            featureTitle = "Smart Data",
+            featureTitle = R.string.smart_data_title,
             permissions = listOf(
                 PermissionItem(
                     iconRes = R.drawable.rounded_android_cell_dual_4_bar_24,
-                    title = "Read Phone State",
-                    description = "Required to detect network type for Smart Data feature",
-                    dependentFeatures = listOf("Smart Data"),
-                    actionLabel = "Grant Permission",
+                    title = R.string.permission_read_phone_state_title,
+                    description = R.string.permission_read_phone_state_desc,
+                    dependentFeatures = listOf(R.string.smart_data_title),
+                    actionLabel = R.string.permission_grant_action,
                     action = {
                         ActivityCompat.requestPermissions(
                             context as ComponentActivity,
@@ -98,11 +99,11 @@ fun StatusBarIconSettingsUI(
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         // Iterate through categories
-        categories.forEach { categoryName ->
-            val iconsInCat = StatusBarIconRegistry.ALL_ICONS.filter { it.category == categoryName }
+        categories.forEach { categoryRes ->
+            val iconsInCat = StatusBarIconRegistry.ALL_ICONS.filter { it.categoryRes == categoryRes }
             if (iconsInCat.isNotEmpty()) {
                 Text(
-                    text = categoryName,
+                    text = stringResource(categoryRes),
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(start = 16.dp, top = 24.dp, bottom = 8.dp),
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -117,13 +118,13 @@ fun StatusBarIconSettingsUI(
                         val isChecked = viewModel.getIconVisibility(icon.id)?.value ?: icon.defaultVisible
                         IconToggleItem(
                             iconRes = icon.iconRes ?: R.drawable.rounded_info_24,
-                            title = icon.displayName,
+                            title = stringResource(icon.displayNameRes),
                             isChecked = isChecked,
                             onCheckedChange = { checked ->
                                 viewModel.setIconVisibility(icon.id, checked, context)
                             },
                             enabled = isPermissionGranted,
-                            modifier = Modifier.highlight(highlightSetting == icon.displayName)
+                            modifier = Modifier.highlight(highlightSetting == context.getString(icon.displayNameRes))
                         )
                     }
                 }
@@ -132,7 +133,7 @@ fun StatusBarIconSettingsUI(
 
         // Smart Visibility Category
         Text(
-            text = "Smart Visibility",
+            text = stringResource(R.string.settings_section_smart_visibility),
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(start = 16.dp, top = 24.dp, bottom = 8.dp),
             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -145,8 +146,8 @@ fun StatusBarIconSettingsUI(
         ) {
             IconToggleItem(
                 iconRes = R.drawable.rounded_cell_wifi_24,
-                title = "Smart WiFi",
-                description = "Hide mobile data when WiFi is connected",
+                title = stringResource(R.string.smart_wifi_title),
+                description = stringResource(R.string.smart_wifi_desc),
                 isChecked = viewModel.isSmartWiFiEnabled.value,
                 onCheckedChange = { isChecked ->
                     viewModel.setSmartWiFiEnabled(isChecked, context)
@@ -172,8 +173,8 @@ fun StatusBarIconSettingsUI(
             ) {
                 IconToggleItem(
                     iconRes = R.drawable.rounded_android_cell_dual_5_bar_alert_24,
-                    title = "Smart Data",
-                    description = "Hide mobile data in certain modes",
+                    title = stringResource(R.string.smart_data_title),
+                    description = stringResource(R.string.smart_data_desc),
                     isChecked = viewModel.isSmartDataEnabled.value,
                     onCheckedChange = { isChecked ->
                         val hasPermission = ContextCompat.checkSelfPermission(
@@ -260,9 +261,9 @@ fun StatusBarIconSettingsUI(
                 .highlight(highlightSetting == "reset_icons"),
             enabled = isPermissionGranted
         ) {
-            Text("Reset All Icons")
+            Text(stringResource(R.string.action_reset_all_icons))
         }
 
-        Text("Please note that the implementation of these options may depend on the OEM and some may not be functional at all.")
+        Text(stringResource(R.string.status_bar_icons_disclaimer))
     }
 }

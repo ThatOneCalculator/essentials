@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.sameerasw.essentials.R
 import com.sameerasw.essentials.ui.components.cards.IconToggleItem
@@ -40,7 +41,7 @@ fun SnoozeNotificationsSettingsUI(
             // Debugging
             IconToggleItem(
                 iconRes = R.drawable.rounded_adb_24,
-                title = "Disable debugging notifications",
+                title = stringResource(R.string.search_snooze_debug_title),
                 isChecked = viewModel.isSnoozeDebuggingEnabled.value,
                 onCheckedChange = { checked ->
                     HapticUtil.performVirtualKeyHaptic(view)
@@ -52,7 +53,7 @@ fun SnoozeNotificationsSettingsUI(
             // File Transfer
             IconToggleItem(
                 iconRes = R.drawable.rounded_usb_24,
-                title = "Disable file transfer notification",
+                title = stringResource(R.string.search_snooze_file_title),
                 isChecked = viewModel.isSnoozeFileTransferEnabled.value,
                 onCheckedChange = { checked ->
                     HapticUtil.performVirtualKeyHaptic(view)
@@ -64,7 +65,7 @@ fun SnoozeNotificationsSettingsUI(
             // Charging
             IconToggleItem(
                 iconRes = R.drawable.rounded_charger_24,
-                title = "Disable charging notification",
+                title = stringResource(R.string.search_snooze_charge_title),
                 isChecked = viewModel.isSnoozeChargingEnabled.value,
                 onCheckedChange = { checked ->
                     HapticUtil.performVirtualKeyHaptic(view)

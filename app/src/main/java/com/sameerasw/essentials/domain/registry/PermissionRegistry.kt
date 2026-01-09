@@ -1,53 +1,50 @@
 package com.sameerasw.essentials.domain.registry
 
-object PermissionRegistry {
-    private val registry = mutableMapOf<String, MutableList<String>>()
+import com.sameerasw.essentials.R
 
-    fun register(permissionKey: String, featureName: String) {
+object PermissionRegistry {
+    private val registry = mutableMapOf<String, MutableList<Int>>()
+
+    fun register(permissionKey: String, featureTitleRes: Int) {
         val list = registry.getOrPut(permissionKey) { mutableListOf() }
-        if (!list.contains(featureName)) list.add(featureName)
+        if (!list.contains(featureTitleRes)) list.add(featureTitleRes)
     }
 
-    fun getFeatures(permissionKey: String): List<String> = registry[permissionKey]?.toList() ?: emptyList()
+    fun getFeatures(permissionKey: String): List<Int> = registry[permissionKey]?.toList() ?: emptyList()
 }
 
 // Register existing dependencies
 fun initPermissionRegistry() {
     // Accessibility permission
-    PermissionRegistry.register("ACCESSIBILITY", "Screen off widget")
-    PermissionRegistry.register("ACCESSIBILITY", "Notification lighting")
-    PermissionRegistry.register("ACCESSIBILITY", "Flashlight toggle")
-    PermissionRegistry.register("ACCESSIBILITY", "Dynamic night light")
-    PermissionRegistry.register("ACCESSIBILITY", "Screen locked security")
-    PermissionRegistry.register("ACCESSIBILITY", "App lock")
+    PermissionRegistry.register("ACCESSIBILITY", R.string.feat_screen_off_widget_title)
+    PermissionRegistry.register("ACCESSIBILITY", R.string.feat_notification_lighting_title)
+    PermissionRegistry.register("ACCESSIBILITY", R.string.feat_dynamic_night_light_title)
+    PermissionRegistry.register("ACCESSIBILITY", R.string.feat_screen_locked_security_title)
+    PermissionRegistry.register("ACCESSIBILITY", R.string.feat_app_lock_title)
 
     // Write secure settings permission
-    PermissionRegistry.register("WRITE_SECURE_SETTINGS", "Statusbar icons")
-    PermissionRegistry.register("WRITE_SECURE_SETTINGS", "Sound Mode")
-    PermissionRegistry.register("WRITE_SECURE_SETTINGS", "Dynamic night light")
-    PermissionRegistry.register("WRITE_SECURE_SETTINGS", "Screen locked security")
+    PermissionRegistry.register("WRITE_SECURE_SETTINGS", R.string.feat_statusbar_icons_title)
+    PermissionRegistry.register("WRITE_SECURE_SETTINGS", R.string.feat_sound_mode_tile_title)
+    PermissionRegistry.register("WRITE_SECURE_SETTINGS", R.string.feat_dynamic_night_light_title)
+    PermissionRegistry.register("WRITE_SECURE_SETTINGS", R.string.feat_screen_locked_security_title)
 
     // Shizuku permission
-    PermissionRegistry.register("SHIZUKU", "Maps power saving mode")
-    PermissionRegistry.register("SHIZUKU", "Automatic write secure settings")
-    PermissionRegistry.register("SHIZUKU", "Freeze")
+    PermissionRegistry.register("SHIZUKU", R.string.feat_maps_power_saving_title)
+    PermissionRegistry.register("SHIZUKU", R.string.feat_freeze_title)
 
     // Notification listener permission
-    PermissionRegistry.register("NOTIFICATION_LISTENER", "Maps power saving mode")
-    PermissionRegistry.register("NOTIFICATION_LISTENER", "Notification lighting")
+    PermissionRegistry.register("NOTIFICATION_LISTENER", R.string.feat_maps_power_saving_title)
+    PermissionRegistry.register("NOTIFICATION_LISTENER", R.string.feat_notification_lighting_title)
 
     // Draw over other apps permission
-    PermissionRegistry.register("DRAW_OVER_OTHER_APPS", "Notification lighting")
+    PermissionRegistry.register("DRAW_OVER_OTHER_APPS", R.string.feat_notification_lighting_title)
 
     // Post notifications permission
-    PermissionRegistry.register("POST_NOTIFICATIONS", "Caffeinate show notification")
+    PermissionRegistry.register("POST_NOTIFICATIONS", R.string.search_caffeinate_notif_title)
 
     // Read phone state permission
-    PermissionRegistry.register("READ_PHONE_STATE", "Smart data")
-
-    // Default browser permission
-    PermissionRegistry.register("DEFAULT_BROWSER", "Link picker - open with")
+    PermissionRegistry.register("READ_PHONE_STATE", R.string.search_smart_data_title)
 
     // Device Admin permission
-    PermissionRegistry.register("DEVICE_ADMIN", "Screen locked security")
+    PermissionRegistry.register("DEVICE_ADMIN", R.string.feat_screen_locked_security_title)
 }

@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.sameerasw.essentials.R
@@ -33,7 +34,7 @@ import com.sameerasw.essentials.utils.HapticUtil
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ReusableTopAppBar(
-    title: String,
+    title: Any, // Can be Int (Resource ID) or String
     hasBack: Boolean = false,
     hasSearch: Boolean = true,
     hasSettings: Boolean = false,
@@ -45,7 +46,7 @@ fun ReusableTopAppBar(
     hasUpdateAvailable: Boolean = false,
     hasHelp: Boolean = false,
     scrollBehavior: TopAppBarScrollBehavior? = null,
-    subtitle: String? = null,
+    subtitle: Any? = null, // Can be Int or String
     actions: @Composable RowScope.() -> Unit = {}
 ) {
     val collapsedFraction = scrollBehavior?.state?.collapsedFraction ?: 0f
@@ -60,16 +61,26 @@ fun ReusableTopAppBar(
         collapsedHeight = 64.dp,
 
         title = {
+            val resolvedTitle = when (title) {
+                is Int -> stringResource(id = title)
+                is String -> title
+                else -> ""
+            }
             if (subtitle != null) {
                 // Show title and subtitle
                 Column {
                     Text(
-                        title,
+                        resolvedTitle,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
+                    val resolvedSubtitle = when (subtitle) {
+                        is Int -> stringResource(id = subtitle)
+                        is String -> subtitle
+                        else -> ""
+                    }
                     Text(
-                        subtitle,
+                        resolvedSubtitle,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
@@ -79,7 +90,7 @@ fun ReusableTopAppBar(
             } else {
                 // Show only title
                 Text(
-                    title,
+                    resolvedTitle,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -100,7 +111,7 @@ fun ReusableTopAppBar(
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.rounded_arrow_back_24),
-                        contentDescription = "Back",
+                        contentDescription = stringResource(R.string.action_back),
                         modifier = Modifier.size(32.dp)
                     )
                 }
@@ -123,7 +134,7 @@ fun ReusableTopAppBar(
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.rounded_help_24),
-                        contentDescription = "Help Guide",
+                        contentDescription = stringResource(R.string.action_help_guide),
                         modifier = Modifier.size(32.dp)
                     )
                 }
@@ -148,7 +159,7 @@ fun ReusableTopAppBar(
                     Box {
                         Icon(
                             painter = painterResource(id = R.drawable.rounded_mobile_arrow_down_24),
-                            contentDescription = "Update Available",
+                            contentDescription = stringResource(R.string.update_available_title),
                             modifier = Modifier.size(32.dp)
                         )
                         // Red dot
@@ -180,7 +191,7 @@ fun ReusableTopAppBar(
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.rounded_settings_heart_24),
-                        contentDescription = "Settings",
+                        contentDescription = stringResource(R.string.content_desc_settings),
                         modifier = Modifier.size(32.dp)
                     )
                 }

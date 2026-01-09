@@ -39,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
@@ -68,6 +69,7 @@ import com.sameerasw.essentials.ui.components.sheets.PermissionsBottomSheet
 import com.sameerasw.essentials.ui.composables.configs.AppLockSettingsUI
 import com.sameerasw.essentials.ui.composables.configs.ScreenLockedSecuritySettingsUI
 import com.sameerasw.essentials.utils.HapticUtil
+import com.sameerasw.essentials.domain.registry.FeatureRegistry
 
 @OptIn(ExperimentalMaterial3Api::class)
 class FeatureSettingsActivity : FragmentActivity() {
@@ -87,25 +89,24 @@ class FeatureSettingsActivity : FragmentActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             window.isNavigationBarContrastEnforced = false
         }
-        val feature = intent.getStringExtra("feature") ?: "Feature"
-        val featureDescriptions = mapOf(
-            "Screen off widget" to "Invisible widget to turn the screen off",
-            "Statusbar icons" to "Control statusbar icons visibility",
-            "Caffeinate" to "Keep the screen awake",
-            "Notification lighting" to "Lighting effects for new notifications",
-            "Sound mode tile" to "QS tile to toggle sound mode",
-            "Link actions" to "Handle links with multiple apps",
-            "Flashlight toggle" to "Toggle flashlight while screen off",
-            "Dynamic night light" to "Toggle based on current app",
-            "Snooze system notifications" to "Automatically snooze persistent notifications",
-            "Quick settings tiles" to "All available QS tiles",
-            "Button remap" to "Remap hardware buttons",
-            "Screen locked security" to "Protect network settings from lock screen",
-            "App lock" to "Secure individual apps with biometrics",
-            "Freeze" to "Disable rarely used apps"
-        )
-        val description = featureDescriptions[feature] ?: ""
+        val featureId = intent.getStringExtra("feature") ?: ""
+        val featureObj = FeatureRegistry.ALL_FEATURES.find { it.id == featureId }
         val highlightSetting = intent.getStringExtra("highlight_setting")
+
+        if (featureId == "Link actions") {
+            setContent {
+                EssentialsTheme {
+                    LinkPickerScreen(
+                        uri = "https://sameerasw.com".toUri(),
+                        onFinish = { finish() },
+                        modifier = Modifier.fillMaxSize(),
+                        demo = true
+                    )
+                }
+            }
+            return
+        }
+
         setContent {
             EssentialsTheme {
                 val context = LocalContext.current
@@ -124,15 +125,15 @@ class FeatureSettingsActivity : FragmentActivity() {
                 val caffeinateViewModel: CaffeinateViewModel = viewModel()
 
                 // Automatic refresh on resume
-                val lifecycleOwner = LocalLifecycleOwner.current
+                val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
                 DisposableEffect(lifecycleOwner) {
                     val observer = LifecycleEventObserver { _, event ->
                         if (event == Lifecycle.Event.ON_RESUME) {
                             viewModel.check(context)
-                            if (feature == "Statusbar icons") {
+                            if (featureId == "Statusbar icons") {
                                 statusBarViewModel.check(context)
                             }
-                            if (feature == "Caffeinate") {
+                            if (featureId == "Caffeinate") {
                                 caffeinateViewModel.check(context)
                             }
                         }
@@ -168,8 +169,8 @@ class FeatureSettingsActivity : FragmentActivity() {
 
                 // FAB State for Notification Lighting
                 var fabExpanded by remember { mutableStateOf(true) }
-                LaunchedEffect(feature) {
-                    if (feature == "Notification lighting") {
+                LaunchedEffect(featureId) {
+                    if (featureId == "Notification lighting") {
                         fabExpanded = true
                         delay(3000)
                         fabExpanded = false
@@ -177,8 +178,8 @@ class FeatureSettingsActivity : FragmentActivity() {
                 }
 
                 // Show permission sheet if feature has missing permissions
-                LaunchedEffect(feature, isAccessibilityEnabled, isWriteSecureSettingsEnabled, isOverlayPermissionGranted, isNotificationLightingAccessibilityEnabled, isNotificationListenerEnabled) {
-                    val hasMissingPermissions = when (feature) {
+                LaunchedEffect(featureId, isAccessibilityEnabled, isWriteSecureSettingsEnabled, isOverlayPermissionGranted, isNotificationLightingAccessibilityEnabled, isNotificationListenerEnabled) {
+                    val hasMissingPermissions = when (featureId) {
                         "Screen off widget" -> !isAccessibilityEnabled
                         "Statusbar icons" -> !isWriteSecureSettingsEnabled
                         "Notification lighting" -> !isOverlayPermissionGranted || !isNotificationLightingAccessibilityEnabled || !isNotificationListenerEnabled
@@ -194,14 +195,14 @@ class FeatureSettingsActivity : FragmentActivity() {
                 }
 
                 if (showPermissionSheet) {
-                    val permissionItems = when (feature) {
+                    val permissionItems = when (featureId) {
                         "Screen off widget" -> listOf(
                             PermissionItem(
                                 iconRes = R.drawable.rounded_settings_accessibility_24,
-                                title = "Accessibility",
-                                description = "Required for App Lock, Screen off widget and other features to detect interactions",
+                                title = R.string.perm_accessibility_title,
+                                description = R.string.perm_accessibility_desc_common,
                                 dependentFeatures = PermissionRegistry.getFeatures("ACCESSIBILITY"),
-                                actionLabel = "Grant Permission",
+                                actionLabel = R.string.perm_action_grant,
                                 action = {
                                     context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
                                 },
@@ -211,17 +212,17 @@ class FeatureSettingsActivity : FragmentActivity() {
                         "Statusbar icons" -> listOf(
                             PermissionItem(
                                 iconRes = R.drawable.rounded_security_24,
-                                title = "Write Secure Settings",
-                                description = "Required for Statusbar icons and Screen Locked Security",
+                                title = R.string.perm_write_secure_title,
+                                description = R.string.perm_write_secure_desc_common,
                                 dependentFeatures = PermissionRegistry.getFeatures("WRITE_SECURE_SETTINGS"),
-                                actionLabel = "Copy ADB",
+                                actionLabel = R.string.perm_action_copy_adb,
                                 action = {
                                     val adbCommand = "adb shell pm grant com.sameerasw.essentials android.permission.WRITE_SECURE_SETTINGS"
                                     val clipboard = context.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
                                     val clip = ClipData.newPlainText("adb_command", adbCommand)
                                     clipboard.setPrimaryClip(clip)
                                 },
-                                secondaryActionLabel = "Check",
+                                secondaryActionLabel = R.string.perm_action_check,
                                 secondaryAction = {
                                     viewModel.isWriteSecureSettingsEnabled.value = viewModel.canWriteSecureSettings(context)
                                 },
@@ -231,10 +232,10 @@ class FeatureSettingsActivity : FragmentActivity() {
                         "Notification lighting" -> listOf(
                             PermissionItem(
                                 iconRes = R.drawable.rounded_magnify_fullscreen_24,
-                                title = "Overlay Permission",
-                                description = "Required to display the notification lighting overlay on the screen",
+                                title = R.string.perm_overlay_title,
+                                description = R.string.perm_overlay_desc,
                                 dependentFeatures = PermissionRegistry.getFeatures("DRAW_OVERLAYS"),
-                                actionLabel = "Grant Permission",
+                                actionLabel = R.string.perm_action_grant,
                                 action = {
                                     val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:${context.packageName}"))
                                     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
@@ -244,10 +245,10 @@ class FeatureSettingsActivity : FragmentActivity() {
                             ),
                             PermissionItem(
                                 iconRes = R.drawable.rounded_settings_accessibility_24,
-                                title = "Accessibility Service",
-                                description = "Required to trigger notification lighting on new notifications",
+                                title = R.string.perm_accessibility_title,
+                                description = R.string.perm_accessibility_desc_lighting,
                                 dependentFeatures = PermissionRegistry.getFeatures("ACCESSIBILITY"),
-                                actionLabel = "Enable in Settings",
+                                actionLabel = R.string.perm_action_enable,
                                 action = {
                                     val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
                                     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
@@ -257,10 +258,10 @@ class FeatureSettingsActivity : FragmentActivity() {
                             ),
                             PermissionItem(
                                 iconRes = R.drawable.rounded_notifications_unread_24,
-                                title = "Notification Listener",
-                                description = "Required to detect new notifications",
+                                title = R.string.perm_notif_listener_title,
+                                description = R.string.perm_notif_listener_desc_lighting,
                                 dependentFeatures = PermissionRegistry.getFeatures("NOTIFICATION_LISTENER"),
-                                actionLabel = if (isNotificationListenerEnabled) "Permission granted" else "Grant listener",
+                                actionLabel = R.string.perm_action_grant,
                                 action = { viewModel.requestNotificationListenerPermission(context) },
                                 isGranted = isNotificationListenerEnabled
                             )
@@ -268,10 +269,10 @@ class FeatureSettingsActivity : FragmentActivity() {
                         "Button remap" -> listOf(
                             PermissionItem(
                                 iconRes = R.drawable.rounded_settings_accessibility_24,
-                                title = "Accessibility Service",
-                                description = "Required to intercept hardware button events",
+                                title = R.string.perm_accessibility_title,
+                                description = R.string.perm_accessibility_desc_remap,
                                 dependentFeatures = PermissionRegistry.getFeatures("ACCESSIBILITY"),
-                                actionLabel = "Enable in Settings",
+                                actionLabel = R.string.perm_action_enable,
                                 action = {
                                     context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
                                 },
@@ -281,10 +282,10 @@ class FeatureSettingsActivity : FragmentActivity() {
                         "Dynamic night light" -> listOf(
                             PermissionItem(
                                 iconRes = R.drawable.rounded_settings_accessibility_24,
-                                title = "Accessibility Service",
-                                description = "Needed to monitor foreground applications.",
+                                title = R.string.perm_accessibility_title,
+                                description = R.string.perm_accessibility_desc_night_light,
                                 dependentFeatures = PermissionRegistry.getFeatures("ACCESSIBILITY"),
-                                actionLabel = "Enable Service",
+                                actionLabel = R.string.perm_action_enable,
                                 action = {
                                     val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
                                     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
@@ -294,17 +295,17 @@ class FeatureSettingsActivity : FragmentActivity() {
                             ),
                             PermissionItem(
                                 iconRes = R.drawable.rounded_security_24,
-                                title = "Write Secure Settings",
-                                description = "Needed to toggle Night Light. Grant via ADB or root.",
+                                title = R.string.perm_write_secure_title,
+                                description = R.string.perm_write_secure_desc_night_light,
                                 dependentFeatures = PermissionRegistry.getFeatures("WRITE_SECURE_SETTINGS"),
-                                actionLabel = "Copy ADB",
+                                actionLabel = R.string.perm_action_copy_adb,
                                 action = {
                                     val adbCommand = "adb shell pm grant com.sameerasw.essentials android.permission.WRITE_SECURE_SETTINGS"
                                     val clipboard = context.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
                                     val clip = ClipData.newPlainText("adb_command", adbCommand)
                                     clipboard.setPrimaryClip(clip)
                                 },
-                                secondaryActionLabel = "Check",
+                                secondaryActionLabel = R.string.perm_action_check,
                                 secondaryAction = {
                                     viewModel.isWriteSecureSettingsEnabled.value = viewModel.canWriteSecureSettings(context)
                                 },
@@ -314,10 +315,10 @@ class FeatureSettingsActivity : FragmentActivity() {
                         "Snooze system notifications" -> listOf(
                             PermissionItem(
                                 iconRes = R.drawable.rounded_snooze_24,
-                                title = "Notification Listener",
-                                description = "Required to detect and snooze notifications",
+                                title = R.string.perm_notif_listener_title,
+                                description = R.string.perm_notif_listener_desc_snooze,
                                 dependentFeatures = PermissionRegistry.getFeatures("NOTIFICATION_LISTENER"),
-                                actionLabel = if (isNotificationListenerEnabled) "Permission granted" else "Grant listener",
+                                actionLabel = R.string.perm_action_grant,
                                 action = { viewModel.requestNotificationListenerPermission(context) },
                                 isGranted = isNotificationListenerEnabled
                             )
@@ -325,10 +326,10 @@ class FeatureSettingsActivity : FragmentActivity() {
                         "Screen locked security" -> listOf(
                             PermissionItem(
                                 iconRes = R.drawable.rounded_settings_accessibility_24,
-                                title = "Accessibility Service",
-                                description = "Required for App Lock, Screen Locked Security and other features to detect interactions",
+                                title = R.string.perm_accessibility_title,
+                                description = R.string.perm_accessibility_desc_common,
                                 dependentFeatures = PermissionRegistry.getFeatures("ACCESSIBILITY"),
-                                actionLabel = "Enable in Settings",
+                                actionLabel = R.string.perm_action_enable,
                                 action = {
                                     context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
                                 },
@@ -336,10 +337,10 @@ class FeatureSettingsActivity : FragmentActivity() {
                             ),
                             PermissionItem(
                                 iconRes = R.drawable.rounded_security_24,
-                                title = "Write Secure Settings",
-                                description = "Required for Statusbar icons and Screen Locked Security",
+                                title = R.string.perm_write_secure_title,
+                                description = R.string.perm_write_secure_desc_common,
                                 dependentFeatures = PermissionRegistry.getFeatures("WRITE_SECURE_SETTINGS"),
-                                actionLabel = "Copy ADB",
+                                actionLabel = R.string.perm_action_copy_adb,
                                 action = {
                                     val adbCommand = "adb shell pm grant com.sameerasw.essentials android.permission.WRITE_SECURE_SETTINGS"
                                     val clipboard = context.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
@@ -350,10 +351,10 @@ class FeatureSettingsActivity : FragmentActivity() {
                             ),
                             PermissionItem(
                                 iconRes = R.drawable.rounded_security_24,
-                                title = "Device Administrator",
-                                description = "Required to lock the device on unauthorized access attempts for Screen Locked Security",
+                                title = R.string.perm_device_admin_title,
+                                description = R.string.perm_device_admin_desc,
                                 dependentFeatures = PermissionRegistry.getFeatures("DEVICE_ADMIN"),
-                                actionLabel = "Enable Admin",
+                                actionLabel = R.string.action_enable_in_settings,
                                 action = {
                                     viewModel.requestDeviceAdmin(context)
                                 },
@@ -363,10 +364,10 @@ class FeatureSettingsActivity : FragmentActivity() {
                         "App lock" -> listOf(
                             PermissionItem(
                                 iconRes = R.drawable.rounded_settings_accessibility_24,
-                                title = "Accessibility Service",
-                                description = "Required for App Lock and other features to detect app launches",
+                                title = R.string.perm_accessibility_title,
+                                description = R.string.perm_accessibility_desc_common,
                                 dependentFeatures = PermissionRegistry.getFeatures("ACCESSIBILITY"),
-                                actionLabel = "Enable in Settings",
+                                actionLabel = R.string.perm_action_enable,
                                 action = {
                                     context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
                                 },
@@ -376,10 +377,10 @@ class FeatureSettingsActivity : FragmentActivity() {
                         "Freeze" -> listOf(
                             PermissionItem(
                                 iconRes = R.drawable.rounded_mode_cool_24,
-                                title = "Shizuku Service",
-                                description = "Required to disable/freeze applications",
+                                title = R.string.perm_shizuku_title,
+                                description = R.string.perm_shizuku_desc,
                                 dependentFeatures = PermissionRegistry.getFeatures("SHIZUKU"),
-                                actionLabel = if (viewModel.isShizukuPermissionGranted.value) "Permission granted" else "Grant Shizuku",
+                                actionLabel = R.string.perm_action_grant,
                                 action = { viewModel.requestShizukuPermission() },
                                 isGranted = viewModel.isShizukuPermissionGranted.value
                             )
@@ -390,7 +391,7 @@ class FeatureSettingsActivity : FragmentActivity() {
                     if (permissionItems.isNotEmpty()) {
                         PermissionsBottomSheet(
                             onDismissRequest = { showPermissionSheet = false },
-                            featureTitle = feature,
+                            featureTitle = if (featureObj != null) stringResource(featureObj.title) else featureId,
                             permissions = permissionItems
                         )
                     }
@@ -403,16 +404,16 @@ class FeatureSettingsActivity : FragmentActivity() {
                     containerColor = MaterialTheme.colorScheme.surfaceContainer,
                     topBar = {
                         ReusableTopAppBar(
-                            title = feature,
+                            title = if (featureObj != null) stringResource(featureObj.title) else featureId,
                             hasBack = true,
                             hasSearch = false,
                             onBackClick = { finish() },
                             scrollBehavior = scrollBehavior,
-                            subtitle = description
+                            subtitle = if (featureObj != null) stringResource(featureObj.description) else ""
                         )
                     },
                     floatingActionButton = {
-                        if (feature == "Notification lighting") {
+                        if (featureId == "Notification lighting") {
                             ExtendedFloatingActionButton(
                                 onClick = {
                                     HapticUtil.performVirtualKeyHaptic(view)
@@ -420,20 +421,20 @@ class FeatureSettingsActivity : FragmentActivity() {
                                 },
                                 expanded = fabExpanded,
                                 icon = { Icon(painter = painterResource(id = R.drawable.rounded_play_arrow_24), contentDescription = null) },
-                                text = { Text("Preview") },
+                                text = { Text(stringResource(R.string.action_preview)) },
                                 modifier = Modifier.height(64.dp)
                             )
                         }
                     }
                 ) { innerPadding ->
-                    val hasScroll = feature != "Sound mode tile"
+                    val hasScroll = featureId != "Sound mode tile"
                     Column(
                         modifier = Modifier
                             .padding(innerPadding)
                             .fillMaxSize()
                             .then(if (hasScroll) Modifier.verticalScroll(rememberScrollState()) else Modifier)
                     ) {
-                        when (feature) {
+                        when (featureId) {
                             "Screen off widget" -> {
                                 ScreenOffWidgetSettingsUI(
                                     viewModel = viewModel,
@@ -486,7 +487,6 @@ class FeatureSettingsActivity : FragmentActivity() {
                                     highlightSetting = highlightSetting
                                 )
                             }
-
                             "Snooze system notifications" -> {
                                 SnoozeNotificationsSettingsUI(
                                     viewModel = viewModel,
@@ -520,28 +520,7 @@ class FeatureSettingsActivity : FragmentActivity() {
                                     highlightSetting = highlightSetting
                                 )
                             }
-                            "Link actions" -> {
-                                setContent {
-                                    EssentialsTheme {
-                                        LinkPickerScreen(
-                                            uri = "https://sameerasw.com".toUri(),
-                                            onFinish = { finish() },
-                                            modifier = Modifier.fillMaxSize(),
-                                            demo = true
-                                        )
-                                    }
-                                }
-                            }
-                            else -> {
-                                ScreenOffWidgetSettingsUI(
-                                    viewModel = viewModel,
-                                    selectedHaptic = selectedHaptic,
-                                    onHapticSelected = { type -> selectedHaptic = type },
-                                    vibrator = vibrator,
-                                    prefs = prefs,
-                                    modifier = Modifier.padding(top = 16.dp)
-                                )
-                            }
+                            // else -> default UI (optional cleanup)
                         }
                     }
                 }

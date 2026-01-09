@@ -40,6 +40,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import com.sameerasw.essentials.domain.registry.FeatureRegistry
@@ -53,7 +54,7 @@ import com.sameerasw.essentials.ui.components.sheets.PermissionsBottomSheet
 import com.sameerasw.essentials.viewmodels.MainViewModel
 import kotlinx.coroutines.delay
 
-private const val FEATURE_MAPS_POWER_SAVING = "Maps power saving mode"
+private const val FEATURE_MAPS_POWER_SAVING = R.string.feat_maps_power_saving_title
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -83,10 +84,10 @@ fun SetupFeatures(
             items.add(
                 PermissionItem(
                     iconRes = R.drawable.rounded_adb_24,
-                    title = "Shizuku",
-                    description = "Required for advanced commands. Install Shizuku from the Play Store.",
+                    title = R.string.perm_shizuku_title,
+                    description = R.string.perm_shizuku_desc,
                     dependentFeatures = PermissionRegistry.getFeatures("SHIZUKU"),
-                    actionLabel = "Install Shizuku",
+                    actionLabel = R.string.perm_shizuku_install_action,
                     action = {
                         val intent = Intent(Intent.ACTION_VIEW,
                             "https://play.google.com/store/apps/details?id=moe.shizuku.privileged.api".toUri())
@@ -100,10 +101,10 @@ fun SetupFeatures(
             items.add(
                 PermissionItem(
                     iconRes = R.drawable.rounded_adb_24,
-                    title = "Shizuku permission",
-                    description = "Required to run power-saving commands while maps is navigating.",
+                    title = R.string.perm_shizuku_grant_title,
+                    description = R.string.perm_shizuku_grant_desc,
                     dependentFeatures = PermissionRegistry.getFeatures("SHIZUKU"),
-                    actionLabel = "Grant permission",
+                    actionLabel = R.string.perm_action_grant,
                     action = { viewModel.requestShizukuPermission() },
                     isGranted = isShizukuPermissionGranted
                 )
@@ -114,10 +115,10 @@ fun SetupFeatures(
             items.add(
                 PermissionItem(
                     iconRes = R.drawable.rounded_notifications_unread_24,
-                    title = "Notification listener",
-                    description = "Required to detect when Maps is navigating.",
+                    title = R.string.perm_notif_listener_title,
+                    description = R.string.perm_notif_listener_desc_maps,
                     dependentFeatures = PermissionRegistry.getFeatures("NOTIFICATION_LISTENER"),
-                    actionLabel = "Grant listener",
+                    actionLabel = R.string.perm_action_grant,
                     action = { viewModel.requestNotificationListenerPermission(context) },
                     isGranted = isNotificationListenerEnabled
                 )
@@ -128,7 +129,7 @@ fun SetupFeatures(
     }
 
     var showSheet by remember { mutableStateOf(false) }
-    var currentFeature by remember { mutableStateOf<String?>(null) }
+    var currentFeature by remember { mutableStateOf<Int?>(null) }
 
     // Periodic check for Caffeinate status
     LaunchedEffect(Unit) {
@@ -152,13 +153,13 @@ fun SetupFeatures(
         if (showSheet && currentFeature != null) {
             val missing = mutableListOf<PermissionItem>()
             when (currentFeature) {
-                "Screen off widget" -> {
+                R.string.feat_screen_off_widget_title -> {
                     if (!isAccessibilityEnabled) {
                         missing.add(
                             PermissionItem(
                                 iconRes = R.drawable.rounded_settings_accessibility_24,
-                                title = "Accessibility",
-                                description = "Required for App Lock, Screen off widget and other features to detect interactions",
+                                title = R.string.perm_accessibility_title,
+                                description = R.string.perm_accessibility_desc_common,
                                 dependentFeatures = PermissionRegistry.getFeatures("ACCESSIBILITY"),
                                 action = {
                                     context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
@@ -168,22 +169,22 @@ fun SetupFeatures(
                         )
                     }
                 }
-                "Statusbar icons" -> {
+                R.string.feat_statusbar_icons_title -> {
                     if (!isWriteSecureSettingsEnabled) {
                         missing.add(
                             PermissionItem(
                                 iconRes = R.drawable.rounded_security_24,
-                                title = "Write Secure Settings",
-                                description = "Required for Statusbar icons and Screen Locked Security",
+                                title = R.string.perm_write_secure_title,
+                                description = R.string.perm_write_secure_desc_common,
                                 dependentFeatures = PermissionRegistry.getFeatures("WRITE_SECURE_SETTINGS"),
-                                actionLabel = "Copy ADB",
+                                actionLabel = R.string.perm_action_copy_adb,
                                 action = {
                                     val adbCommand = "adb shell pm grant com.sameerasw.essentials android.permission.WRITE_SECURE_SETTINGS"
                                     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                                     val clip = ClipData.newPlainText("adb_command", adbCommand)
                                     clipboard.setPrimaryClip(clip)
                                 },
-                                secondaryActionLabel = "Check",
+                                secondaryActionLabel = R.string.perm_action_check,
                                 secondaryAction = {
                                     viewModel.isWriteSecureSettingsEnabled.value = viewModel.canWriteSecureSettings(context)
                                 },
@@ -195,15 +196,15 @@ fun SetupFeatures(
                 FEATURE_MAPS_POWER_SAVING -> {
                     missing.addAll(buildMapsPowerSavingPermissionItems())
                 }
-                "Notification lighting" -> {
+                R.string.feat_notification_lighting_title -> {
                     if (!isOverlayPermissionGranted) {
                         missing.add(
                             PermissionItem(
                                 iconRes = R.drawable.rounded_magnify_fullscreen_24,
-                                title = "Overlay Permission",
-                                description = "Required to display the notification lighting overlay on the screen",
+                                title = R.string.perm_overlay_title,
+                                description = R.string.perm_overlay_desc,
                                 dependentFeatures = PermissionRegistry.getFeatures("DRAW_OVERLAYS"),
-                                actionLabel = "Grant Permission",
+                                actionLabel = R.string.perm_action_grant,
                                 action = {
                                     val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                                         "package:${context.packageName}".toUri())
@@ -218,10 +219,10 @@ fun SetupFeatures(
                         missing.add(
                             PermissionItem(
                                 iconRes = R.drawable.rounded_settings_accessibility_24,
-                                title = "Accessibility Service",
-                                description = "Required to trigger notification lighting on new notifications",
+                                title = R.string.perm_accessibility_title,
+                                description = R.string.perm_accessibility_desc_lighting,
                                 dependentFeatures = PermissionRegistry.getFeatures("ACCESSIBILITY"),
-                                actionLabel = "Enable in Settings",
+                                actionLabel = R.string.perm_action_enable,
                                 action = {
                                     val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
                                     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
@@ -235,25 +236,25 @@ fun SetupFeatures(
                         missing.add(
                             PermissionItem(
                                 iconRes = R.drawable.rounded_notifications_unread_24,
-                                title = "Notification Listener",
-                                description = "Required to detect new notifications",
+                                title = R.string.perm_notif_listener_title,
+                                description = R.string.perm_notif_listener_desc_lighting,
                                 dependentFeatures = PermissionRegistry.getFeatures("NOTIFICATION_LISTENER"),
-                                actionLabel = if (isNotificationListenerEnabled) "Permission granted" else "Grant listener",
+                                actionLabel = R.string.perm_action_grant,
                                 action = { viewModel.requestNotificationListenerPermission(context) },
                                 isGranted = isNotificationListenerEnabled
                             )
                         )
                     }
                 }
-                "Button remap" -> {
+                R.string.feat_button_remap_title -> {
                     if (!isAccessibilityEnabled) {
                         missing.add(
                             PermissionItem(
                                 iconRes = R.drawable.rounded_settings_accessibility_24,
-                                title = "Accessibility Service",
-                                description = "Required to intercept hardware button events",
+                                title = R.string.perm_accessibility_title,
+                                description = R.string.perm_accessibility_desc_remap,
                                 dependentFeatures = PermissionRegistry.getFeatures("ACCESSIBILITY"),
-                                actionLabel = "Enable in Settings",
+                                actionLabel = R.string.perm_action_enable,
                                 action = {
                                     val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
                                     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
@@ -264,15 +265,15 @@ fun SetupFeatures(
                         )
                     }
                 }
-                "Dynamic night light" -> {
+                R.string.feat_dynamic_night_light_title -> {
                     if (!isAccessibilityEnabled) {
                         missing.add(
                             PermissionItem(
                                 iconRes = R.drawable.rounded_settings_accessibility_24,
-                                title = "Accessibility Service",
-                                description = "Needed to monitor foreground applications.",
+                                title = R.string.perm_accessibility_title,
+                                description = R.string.perm_accessibility_desc_night_light,
                                 dependentFeatures = PermissionRegistry.getFeatures("ACCESSIBILITY"),
-                                actionLabel = "Enable Service",
+                                actionLabel = R.string.perm_action_enable,
                                 action = {
                                     val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
                                     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
@@ -286,12 +287,12 @@ fun SetupFeatures(
                         missing.add(
                             PermissionItem(
                                 iconRes = R.drawable.rounded_security_24,
-                                title = "Write Secure Settings",
-                                description = "Needed to toggle Night Light. Grant via ADB or root.",
+                                title = R.string.perm_write_secure_title,
+                                description = R.string.perm_write_secure_desc_night_light,
                                 dependentFeatures = PermissionRegistry.getFeatures("WRITE_SECURE_SETTINGS"),
-                                actionLabel = "How to grant",
+                                actionLabel = R.string.perm_action_how_to,
                                 action = {
-                                    // Maybe show a dialog or link to instructions
+                                    // instructions
                                 },
                                 isGranted = isWriteSecureSettingsEnabled
                             )
@@ -299,15 +300,15 @@ fun SetupFeatures(
                     }
                 }
 
-                "Screen locked security" -> {
+                R.string.feat_screen_locked_security_title -> {
                     if (!isAccessibilityEnabled) {
                         missing.add(
                             PermissionItem(
                                 iconRes = R.drawable.rounded_settings_accessibility_24,
-                                title = "Accessibility Service",
-                                description = "Required for App Lock, Screen Locked Security and other features to detect interactions",
+                                title = R.string.perm_accessibility_title,
+                                description = R.string.perm_accessibility_desc_common,
                                 dependentFeatures = PermissionRegistry.getFeatures("ACCESSIBILITY"),
-                                actionLabel = "Enable Service",
+                                actionLabel = R.string.perm_action_enable,
                                 action = {
                                     val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
                                     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
@@ -321,10 +322,10 @@ fun SetupFeatures(
                         missing.add(
                             PermissionItem(
                                 iconRes = R.drawable.rounded_security_24,
-                                title = "Write Secure Settings",
-                                description = "Required for Statusbar icons and Screen Locked Security",
+                                title = R.string.perm_write_secure_title,
+                                description = R.string.perm_write_secure_desc_common,
                                 dependentFeatures = PermissionRegistry.getFeatures("WRITE_SECURE_SETTINGS"),
-                                actionLabel = "Copy ADB",
+                                actionLabel = R.string.perm_action_copy_adb,
                                 action = {
                                     val adbCommand = "adb shell pm grant com.sameerasw.essentials android.permission.WRITE_SECURE_SETTINGS"
                                     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
@@ -339,10 +340,10 @@ fun SetupFeatures(
                         missing.add(
                             PermissionItem(
                                 iconRes = R.drawable.rounded_security_24,
-                                title = "Device Administrator",
-                                description = "Required to hard-lock the device (disabling biometrics) on unauthorized access attempts",
+                                title = R.string.perm_device_admin_title,
+                                description = R.string.perm_device_admin_desc,
                                 dependentFeatures = PermissionRegistry.getFeatures("DEVICE_ADMIN"),
-                                actionLabel = "Enable Admin",
+                                actionLabel = R.string.action_enable_in_settings,
                                 action = {
                                     viewModel.requestDeviceAdmin(context)
                                 },
@@ -351,15 +352,15 @@ fun SetupFeatures(
                         )
                     }
                 }
-                "App lock" -> {
+                R.string.feat_app_lock_title -> {
                     if (!isAccessibilityEnabled) {
                         missing.add(
                             PermissionItem(
                                 iconRes = R.drawable.rounded_settings_accessibility_24,
-                                title = "Accessibility Service",
-                                description = "Required for App Lock and other features to detect app launches",
+                                title = R.string.perm_accessibility_title,
+                                description = R.string.perm_accessibility_desc_common,
                                 dependentFeatures = PermissionRegistry.getFeatures("ACCESSIBILITY"),
-                                actionLabel = "Enable Service",
+                                actionLabel = R.string.perm_action_enable,
                                 action = {
                                     val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
                                     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
@@ -380,33 +381,33 @@ fun SetupFeatures(
 
     if (showSheet && currentFeature != null) {
         val permissionItems = when (currentFeature) {
-            "Screen off widget" -> listOf(
+            R.string.feat_screen_off_widget_title -> listOf(
                 PermissionItem(
                     iconRes = R.drawable.rounded_settings_accessibility_24,
-                    title = "Accessibility",
-                    description = "Required for App Lock, Screen off widget and other features to detect interactions",
+                    title = R.string.perm_accessibility_title,
+                    description = R.string.perm_accessibility_desc_common,
                     dependentFeatures = PermissionRegistry.getFeatures("ACCESSIBILITY"),
-                    actionLabel = "Grant Permission",
+                    actionLabel = R.string.perm_action_grant,
                     action = {
                         context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
                     },
                     isGranted = isAccessibilityEnabled
                 )
             )
-            "Statusbar icons" -> listOf(
+            R.string.feat_statusbar_icons_title -> listOf(
                 PermissionItem(
-                    iconRes = R.drawable.rounded_chevron_right_24,
-                    title = "Write Secure Settings",
-                    description = "Required for Statusbar icons and Screen Locked Security",
+                    iconRes = R.drawable.rounded_security_24,
+                    title = R.string.perm_write_secure_title,
+                    description = R.string.perm_write_secure_desc_common,
                     dependentFeatures = PermissionRegistry.getFeatures("WRITE_SECURE_SETTINGS"),
-                    actionLabel = "Copy ADB",
+                    actionLabel = R.string.perm_action_copy_adb,
                     action = {
                         val adbCommand = "adb shell pm grant com.sameerasw.essentials android.permission.WRITE_SECURE_SETTINGS"
                         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                         val clip = ClipData.newPlainText("adb_command", adbCommand)
                         clipboard.setPrimaryClip(clip)
                     },
-                    secondaryActionLabel = "Check",
+                    secondaryActionLabel = R.string.perm_action_check,
                     secondaryAction = {
                         viewModel.isWriteSecureSettingsEnabled.value = viewModel.canWriteSecureSettings(context)
                     },
@@ -414,157 +415,157 @@ fun SetupFeatures(
                 )
             )
             FEATURE_MAPS_POWER_SAVING -> buildMapsPowerSavingPermissionItems()
-                "Notification lighting" -> listOf(
-                    PermissionItem(
-                        iconRes = R.drawable.rounded_magnify_fullscreen_24,
-                        title = "Overlay Permission",
-                        description = "Required to display the notification lighting overlay on the screen",
-                        dependentFeatures = PermissionRegistry.getFeatures("DRAW_OVERLAYS"),
-                        actionLabel = "Grant Permission",
-                        action = {
-                            val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                                "package:${context.packageName}".toUri())
-                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                            context.startActivity(intent)
-                        },
-                        isGranted = isOverlayPermissionGranted
-                    ),
-                    PermissionItem(
-                        iconRes = R.drawable.rounded_settings_accessibility_24,
-                        title = "Accessibility Service",
-                        description = "Required to trigger notification lighting on new notifications",
-                        dependentFeatures = PermissionRegistry.getFeatures("ACCESSIBILITY"),
-                        actionLabel = "Enable in Settings",
-                        action = {
-                            val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                            context.startActivity(intent)
-                        },
-                        isGranted = isNotificationLightingAccessibilityEnabled
-                    ),
-                    PermissionItem(
-                        iconRes = R.drawable.rounded_notifications_unread_24,
-                        title = "Notification Listener",
-                        description = "Required to detect new notifications",
-                        dependentFeatures = PermissionRegistry.getFeatures("NOTIFICATION_LISTENER"),
-                        actionLabel = if (isNotificationListenerEnabled) "Permission granted" else "Grant listener",
-                        action = { viewModel.requestNotificationListenerPermission(context) },
-                        isGranted = isNotificationListenerEnabled
-                    )
+            R.string.feat_notification_lighting_title -> listOf(
+                PermissionItem(
+                    iconRes = R.drawable.rounded_magnify_fullscreen_24,
+                    title = R.string.perm_overlay_title,
+                    description = R.string.perm_overlay_desc,
+                    dependentFeatures = PermissionRegistry.getFeatures("DRAW_OVERLAYS"),
+                    actionLabel = R.string.perm_action_grant,
+                    action = {
+                        val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                            "package:${context.packageName}".toUri())
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                        context.startActivity(intent)
+                    },
+                    isGranted = isOverlayPermissionGranted
+                ),
+                PermissionItem(
+                    iconRes = R.drawable.rounded_settings_accessibility_24,
+                    title = R.string.perm_accessibility_title,
+                    description = R.string.perm_accessibility_desc_lighting,
+                    dependentFeatures = PermissionRegistry.getFeatures("ACCESSIBILITY"),
+                    actionLabel = R.string.perm_action_enable,
+                    action = {
+                        val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                        context.startActivity(intent)
+                    },
+                    isGranted = isNotificationLightingAccessibilityEnabled
+                ),
+                PermissionItem(
+                    iconRes = R.drawable.rounded_notifications_unread_24,
+                    title = R.string.perm_notif_listener_title,
+                    description = R.string.perm_notif_listener_desc_lighting,
+                    dependentFeatures = PermissionRegistry.getFeatures("NOTIFICATION_LISTENER"),
+                    actionLabel = R.string.perm_action_grant,
+                    action = { viewModel.requestNotificationListenerPermission(context) },
+                    isGranted = isNotificationListenerEnabled
                 )
-                "Button remap" -> listOf(
-                    PermissionItem(
-                        iconRes = R.drawable.rounded_settings_accessibility_24,
-                        title = "Accessibility Service",
-                        description = "Required to intercept hardware button events",
-                        dependentFeatures = PermissionRegistry.getFeatures("ACCESSIBILITY"),
-                        actionLabel = "Enable in Settings",
-                        action = {
-                            val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                            context.startActivity(intent)
-                        },
-                        isGranted = isAccessibilityEnabled
-                    )
+            )
+            R.string.feat_button_remap_title -> listOf(
+                PermissionItem(
+                    iconRes = R.drawable.rounded_settings_accessibility_24,
+                    title = R.string.perm_accessibility_title,
+                    description = R.string.perm_accessibility_desc_remap,
+                    dependentFeatures = PermissionRegistry.getFeatures("ACCESSIBILITY"),
+                    actionLabel = R.string.perm_action_enable,
+                    action = {
+                        val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                        context.startActivity(intent)
+                    },
+                    isGranted = isAccessibilityEnabled
                 )
-                "Snooze system notifications" -> listOf(
-                    PermissionItem(
-                        iconRes = R.drawable.rounded_snooze_24,
-                        title = "Notification Listener",
-                        description = "Required to detect and snooze notifications",
-                        dependentFeatures = PermissionRegistry.getFeatures("NOTIFICATION_LISTENER"),
-                        actionLabel = if (isNotificationListenerEnabled) "Permission granted" else "Grant listener",
-                        action = { viewModel.requestNotificationListenerPermission(context) },
-                        isGranted = isNotificationListenerEnabled
-                    )
+            )
+            R.string.feat_snooze_notifications_title -> listOf(
+                PermissionItem(
+                    iconRes = R.drawable.rounded_snooze_24,
+                    title = R.string.perm_notif_listener_title,
+                    description = R.string.perm_notif_listener_desc_snooze,
+                    dependentFeatures = PermissionRegistry.getFeatures("NOTIFICATION_LISTENER"),
+                    actionLabel = R.string.perm_action_grant,
+                    action = { viewModel.requestNotificationListenerPermission(context) },
+                    isGranted = isNotificationListenerEnabled
                 )
-                "Dynamic night light" -> listOf(
-                    PermissionItem(
-                        iconRes = R.drawable.rounded_settings_accessibility_24,
-                        title = "Accessibility Service",
-                        description = "Needed to monitor foreground applications.",
-                        dependentFeatures = PermissionRegistry.getFeatures("ACCESSIBILITY"),
-                        actionLabel = "Enable Service",
-                        action = {
-                            val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                            context.startActivity(intent)
-                        },
-                        isGranted = isAccessibilityEnabled
-                    ),
-                    PermissionItem(
-                        iconRes = R.drawable.rounded_security_24,
-                        title = "Write Secure Settings",
-                        description = "Needed to toggle Night Light. Grant via ADB or root.",
-                        dependentFeatures = PermissionRegistry.getFeatures("WRITE_SECURE_SETTINGS"),
-                        actionLabel = "How to grant",
-                        action = { /* instructions */ },
-                        isGranted = isWriteSecureSettingsEnabled
-                    )
+            )
+            R.string.feat_dynamic_night_light_title -> listOf(
+                PermissionItem(
+                    iconRes = R.drawable.rounded_settings_accessibility_24,
+                    title = R.string.perm_accessibility_title,
+                    description = R.string.perm_accessibility_desc_night_light,
+                    dependentFeatures = PermissionRegistry.getFeatures("ACCESSIBILITY"),
+                    actionLabel = R.string.perm_action_enable,
+                    action = {
+                        val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                        context.startActivity(intent)
+                    },
+                    isGranted = isAccessibilityEnabled
+                ),
+                PermissionItem(
+                    iconRes = R.drawable.rounded_security_24,
+                    title = R.string.perm_write_secure_title,
+                    description = R.string.perm_write_secure_desc_night_light,
+                    dependentFeatures = PermissionRegistry.getFeatures("WRITE_SECURE_SETTINGS"),
+                    actionLabel = R.string.perm_action_how_to,
+                    action = { /* instructions */ },
+                    isGranted = isWriteSecureSettingsEnabled
                 )
-                "Screen locked security" -> listOf(
-                    PermissionItem(
-                        iconRes = R.drawable.rounded_settings_accessibility_24,
-                        title = "Accessibility Service",
-                        description = "Required for App Lock, Screen Locked Security and other features to detect interactions",
-                        dependentFeatures = PermissionRegistry.getFeatures("ACCESSIBILITY"),
-                        actionLabel = "Enable Service",
-                        action = {
-                            val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                            context.startActivity(intent)
-                        },
-                        isGranted = isAccessibilityEnabled
-                    ),
-                    PermissionItem(
-                        iconRes = R.drawable.rounded_security_24,
-                        title = "Write Secure Settings",
-                        description = "Required for Statusbar icons and Screen Locked Security",
-                        dependentFeatures = PermissionRegistry.getFeatures("WRITE_SECURE_SETTINGS"),
-                        actionLabel = "Copy ADB",
-                        action = {
-                            val adbCommand = "adb shell pm grant com.sameerasw.essentials android.permission.WRITE_SECURE_SETTINGS"
-                            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                            val clip = ClipData.newPlainText("adb_command", adbCommand)
-                            clipboard.setPrimaryClip(clip)
-                        },
-                        isGranted = isWriteSecureSettingsEnabled
-                    ),
-                    PermissionItem(
-                        iconRes = R.drawable.rounded_security_24,
-                        title = "Device Administrator",
-                        description = "Required to hard-lock the device (disabling biometrics) on unauthorized access attempts",
-                        dependentFeatures = PermissionRegistry.getFeatures("DEVICE_ADMIN"),
-                        actionLabel = "Enable Admin",
-                        action = {
-                            viewModel.requestDeviceAdmin(context)
-                        },
-                        isGranted = viewModel.isDeviceAdminEnabled.value
-                    )
+            )
+            R.string.feat_screen_locked_security_title -> listOf(
+                PermissionItem(
+                    iconRes = R.drawable.rounded_settings_accessibility_24,
+                    title = R.string.perm_accessibility_title,
+                    description = R.string.perm_accessibility_desc_common,
+                    dependentFeatures = PermissionRegistry.getFeatures("ACCESSIBILITY"),
+                    actionLabel = R.string.perm_action_enable,
+                    action = {
+                        val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                        context.startActivity(intent)
+                    },
+                    isGranted = isAccessibilityEnabled
+                ),
+                PermissionItem(
+                    iconRes = R.drawable.rounded_security_24,
+                    title = R.string.perm_write_secure_title,
+                    description = R.string.perm_write_secure_desc_common,
+                    dependentFeatures = PermissionRegistry.getFeatures("WRITE_SECURE_SETTINGS"),
+                    actionLabel = R.string.perm_action_copy_adb,
+                    action = {
+                        val adbCommand = "adb shell pm grant com.sameerasw.essentials android.permission.WRITE_SECURE_SETTINGS"
+                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                        val clip = ClipData.newPlainText("adb_command", adbCommand)
+                        clipboard.setPrimaryClip(clip)
+                    },
+                    isGranted = isWriteSecureSettingsEnabled
+                ),
+                PermissionItem(
+                    iconRes = R.drawable.rounded_security_24,
+                    title = R.string.perm_device_admin_title,
+                    description = R.string.perm_device_admin_desc,
+                    dependentFeatures = PermissionRegistry.getFeatures("DEVICE_ADMIN"),
+                    actionLabel = R.string.action_enable_in_settings,
+                    action = {
+                        viewModel.requestDeviceAdmin(context)
+                    },
+                    isGranted = viewModel.isDeviceAdminEnabled.value
                 )
+            )
 
-                "App lock" -> listOf(
-                    PermissionItem(
-                        iconRes = R.drawable.rounded_settings_accessibility_24,
-                        title = "Accessibility Service",
-                        description = "Required for App Lock and other features to detect app launches",
-                        dependentFeatures = PermissionRegistry.getFeatures("ACCESSIBILITY"),
-                        actionLabel = "Enable Service",
-                        action = {
-                            val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                            context.startActivity(intent)
-                        },
-                        isGranted = isAccessibilityEnabled
-                    )
+            R.string.feat_app_lock_title -> listOf(
+                PermissionItem(
+                    iconRes = R.drawable.rounded_settings_accessibility_24,
+                    title = R.string.perm_accessibility_title,
+                    description = R.string.perm_accessibility_desc_common,
+                    dependentFeatures = PermissionRegistry.getFeatures("ACCESSIBILITY"),
+                    actionLabel = R.string.perm_action_enable,
+                    action = {
+                        val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                        context.startActivity(intent)
+                    },
+                    isGranted = isAccessibilityEnabled
                 )
+            )
             else -> emptyList()
         }
 
-        if (permissionItems.isNotEmpty()) {
+        if (showSheet && permissionItems.isNotEmpty() && currentFeature != null) {
             PermissionsBottomSheet(
                 onDismissRequest = { showSheet = false },
-                featureTitle = currentFeature ?: "",
+                featureTitle = currentFeature!!,
                 permissions = permissionItems,
                 onHelpClick = {
                     showSheet = false
@@ -606,7 +607,7 @@ fun SetupFeatures(
         OutlinedTextField(
             value = viewModel.searchQuery.value,
             onValueChange = { new ->
-                viewModel.onSearchQueryChanged(new)
+                viewModel.onSearchQueryChanged(new, context)
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -616,11 +617,11 @@ fun SetupFeatures(
             leadingIcon = {
                 Icon(
                     painter = painterResource(id = R.drawable.rounded_search_24),
-                    contentDescription = "Search",
+                    contentDescription = stringResource(R.string.label_search_content_description),
                     modifier = Modifier.size(24.dp)
                 )
             },
-            placeholder = { if (!isFocused && viewModel.searchQuery.value.isEmpty()) Text("Search for Tools, Mods and Tweaks") },
+            placeholder = { if (!isFocused && viewModel.searchQuery.value.isEmpty()) Text(stringResource(R.string.search_placeholder)) },
             shape = RoundedCornerShape(64.dp),
             singleLine = true,
             colors = OutlinedTextFieldDefaults.colors(
@@ -659,7 +660,7 @@ fun SetupFeatures(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    text = "No results for \"$searchQuery\"",
+                    text = stringResource(id = R.string.search_no_results, searchQuery),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 8.dp)
@@ -671,7 +672,7 @@ fun SetupFeatures(
             // Render Search Results
             if (searchResults.isNotEmpty()) {
                 Text(
-                    text = "Search Results",
+                    text = stringResource(R.string.search_results_title),
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(start = 32.dp, top = 16.dp, bottom = 8.dp),
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -699,8 +700,8 @@ fun SetupFeatures(
                                 if (result.category == "Security and Privacy" && context is FragmentActivity) {
                                     BiometricHelper.showBiometricPrompt(
                                         activity = context,
-                                        title = "${result.title} Settings",
-                                        subtitle = "Authenticate to access settings",
+                                        title = context.getString(R.string.biometric_title_settings_format, result.title),
+                                        subtitle = context.getString(R.string.biometric_subtitle_access_settings),
                                         onSuccess = action
                                     )
                                 } else {
@@ -711,7 +712,7 @@ fun SetupFeatures(
                             modifier = Modifier.padding(horizontal = 0.dp, vertical = 0.dp),
                             showToggle = false,
                             hasMoreSettings = true,
-                            description = if (result.parentFeature != null) "${result.parentFeature} > ${result.description}" else result.description
+                            descriptionOverride = if (result.parentFeature != null) "${result.parentFeature} > ${result.description}" else result.description
                         )
                     }
                 }
@@ -725,7 +726,7 @@ fun SetupFeatures(
                 // Show category header if there are features in this category
                 if (categoryFeatures.isNotEmpty()) {
                     Text(
-                        text = category,
+                        text = stringResource(id = category),
                         style = MaterialTheme.typography.titleMedium,
                         modifier = Modifier.padding(start = 32.dp, top = 16.dp, bottom = 8.dp),
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -740,11 +741,11 @@ fun SetupFeatures(
                             title = feature.title,
                             isEnabled = feature.isEnabled(viewModel),
                             onToggle = { enabled ->
-                                if (feature.category == "Security and Privacy" && context is FragmentActivity) {
+                                if (feature.category == R.string.cat_security && context is FragmentActivity) {
                                     BiometricHelper.showBiometricPrompt(
                                         activity = context,
-                                        title = "${feature.title} Security",
-                                        subtitle = if (enabled) "Authenticate to enable this feature" else "Authenticate to disable this feature",
+                                        title = context.getString(R.string.biometric_title_settings_format, context.getString(feature.title)),
+                                        subtitle = if (enabled) context.getString(R.string.biometric_subtitle_enable_feature) else context.getString(R.string.biometric_subtitle_disable_feature),
                                         onSuccess = { feature.onToggle(viewModel, context, enabled) }
                                     )
                                 } else {
@@ -752,11 +753,11 @@ fun SetupFeatures(
                                 }
                             },
                             onClick = {
-                                if (feature.category == "Security and Privacy" && context is FragmentActivity) {
+                                if (feature.category == R.string.cat_security && context is FragmentActivity) {
                                     BiometricHelper.showBiometricPrompt(
                                         activity = context,
-                                        title = "${feature.title} Settings",
-                                        subtitle = "Authenticate to access settings",
+                                        title = context.getString(R.string.biometric_title_settings_format, context.getString(feature.title)),
+                                        subtitle = context.getString(R.string.biometric_subtitle_access_settings),
                                         onSuccess = { feature.onClick(context, viewModel) }
                                     )
                                 } else {

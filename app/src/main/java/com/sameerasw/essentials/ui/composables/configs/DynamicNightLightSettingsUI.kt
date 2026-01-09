@@ -23,6 +23,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import com.sameerasw.essentials.R
 import com.sameerasw.essentials.domain.model.NotificationApp
 import com.sameerasw.essentials.domain.model.AppSelection
@@ -60,7 +61,7 @@ fun DynamicNightLightSettingsUI(
         ) {
             IconToggleItem(
                 iconRes = R.drawable.rounded_nightlight_24,
-                title = "Enable Dynamic Night Light",
+                title = stringResource(R.string.dynamic_night_light_enable_title),
                 isChecked = viewModel.isDynamicNightLightEnabled.value,
                 onCheckedChange = { checked ->
                     viewModel.setDynamicNightLightEnabled(checked, context)
@@ -70,7 +71,7 @@ fun DynamicNightLightSettingsUI(
         }
 
         Text(
-            text = "Apps that toggle off night light",
+            text = stringResource(R.string.dynamic_night_light_apps_section),
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(start = 16.dp, top = 24.dp, bottom = 8.dp),
             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -84,7 +85,7 @@ fun DynamicNightLightSettingsUI(
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Select apps")
+            Text(stringResource(R.string.action_select_apps))
         }
 
         if (showAppSelectionSheet) {

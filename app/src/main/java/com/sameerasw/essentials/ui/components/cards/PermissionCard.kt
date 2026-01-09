@@ -16,6 +16,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -29,13 +30,13 @@ import com.sameerasw.essentials.utils.HapticUtil
 @Composable
 fun PermissionCard(
     iconRes: Int,
-    title: String,
-    dependentFeatures: List<String>,
-    actionLabel: String = "Grant Permission",
+    title: Any, // Can be Int (Resource ID) or String
+    dependentFeatures: List<Any>, // List of Int or String
+    actionLabel: Any = R.string.perm_action_grant, // Can be Int or String
     isGranted: Boolean,
     onActionClick: () -> Unit,
     modifier: Modifier = Modifier,
-    secondaryActionLabel: String? = null,
+    secondaryActionLabel: Any? = null, // Can be Int or String
     onSecondaryActionClick: (() -> Unit)? = null
 ) {
     val grantedGreen = Color(0xFF4CAF50)
@@ -58,7 +59,12 @@ fun PermissionCard(
 
                 Column(modifier = Modifier.weight(1f)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(text = title, style = MaterialTheme.typography.titleMedium)
+                        val resolvedTitle = when (title) {
+                            is Int -> stringResource(id = title)
+                            is String -> title
+                            else -> ""
+                        }
+                        Text(text = resolvedTitle, style = MaterialTheme.typography.titleMedium)
                     }
 
                     Spacer(modifier = Modifier.height(4.dp))
@@ -66,13 +72,30 @@ fun PermissionCard(
                     Spacer(modifier = Modifier.height(4.dp))
                     // Bulleted list of dependent features
                     dependentFeatures.forEach { f ->
-                        Text(text = "• $f", style = MaterialTheme.typography.bodyMedium)
+                        val resolvedFeature = when (f) {
+                            is Int -> stringResource(id = f)
+                            is String -> f
+                            else -> ""
+                        }
+                        Text(text = "• $resolvedFeature", style = MaterialTheme.typography.bodyMedium)
                     }
                 }
             }
 
+            val resolvedActionLabel = when (actionLabel) {
+                is Int -> stringResource(id = actionLabel)
+                is String -> actionLabel
+                else -> ""
+            }
+
+            val resolvedSecondaryLabel = when (secondaryActionLabel) {
+                is Int -> stringResource(id = secondaryActionLabel as Int)
+                is String -> secondaryActionLabel
+                else -> null
+            }
+
             if (isGranted) {
-                if (secondaryActionLabel != null && onSecondaryActionClick != null) {
+                if (resolvedSecondaryLabel != null && onSecondaryActionClick != null) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -84,7 +107,7 @@ fun PermissionCard(
                             },
                             modifier = Modifier.weight(1f)
                         ) {
-                            Text(actionLabel)
+                            Text(resolvedActionLabel)
                         }
 
                         Button(
@@ -94,7 +117,7 @@ fun PermissionCard(
                             },
                             modifier = Modifier.weight(1f)
                         ) {
-                            Text(secondaryActionLabel)
+                            Text(resolvedSecondaryLabel)
                         }
                     }
                 } else {
@@ -102,14 +125,14 @@ fun PermissionCard(
                         HapticUtil.performVirtualKeyHaptic(view)
                         onActionClick()
                     }, modifier = Modifier.fillMaxWidth()) {
-                        Text(actionLabel)
+                        Text(resolvedActionLabel)
                         Spacer(modifier = Modifier.weight(1f))
                         Icon(painter = painterResource(id = R.drawable.rounded_arrow_forward_24), contentDescription = null)
                     }
                 }
             } else {
                 // Show buttons - either single or dual buttons
-                if (secondaryActionLabel != null && onSecondaryActionClick != null) {
+                if (resolvedSecondaryLabel != null && onSecondaryActionClick != null) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -121,7 +144,7 @@ fun PermissionCard(
                             },
                             modifier = Modifier.weight(1f)
                         ) {
-                            Text(actionLabel)
+                            Text(resolvedActionLabel)
                         }
 
                         Button(
@@ -131,7 +154,7 @@ fun PermissionCard(
                             },
                             modifier = Modifier.weight(1f)
                         ) {
-                            Text(secondaryActionLabel)
+                            Text(resolvedSecondaryLabel)
                         }
                     }
                 } else {
@@ -139,7 +162,7 @@ fun PermissionCard(
                         HapticUtil.performVirtualKeyHaptic(view)
                         onActionClick()
                     }, modifier = Modifier.fillMaxWidth()) {
-                        Text(actionLabel)
+                        Text(resolvedActionLabel)
                         Spacer(modifier = Modifier.weight(1f))
                         Icon(painter = painterResource(id = R.drawable.rounded_arrow_forward_24), contentDescription = null)
                     }

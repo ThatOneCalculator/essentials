@@ -12,7 +12,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import androidx.core.content.edit
+import com.sameerasw.essentials.R
 import com.sameerasw.essentials.viewmodels.MainViewModel
 import com.sameerasw.essentials.ui.components.pickers.HapticFeedbackPicker
 import com.sameerasw.essentials.ui.components.containers.RoundedCardContainer
@@ -40,7 +42,7 @@ fun ScreenOffWidgetSettingsUI(
     ) {
         // Haptic Feedback Category
         Text(
-            text = "Haptic Feedback",
+            text = stringResource(R.string.settings_section_haptic),
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp),
             color = MaterialTheme.colorScheme.onSurfaceVariant

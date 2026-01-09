@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import com.sameerasw.essentials.R
 import com.sameerasw.essentials.ui.components.cards.IconToggleItem
 import com.sameerasw.essentials.ui.components.containers.RoundedCardContainer
@@ -36,7 +37,7 @@ fun ScreenLockedSecuritySettingsUI(
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         Text(
-            text = "Security",
+            text = stringResource(R.string.settings_section_security),
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp),
             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -48,14 +49,14 @@ fun ScreenLockedSecuritySettingsUI(
             cornerRadius = 24.dp
         ) {
             IconToggleItem(
-                title = "Screen locked security",
+                title = stringResource(R.string.screen_locked_security_title),
                 isChecked = viewModel.isScreenLockedSecurityEnabled.value,
                 onCheckedChange = { isChecked ->
                     if (context is FragmentActivity) {
                         BiometricHelper.showBiometricPrompt(
                             activity = context,
-                            title = "Screen Locked Security",
-                            subtitle = if (isChecked) "Authenticate to enable screen locked security" else "Authenticate to disable screen locked security",
+                            title = context.getString(R.string.screen_locked_security_dialog_title),
+                            subtitle = if (isChecked) context.getString(R.string.screen_locked_security_auth_enable) else context.getString(R.string.screen_locked_security_auth_disable),
                             onSuccess = { viewModel.setScreenLockedSecurityEnabled(isChecked, context) }
                         )
                     } else {
@@ -85,17 +86,17 @@ fun ScreenLockedSecuritySettingsUI(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Text(
-                    text = "⚠️ WARNING",
+                    text = stringResource(R.string.warning_title),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.error
                 )
                 Text(
-                    text = "This feature is not foolproof. There may be edge cases where someone still being able to interact with the tile. \nAlso keep in mind that Android will always allow to do a forced reboot and Pixels will always allow the device to be turned off from the lock screen as well.",
+                    text = stringResource(R.string.screen_locked_security_warning_text),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = "Make sure to remove the airplane mode tile from quick settings as that is not preventable because it does not open a dialog window.",
+                    text = stringResource(R.string.screen_locked_security_airplane_warning),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.error,
                     fontWeight = FontWeight.Medium
@@ -105,7 +106,7 @@ fun ScreenLockedSecuritySettingsUI(
         }
 
         Text(
-            text = "When enabled, the Quick Settings panel will be immediately closed and the device will be locked down if someone attempt to interact with Internet tiles while the device is locked. \n\nThis will also disable biometric unlock to prevent further unauthorized access. Animation scale will be reduced to 0.1x while locked to make it even harder to interact with.",
+            text = stringResource(R.string.screen_locked_security_description),
             style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.padding(16.dp),
             color = MaterialTheme.colorScheme.onSurfaceVariant

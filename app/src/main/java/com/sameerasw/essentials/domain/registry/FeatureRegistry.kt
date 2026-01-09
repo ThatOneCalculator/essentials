@@ -10,17 +10,17 @@ object FeatureRegistry {
     val ALL_FEATURES = listOf(
         object : Feature(
             id = "Screen off widget",
-            title = "Screen off widget",
+            title = R.string.feat_screen_off_widget_title,
             iconRes = R.drawable.rounded_settings_power_24,
-            category = "Tools",
-            description = "Invisible widget to turn the screen off",
+            category = R.string.cat_tools,
+            description = R.string.feat_screen_off_widget_desc,
             permissionKeys = listOf("ACCESSIBILITY"),
             searchableSettings = listOf(
                 SearchSetting(
-                    "Widget Haptic feedback",
-                    "Pick haptic feedback for widget taps",
+                    R.string.search_haptic_title,
+                    R.string.search_haptic_desc,
                     "haptic_picker",
-                    listOf("vibration", "touch", "feel")
+                    R.array.keywords_haptic
                 )
             ),
             showToggle = false
@@ -31,29 +31,29 @@ object FeatureRegistry {
 
         object : Feature(
             id = "Statusbar icons",
-            title = "Statusbar icons",
+            title = R.string.feat_statusbar_icons_title,
             iconRes = R.drawable.rounded_interests_24,
-            category = "Visuals",
-            description = "Control statusbar icons visibility",
+            category = R.string.cat_visuals,
+            description = R.string.feat_statusbar_icons_desc,
             permissionKeys = listOf("WRITE_SECURE_SETTINGS"),
             searchableSettings = listOf(
                 SearchSetting(
-                    "Smart WiFi",
-                    "Hide mobile data when WiFi is connected",
+                    R.string.search_smart_wifi_title,
+                    R.string.search_smart_wifi_desc,
                     "smart_wifi",
-                    listOf("network", "visibility", "auto", "hide")
+                    R.array.keywords_network_visibility
                 ),
                 SearchSetting(
-                    "Smart Data",
-                    "Hide mobile data in certain modes",
+                    R.string.search_smart_data_title,
+                    R.string.search_smart_data_desc,
                     "smart_data",
-                    listOf("network", "visibility", "auto", "hide")
+                    R.array.keywords_network_visibility
                 ),
                 SearchSetting(
-                    "Reset All Icons",
-                    "Reset status bar icon visibility to default",
+                    R.string.search_reset_icons_title,
+                    R.string.search_reset_icons_desc,
                     "reset_icons",
-                    listOf("restore", "default", "icon")
+                    R.array.keywords_restore_default
                 )
             )
         ) {
@@ -64,17 +64,17 @@ object FeatureRegistry {
 
         object : Feature(
             id = "Caffeinate",
-            title = "Caffeinate",
+            title = R.string.feat_caffeinate_title,
             iconRes = R.drawable.rounded_coffee_24,
-            category = "Tools",
-            description = "Keep the screen awake",
+            category = R.string.cat_tools,
+            description = R.string.feat_caffeinate_desc,
             permissionKeys = listOf("POST_NOTIFICATIONS"),
             searchableSettings = listOf(
                 SearchSetting(
-                    "Show notification",
-                    "Show a persistent notification when Caffeinate is active",
+                    R.string.search_caffeinate_notif_title,
+                    R.string.search_caffeinate_notif_desc,
                     "show_notification",
-                    listOf("visible", "alert")
+                    R.array.keywords_alert
                 )
             )
         ) {
@@ -86,10 +86,10 @@ object FeatureRegistry {
 
         object : Feature(
             id = "Maps power saving mode",
-            title = "Maps power saving mode",
+            title = R.string.feat_maps_power_saving_title,
             iconRes = R.drawable.rounded_navigation_24,
-            category = "Tools",
-            description = "For any Android device",
+            category = R.string.cat_tools,
+            description = R.string.feat_maps_power_saving_desc,
             permissionKeys = listOf("SHIZUKU", "NOTIFICATION_LISTENER"),
             hasMoreSettings = false
         ) {
@@ -102,41 +102,41 @@ object FeatureRegistry {
 
         object : Feature(
             id = "Notification lighting",
-            title = "Notification lighting",
+            title = R.string.feat_notification_lighting_title,
             iconRes = R.drawable.rounded_magnify_fullscreen_24,
-            category = "Visuals",
-            description = "Light up for notifications",
+            category = R.string.cat_visuals,
+            description = R.string.feat_notification_lighting_desc,
             permissionKeys = listOf("DRAW_OVERLAYS", "ACCESSIBILITY", "NOTIFICATION_LISTENER"),
             searchableSettings = listOf(
                 SearchSetting(
-                    "Lighting Style",
-                    "Choose between Stroke, Glow, Spinner, and more",
+                    R.string.search_lighting_style_title,
+                    R.string.search_lighting_style_desc,
                     "style",
-                    listOf("animation", "visual", "look")
+                    R.array.keywords_visual_style
                 ),
                 SearchSetting(
-                    "Corner radius",
-                    "Adjust the corner radius of the notification lighting",
+                    R.string.search_corner_radius_title,
+                    R.string.search_corner_radius_desc,
                     "corner_radius",
-                    listOf("round", "shape", "edge")
+                    R.array.keywords_round_shape
                 ),
                 SearchSetting(
-                    "Skip silent notifications",
-                    "Do not show lighting for silent notifications",
+                    R.string.search_skip_silent_title,
+                    R.string.search_skip_silent_desc,
                     "skip_silent_notifications",
-                    listOf("quiet", "ignore", "filter")
+                    R.array.keywords_quiet_filter
                 ),
                 SearchSetting(
-                    "Flashlight pulse",
-                    "Slowly pulse flashlight for new notifications",
+                    R.string.search_flashlight_pulse_title,
+                    R.string.search_flashlight_pulse_desc,
                     "flashlight_pulse",
-                    listOf("light", "torch", "pulse", "notification")
+                    R.array.keywords_flashlight_pulse
                 ),
                 SearchSetting(
-                    "Only while facing down",
-                    "Pulse flashlight only when device is face down",
+                    R.string.search_only_facing_down_title,
+                    R.string.search_only_facing_down_desc,
                     "flashlight_pulse_facedown",
-                    listOf("proximity", "sensor", "face", "down")
+                    R.array.keywords_proximity_sensor
                 )
             )
         ) {
@@ -148,10 +148,10 @@ object FeatureRegistry {
 
         object : Feature(
             id = "Sound mode tile",
-            title = "Sound mode tile",
+            title = R.string.feat_sound_mode_tile_title,
             iconRes = R.drawable.rounded_volume_up_24,
-            category = "Tools",
-            description = "QS tile to toggle sound mode",
+            category = R.string.cat_tools,
+            description = R.string.feat_sound_mode_tile_desc,
             permissionKeys = listOf("WRITE_SECURE_SETTINGS"),
             showToggle = false
         ) {
@@ -161,10 +161,10 @@ object FeatureRegistry {
 
         object : Feature(
             id = "Link actions",
-            title = "Link actions",
+            title = R.string.feat_link_actions_title,
             iconRes = R.drawable.rounded_link_24,
-            category = "Tools",
-            description = "Handle links with multiple apps",
+            category = R.string.cat_tools,
+            description = R.string.feat_link_actions_desc,
             showToggle = false
         ) {
             override fun isEnabled(viewModel: MainViewModel) = false
@@ -173,30 +173,30 @@ object FeatureRegistry {
 
         object : Feature(
             id = "Snooze system notifications",
-            title = "Snooze system notifications",
+            title = R.string.feat_snooze_notifications_title,
             iconRes = R.drawable.rounded_snooze_24,
-            category = "Tools",
-            description = "Snooze persistent notifications",
+            category = R.string.cat_tools,
+            description = R.string.feat_snooze_notifications_desc,
             permissionKeys = listOf("NOTIFICATION_LISTENER"),
             showToggle = false,
             searchableSettings = listOf(
                 SearchSetting(
-                    "Disable debugging notifications",
-                    "Hide persistent ADB/USB debugging notifications",
+                    R.string.search_snooze_debug_title,
+                    R.string.search_snooze_debug_desc,
                     "snooze_debugging",
-                    listOf("adb", "usb", "debug")
+                    R.array.keywords_adb_debug
                 ),
                 SearchSetting(
-                    "Disable file transfer notification",
-                    "Hide persistent USB file transfer notifications",
+                    R.string.search_snooze_file_title,
+                    R.string.search_snooze_file_desc,
                     "snooze_file_transfer",
-                    listOf("usb", "file", "transfer", "mtp")
+                    R.array.keywords_mtp
                 ),
                 SearchSetting(
-                    "Disable charging notification",
-                    "Hide system charging notifications",
+                    R.string.search_snooze_charge_title,
+                    R.string.search_snooze_charge_desc,
                     "snooze_charging",
-                    listOf("battery", "charge", "power")
+                    R.array.keywords_battery_charge
                 )
             )
         ) {
@@ -207,109 +207,109 @@ object FeatureRegistry {
 
         object : Feature(
             id = "Quick settings tiles",
-            title = "Quick settings tiles",
+            title = R.string.feat_qs_tiles_title,
             iconRes = R.drawable.rounded_tile_small_24,
-            category = "System",
-            description = "View all",
+            category = R.string.cat_system,
+            description = R.string.feat_qs_tiles_desc,
             showToggle = false,
             searchableSettings = listOf(
                 SearchSetting(
+                    R.string.search_qs_blur_title,
+                    R.string.search_qs_blur_desc,
                     "UI Blur",
-                    "Toggle system-wide UI blur",
-                    "UI Blur",
-                    listOf("blur", "glass", "vignette", "tile", "qs"),
-                    "Quick Settings"
+                    R.array.keywords_blur_glass,
+                    R.string.feat_qs_tiles_title
                 ),
                 SearchSetting(
+                    R.string.search_qs_bubbles_title,
+                    R.string.search_qs_bubbles_desc,
                     "Bubbles",
-                    "Enable floating window bubbles",
-                    "Bubbles",
-                    listOf("float", "window", "overlay", "tile", "qs"),
-                    "Quick Settings"
+                    R.array.keywords_float_window,
+                    R.string.feat_qs_tiles_title
                 ),
                 SearchSetting(
+                    R.string.search_qs_sensitive_title,
+                    R.string.search_qs_sensitive_desc,
                     "Sensitive Content",
-                    "Hide notification details on lockscreen",
-                    "Sensitive Content",
-                    listOf("privacy", "lock", "secure", "tile", "qs"),
-                    "Quick Settings"
+                    R.array.keywords_privacy,
+                    R.string.feat_qs_tiles_title
                 ),
                 SearchSetting(
+                    R.string.search_qs_wake_title,
+                    R.string.search_qs_wake_desc,
                     "Tap to Wake",
-                    "Double tap to wake control",
-                    "Tap to Wake",
-                    listOf("touch", "wake", "display", "tile", "qs"),
-                    "Quick Settings"
+                    R.array.keywords_wake_display,
+                    R.string.feat_qs_tiles_title
                 ),
                 SearchSetting(
+                    R.string.search_qs_aod_title,
+                    R.string.search_qs_aod_desc,
                     "AOD",
-                    "Always On Display toggle",
-                    "AOD",
-                    listOf("always", "display", "clock", "tile", "qs"),
-                    "Quick Settings"
+                    R.array.keywords_always_display,
+                    R.string.feat_qs_tiles_title
                 ),
                 SearchSetting(
+                    R.string.search_qs_caffeinate_title,
+                    R.string.search_qs_caffeinate_desc,
                     "Caffeinate",
-                    "Keep screen awake toggle",
-                    "Caffeinate",
-                    listOf("stay", "on", "timeout", "tile", "qs"),
-                    "Quick Settings"
+                    R.array.keywords_timeout,
+                    R.string.feat_qs_tiles_title
                 ),
                 SearchSetting(
+                    R.string.search_qs_sound_title,
+                    R.string.search_qs_sound_desc,
                     "Sound Mode",
-                    "Cycle sound modes (Ring/Vibrate/Silent)",
-                    "Sound Mode",
-                    listOf("audio", "mute", "volume", "tile", "qs"),
-                    "Quick Settings"
+                    R.array.keywords_audio_mute,
+                    R.string.feat_qs_tiles_title
                 ),
                 SearchSetting(
+                    R.string.search_qs_lighting_title,
+                    R.string.search_qs_lighting_desc,
                     "Notification Lighting",
-                    "Toggle notification lighting service",
-                    "Notification Lighting",
-                    listOf("glow", "notification", "led", "tile", "qs"),
-                    "Quick Settings"
+                    R.array.keywords_notification_lighting,
+                    R.string.feat_qs_tiles_title
                 ),
                 SearchSetting(
+                    R.string.search_qs_night_light_title,
+                    R.string.search_qs_night_light_desc,
                     "Dynamic Night Light",
-                    "Night light automation toggle",
-                    "Dynamic Night Light",
-                    listOf("blue", "filter", "auto", "tile", "qs"),
-                    "Quick Settings"
+                    R.array.keywords_blue_filter,
+                    R.string.feat_qs_tiles_title
                 ),
                 SearchSetting(
+                    R.string.search_qs_locked_sec_title,
+                    R.string.search_qs_locked_sec_desc,
                     "Locked Security",
-                    "Network security on lockscreen toggle",
-                    "Locked Security",
-                    listOf("wifi", "data", "lock", "tile", "qs"),
-                    "Quick Settings"
+                    R.array.keywords_network_visibility,
+                    R.string.feat_qs_tiles_title
                 ),
                 SearchSetting(
+                    R.string.search_qs_mono_title,
+                    R.string.search_qs_mono_desc,
                     "Mono Audio",
-                    "Force mono audio output toggle",
-                    "Mono Audio",
-                    listOf("sound", "accessibility", "hear", "tile", "qs"),
-                    "Quick Settings"
+                    R.array.keywords_sound_accessibility,
+                    R.string.feat_qs_tiles_title
                 ),
                 SearchSetting(
+                    R.string.search_qs_flashlight_title,
+                    R.string.search_qs_flashlight_desc,
                     "Flashlight",
-                    "Dedicated flashlight toggle",
-                    "Flashlight",
-                    listOf("light", "torch", "tile", "qs"),
-                    "Quick Settings"
+                    R.array.keywords_flashlight,
+                    R.string.feat_qs_tiles_title
                 ),
                 SearchSetting(
+                    R.string.search_qs_freeze_title,
+                    R.string.search_qs_freeze_desc,
                     "App Freezing",
-                    "Launch app freezing grid",
-                    "App Freezing",
-                    listOf("freeze", "shizuku", "tile", "qs"),
-                    "Quick Settings"
+                    R.array.keywords_app_freezing,
+                    R.string.feat_qs_tiles_title
                 ),
                 SearchSetting(
+                    R.string.search_qs_pulse_title,
+                    R.string.search_qs_pulse_desc,
                     "Flashlight Pulse",
-                    "Toggle notification flashlight pulse",
-                    "Flashlight Pulse",
-                    listOf("light", "torch", "pulse", "notification", "tile", "qs"),
-                    "Quick Settings"
+                    R.array.keywords_flashlight_pulse,
+                    R.string.feat_qs_tiles_title
                 )
             )
         ) {
@@ -319,30 +319,30 @@ object FeatureRegistry {
 
         object : Feature(
             id = "Button remap",
-            title = "Button remap",
+            title = R.string.feat_button_remap_title,
             iconRes = R.drawable.rounded_switch_access_3_24,
-            category = "System",
-            description = "Remap hardware button actions",
+            category = R.string.cat_system,
+            description = R.string.feat_button_remap_desc,
             permissionKeys = listOf("ACCESSIBILITY"),
             showToggle = false,
             searchableSettings = listOf(
                 SearchSetting(
-                    "Enable Button Remap",
-                    "Master toggle for volume button remapping",
+                    R.string.search_remap_enable_title,
+                    R.string.search_remap_enable_desc,
                     "enable_remap",
-                    listOf("switch", "master")
+                    R.array.keywords_switch_master
                 ),
                 SearchSetting(
-                    "Remap Haptic Feedback",
-                    "Vibration feedback when remapped button is pressed",
+                    R.string.search_remap_haptic_title,
+                    R.string.search_remap_haptic_desc,
                     "remap_haptic",
-                    listOf("vibration", "feel")
+                    R.array.keywords_vibration
                 ),
                 SearchSetting(
-                    "Flashlight toggle",
-                    "Toggle flashlight with volume buttons",
+                    R.string.search_remap_flashlight_title,
+                    R.string.search_remap_flashlight_desc,
                     "flashlight_toggle",
-                    listOf("light", "torch")
+                    R.array.keywords_flashlight
                 )
             )
         ) {
@@ -353,17 +353,17 @@ object FeatureRegistry {
 
         object : Feature(
             id = "Dynamic night light",
-            title = "Dynamic night light",
+            title = R.string.feat_dynamic_night_light_title,
             iconRes = R.drawable.rounded_nightlight_24,
-            category = "Visuals",
-            description = "Toggle night light based on app",
+            category = R.string.cat_visuals,
+            description = R.string.feat_dynamic_night_light_desc,
             permissionKeys = listOf("ACCESSIBILITY", "WRITE_SECURE_SETTINGS"),
             searchableSettings = listOf(
                 SearchSetting(
-                    "Enable Dynamic Night Light",
-                    "Master switch for dynamic night light",
+                    R.string.search_night_light_enable_title,
+                    R.string.search_night_light_enable_desc,
                     "dynamic_night_light_toggle",
-                    listOf("switch", "master")
+                    R.array.keywords_switch_master
                 )
             )
         ) {
@@ -373,14 +373,12 @@ object FeatureRegistry {
             override fun onToggle(viewModel: MainViewModel, context: Context, enabled: Boolean) = viewModel.setDynamicNightLightEnabled(enabled, context)
         },
 
-
-
         object : Feature(
             id = "Screen locked security",
-            title = "Screen locked security",
+            title = R.string.feat_screen_locked_security_title,
             iconRes = R.drawable.rounded_security_24,
-            category = "Security and Privacy",
-            description = "Prevent network controls",
+            category = R.string.cat_security,
+            description = R.string.feat_screen_locked_security_desc,
             permissionKeys = listOf("ACCESSIBILITY", "WRITE_SECURE_SETTINGS", "DEVICE_ADMIN")
         ) {
             override fun isEnabled(viewModel: MainViewModel) = viewModel.isScreenLockedSecurityEnabled.value
@@ -391,23 +389,23 @@ object FeatureRegistry {
 
         object : Feature(
             id = "App lock",
-            title = "App lock",
+            title = R.string.feat_app_lock_title,
             iconRes = R.drawable.rounded_shield_lock_24,
-            category = "Security and Privacy",
-            description = "Secure apps with biometrics",
+            category = R.string.cat_security,
+            description = R.string.feat_app_lock_desc,
             permissionKeys = listOf("ACCESSIBILITY"),
             searchableSettings = listOf(
                 SearchSetting(
-                    "Enable app lock",
-                    "Master toggle for app locking",
+                    R.string.search_app_lock_enable_title,
+                    R.string.search_app_lock_enable_desc,
                     "app_lock_enabled",
-                    listOf("secure", "privacy", "biometric", "face", "fingerprint")
+                    R.array.keywords_privacy
                 ),
                 SearchSetting(
-                    "Select locked apps",
-                    "Choose which apps require authentication",
+                    R.string.search_app_lock_pick_title,
+                    R.string.search_app_lock_pick_desc,
                     "app_lock_selected_apps",
-                    listOf("list", "picker", "selection")
+                    R.array.keywords_selection
                 )
             )
         ) {
@@ -418,37 +416,38 @@ object FeatureRegistry {
 
         object : Feature(
             id = "Freeze",
-            title = "Freeze",
+            title = R.string.feat_freeze_title,
             iconRes = R.drawable.rounded_mode_cool_24,
-            category = "Tools",
-            description = "Disable rarely used apps",
+            category = R.string.cat_tools,
+            description = R.string.feat_freeze_desc,
             permissionKeys = listOf("SHIZUKU"),
             searchableSettings = listOf(
                 SearchSetting(
-                    "Pick apps to freeze",
-                    "Choose which apps can be frozen",
+                    R.string.search_freeze_pick_title,
+                    R.string.search_freeze_pick_desc,
                     "freeze_selected_apps",
-                    listOf("list", "picker", "selection")
+                    R.array.keywords_selection
                 ),
                 SearchSetting(
-                    "Freeze all apps",
-                    "Immediately freeze all picked apps",
+                    R.string.search_freeze_all_title,
+                    R.string.search_freeze_all_desc,
                     "freeze_all_manual",
-                    listOf("manual", "now", "shizuku")
+                    R.array.keywords_manual_now
                 ),
                 SearchSetting(
-                    "Freeze when locked",
-                    "Freeze selected apps when device locks",
+                    R.string.search_freeze_locked_title,
+                    R.string.search_freeze_locked_desc,
                     "freeze_when_locked_enabled",
-                    listOf("automation", "auto", "lock")
+                    R.array.keywords_automation_lock
                 ),
                 SearchSetting(
-                    "Freeze delay",
-                    "Delay before freezing after locking",
+                    R.string.search_freeze_delay_title,
+                    R.string.search_freeze_delay_desc,
                     "freeze_lock_delay_index",
-                    listOf("timer", "wait", "timeout")
+                    R.array.keywords_timer
                 )
-            ),
+            )
+,
             showToggle = false
         ) {
             override fun isEnabled(viewModel: MainViewModel) = true
