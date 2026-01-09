@@ -2,6 +2,7 @@ package com.sameerasw.essentials.ui.composables.configs
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
+import androidx.compose.ui.res.stringResource
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -38,7 +39,7 @@ fun AppLockSettingsUI(
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         Text(
-            text = "Security",
+            text = stringResource(R.string.settings_section_security),
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp),
             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -51,14 +52,14 @@ fun AppLockSettingsUI(
         ) {
             IconToggleItem(
                 iconRes = R.drawable.rounded_shield_lock_24,
-                title = "Enable app lock",
+                title = stringResource(R.string.app_lock_enable_title),
                 isChecked = isAppLockEnabled,
                 onCheckedChange = { enabled ->
                     if (context is FragmentActivity) {
                         BiometricHelper.showBiometricPrompt(
                             activity = context,
-                            title = "App Lock Security",
-                            subtitle = if (enabled) "Authenticate to enable app lock" else "Authenticate to disable app lock",
+                            title = context.getString(R.string.app_lock_auth_title),
+                            subtitle = if (enabled) context.getString(R.string.app_lock_enable_auth_subtitle) else context.getString(R.string.app_lock_disable_auth_subtitle),
                             onSuccess = { viewModel.setAppLockEnabled(enabled, context) }
                         )
                     } else {
@@ -71,8 +72,8 @@ fun AppLockSettingsUI(
             )
 
             FeatureCard(
-                title = "Select locked apps",
-                description = "Choose which apps require authentication",
+                title = stringResource(R.string.app_lock_select_apps_title),
+                description = stringResource(R.string.app_lock_select_apps_desc),
                 iconRes = R.drawable.rounded_app_registration_24,
                 isEnabled = isAppLockEnabled,
                 showToggle = false,
@@ -84,21 +85,21 @@ fun AppLockSettingsUI(
         }
 
         Text(
-            text = "Secure your apps with biometric authentication. Locked apps will require authentication when launching, Stays unlocked until the screen turns off.",
+            text = stringResource(R.string.app_lock_description),
             style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.padding(16.dp),
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
         Text(
-            text = "Beware that this is not a robust solution as this is only a 3rd party application. If you need strong security, consider using Private Space or other such features.",
+            text = stringResource(R.string.app_lock_warning),
             style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.padding(16.dp),
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
         Text(
-            text = "Another note, the biometric authentication prompt only lets you use STRONG secure class methods. Face unlock security methods in WEAK class in devices such as Pixel 7 will only be able to utilize the available other STRONG auth methods such as fingerprint or pin.",
+            text = stringResource(R.string.app_lock_biometric_note),
             style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.padding(16.dp),
             color = MaterialTheme.colorScheme.onSurfaceVariant

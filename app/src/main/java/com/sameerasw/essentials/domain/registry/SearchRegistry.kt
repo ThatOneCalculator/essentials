@@ -3,15 +3,18 @@ package com.sameerasw.essentials.domain.registry
 import com.sameerasw.essentials.domain.StatusBarIconRegistry
 import com.sameerasw.essentials.domain.model.SearchableItem
 
+import android.content.Context
+import com.sameerasw.essentials.R
+
 object SearchRegistry {
 
-    private val items = mutableListOf<SearchableItem>()
+    private val staticItems = mutableListOf<SearchableItem>()
 
     init {
         // --- Automate Feature and Sub-setting Indexing ---
         FeatureRegistry.ALL_FEATURES.forEach { feature ->
             // Index the feature itself
-            addItem(
+            addStaticItem(
                 SearchableItem(
                     title = feature.title,
                     description = feature.description,
@@ -24,7 +27,7 @@ object SearchRegistry {
 
             // Index sub-settings
             feature.searchableSettings.forEach { setting ->
-                addItem(
+                addStaticItem(
                     SearchableItem(
                         title = setting.title,
                         description = setting.description,
@@ -38,34 +41,36 @@ object SearchRegistry {
                 )
             }
         }
+    }
+
+    private fun addStaticItem(item: SearchableItem) {
+        staticItems.add(item)
+    }
+
+    fun search(context: Context, query: String): List<SearchableItem> {
+        val q = query.trim().lowercase()
+        if (q.isEmpty()) return emptyList()
+
+        val allItems = ArrayList(staticItems)
 
         // --- Dynamic Status Bar Icons ---
         StatusBarIconRegistry.ALL_ICONS.forEach { icon ->
-            addItem(
+            val title = context.getString(icon.displayNameRes)
+            allItems.add(
                 SearchableItem(
-                    title = icon.displayName,
-                    description = "Toggle visibility for ${icon.displayName}",
+                    title = title,
+                    description = context.getString(R.string.search_desc_toggle_visibility, title),
                     category = "Statusbar icons",
                     icon = icon.iconRes,
                     featureKey = "Statusbar icons",
                     parentFeature = "Statusbar icons",
-                    targetSettingHighlightKey = icon.displayName,
+                    targetSettingHighlightKey = title,
                     keywords = icon.blacklistNames + listOf("hide", "show", "visibility")
                 )
             )
         }
 
-    }
-
-    private fun addItem(item: SearchableItem) {
-        items.add(item)
-    }
-
-    fun search(query: String): List<SearchableItem> {
-        val q = query.trim().lowercase()
-        if (q.isEmpty()) return emptyList()
-
-        return items.filter { item ->
+        return allItems.filter { item ->
             item.title.lowercase().contains(q) ||
             item.description.lowercase().contains(q) ||
             item.category.lowercase().contains(q) ||

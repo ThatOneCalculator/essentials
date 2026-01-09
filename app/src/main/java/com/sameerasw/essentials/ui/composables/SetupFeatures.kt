@@ -606,7 +606,7 @@ fun SetupFeatures(
         OutlinedTextField(
             value = viewModel.searchQuery.value,
             onValueChange = { new ->
-                viewModel.onSearchQueryChanged(new)
+                viewModel.onSearchQueryChanged(new, context)
             },
             modifier = Modifier
                 .fillMaxWidth()

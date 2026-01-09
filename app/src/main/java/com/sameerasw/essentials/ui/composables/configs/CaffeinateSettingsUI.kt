@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.ui.res.stringResource
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -50,14 +51,14 @@ fun CaffeinateSettingsUI(
     if (showPermissionSheet) {
         PermissionsBottomSheet(
             onDismissRequest = { },
-            featureTitle = "Show Notification",
+            featureTitle = stringResource(R.string.permission_show_notification_title),
             permissions = listOf(
                 PermissionItem(
                     iconRes = R.drawable.rounded_notifications_unread_24,
-                    title = "Post Notifications",
-                    description = "Allows the app to show notifications",
+                    title = stringResource(R.string.permission_post_notifications_title),
+                    description = stringResource(R.string.permission_post_notifications_desc),
                     dependentFeatures = listOf("Show notification"),
-                    actionLabel = "Grant Permission",
+                    actionLabel = stringResource(R.string.permission_grant_action),
                     action = {
                         requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                     },
@@ -75,7 +76,7 @@ fun CaffeinateSettingsUI(
     ) {
         // Notification Category
         Text(
-            text = "Notification",
+            text = stringResource(R.string.settings_section_notification),
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp),
             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -87,7 +88,7 @@ fun CaffeinateSettingsUI(
             cornerRadius = 24.dp
         ) {
             IconToggleItem(
-                title = "Show notification",
+                title = stringResource(R.string.caffeinate_show_notification_title),
                 isChecked = viewModel.showNotification.value,
                 onCheckedChange = { isChecked ->
                     viewModel.setShowNotification(isChecked, context)

@@ -28,6 +28,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import androidx.core.content.edit
 import com.sameerasw.essentials.R
 import kotlin.math.min
@@ -53,6 +54,12 @@ fun SoundModeTileSettingsUI(
         "Sound" to R.drawable.rounded_volume_up_24,
         "Vibrate" to R.drawable.rounded_mobile_vibrate_24,
         "Silent" to R.drawable.rounded_volume_off_24
+    )
+    
+    val soundModeNames = mapOf(
+        "Sound" to R.string.sound_mode_sound,
+        "Vibrate" to R.string.sound_mode_vibrate,
+        "Silent" to R.string.sound_mode_silent
     )
 
     val hapticFeedback = LocalHapticFeedback.current
@@ -98,7 +105,7 @@ fun SoundModeTileSettingsUI(
 
     // Notification Category
     Text(
-        text = "Re-order modes",
+        text = stringResource(R.string.sound_mode_reorder_title),
         style = MaterialTheme.typography.titleMedium,
         modifier = Modifier.padding(start = 24.dp, top = 16.dp, end = 24.dp),
         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -149,7 +156,7 @@ fun SoundModeTileSettingsUI(
                             tint = MaterialTheme.colorScheme.primary
                         )
                         Spacer(modifier = Modifier.width(12.dp))
-                        Text(mode, style = MaterialTheme.typography.bodyLarge)
+                        Text(stringResource(soundModeNames[mode] ?: R.string.tile_sound_mode), style = MaterialTheme.typography.bodyLarge)
                         Spacer(modifier = Modifier.weight(1f))
                         IconButton(
                             modifier = Modifier.draggableHandle(
@@ -164,7 +171,7 @@ fun SoundModeTileSettingsUI(
                         ) {
                             Icon(
                                 painter = painterResource(id = R.drawable.rounded_drag_handle_24),
-                                contentDescription = "Drag to reorder",
+                                contentDescription = stringResource(R.string.content_desc_drag_reorder),
                                 modifier = Modifier.size(24.dp),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -179,7 +186,7 @@ fun SoundModeTileSettingsUI(
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text(
-                        text = "Long press to toggle",
+                        text = stringResource(R.string.sound_mode_long_press_hint),
                         textAlign = TextAlign.Center,
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.padding(16.dp).fillMaxWidth(),
@@ -221,7 +228,7 @@ fun SoundModeTileSettingsUI(
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Spacer(modifier = Modifier.width(12.dp))
-                        Text(mode, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(stringResource(soundModeNames[mode] ?: R.string.tile_sound_mode), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Spacer(modifier = Modifier.weight(1f))
                         IconButton(
                             modifier = Modifier.draggableHandle(
@@ -236,7 +243,7 @@ fun SoundModeTileSettingsUI(
                         ) {
                             Icon(
                                 painter = painterResource(id = R.drawable.rounded_drag_handle_24),
-                                contentDescription = "Drag to reorder",
+                                contentDescription = stringResource(R.string.content_desc_drag_reorder),
                                 modifier = Modifier.size(24.dp),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )

@@ -24,6 +24,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import com.sameerasw.essentials.R
 import com.sameerasw.essentials.services.tiles.AlwaysOnDisplayTileService
 import com.sameerasw.essentials.services.tiles.BubblesTileService
@@ -43,7 +44,7 @@ import com.sameerasw.essentials.services.tiles.FlashlightPulseTileService
 import com.sameerasw.essentials.ui.modifiers.highlight
 
 data class QSTileInfo(
-    val title: String,
+    val titleRes: Int,
     val iconRes: Int,
     val serviceClass: Class<*>
 )
@@ -57,21 +58,21 @@ fun QuickSettingsTilesSettingsUI(
     LocalView.current
 
     val tiles = listOf(
-        QSTileInfo("UI Blur", R.drawable.rounded_blur_on_24, UiBlurTileService::class.java),
-        QSTileInfo("Bubbles", R.drawable.rounded_bubble_24, BubblesTileService::class.java),
-        QSTileInfo("Sensitive Content", R.drawable.rounded_notifications_off_24, PrivateNotificationsTileService::class.java),
-        QSTileInfo("Tap to Wake", R.drawable.rounded_touch_app_24, TapToWakeTileService::class.java),
-        QSTileInfo("AOD", R.drawable.rounded_mobile_text_2_24, AlwaysOnDisplayTileService::class.java),
-        QSTileInfo("Caffeinate", R.drawable.rounded_coffee_24, CaffeinateTileService::class.java),
-        QSTileInfo("Sound Mode", R.drawable.rounded_volume_up_24, SoundModeTileService::class.java),
-        QSTileInfo("Notification Lighting", R.drawable.rounded_blur_linear_24, NotificationLightingTileService::class.java),
-        QSTileInfo("Dynamic Night Light", R.drawable.rounded_nightlight_24, DynamicNightLightTileService::class.java),
-        QSTileInfo("Locked Security", R.drawable.rounded_security_24, ScreenLockedSecurityTileService::class.java),
-        QSTileInfo("App Lock", R.drawable.rounded_shield_lock_24, AppLockTileService::class.java),
-        QSTileInfo("Mono Audio", R.drawable.rounded_headphones_24, MonoAudioTileService::class.java),
-        QSTileInfo("Flashlight", R.drawable.rounded_flashlight_on_24, FlashlightTileService::class.java),
-        QSTileInfo("App Freezing", R.drawable.rounded_mode_cool_24, AppFreezingTileService::class.java),
-        QSTileInfo("Flashlight Pulse", R.drawable.outline_backlight_high_24, FlashlightPulseTileService::class.java)
+        QSTileInfo(R.string.tile_ui_blur, R.drawable.rounded_blur_on_24, UiBlurTileService::class.java),
+        QSTileInfo(R.string.tile_bubbles, R.drawable.rounded_bubble_24, BubblesTileService::class.java),
+        QSTileInfo(R.string.tile_sensitive_content, R.drawable.rounded_notifications_off_24, PrivateNotificationsTileService::class.java),
+        QSTileInfo(R.string.tile_tap_to_wake, R.drawable.rounded_touch_app_24, TapToWakeTileService::class.java),
+        QSTileInfo(R.string.tile_aod, R.drawable.rounded_mobile_text_2_24, AlwaysOnDisplayTileService::class.java),
+        QSTileInfo(R.string.tile_caffeinate, R.drawable.rounded_coffee_24, CaffeinateTileService::class.java),
+        QSTileInfo(R.string.tile_sound_mode, R.drawable.rounded_volume_up_24, SoundModeTileService::class.java),
+        QSTileInfo(R.string.tile_notification_lighting, R.drawable.rounded_blur_linear_24, NotificationLightingTileService::class.java),
+        QSTileInfo(R.string.tile_dynamic_night_light, R.drawable.rounded_nightlight_24, DynamicNightLightTileService::class.java),
+        QSTileInfo(R.string.tile_locked_security, R.drawable.rounded_security_24, ScreenLockedSecurityTileService::class.java),
+        QSTileInfo(R.string.tile_app_lock, R.drawable.rounded_shield_lock_24, AppLockTileService::class.java),
+        QSTileInfo(R.string.tile_mono_audio, R.drawable.rounded_headphones_24, MonoAudioTileService::class.java),
+        QSTileInfo(R.string.tile_flashlight, R.drawable.rounded_flashlight_on_24, FlashlightTileService::class.java),
+        QSTileInfo(R.string.tile_app_freezing, R.drawable.rounded_mode_cool_24, AppFreezingTileService::class.java),
+        QSTileInfo(R.string.tile_flashlight_pulse, R.drawable.outline_backlight_high_24, FlashlightPulseTileService::class.java)
     )
 
     Column(
@@ -90,7 +91,7 @@ fun QuickSettingsTilesSettingsUI(
                         tile = tile,
                         modifier = Modifier
                             .weight(1f)
-                            .highlight(highlightSetting.equals(tile.title, ignoreCase = true)),
+                            .highlight(highlightSetting.equals(context.getString(tile.titleRes), ignoreCase = true)),
                         onClick = {
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                                 val statusBarManager = context.getSystemService(StatusBarManager::class.java)
@@ -98,16 +99,16 @@ fun QuickSettingsTilesSettingsUI(
                                 
                                 statusBarManager.requestAddTileService(
                                     componentName,
-                                    tile.title,
+                                    context.getString(tile.titleRes),
                                     Icon.createWithResource(context, tile.iconRes),
                                     context.mainExecutor
                                 ) { result ->
                                      if(result == StatusBarManager.TILE_ADD_REQUEST_RESULT_TILE_ALREADY_ADDED){
-                                         Toast.makeText(context, "Already added", Toast.LENGTH_SHORT).show()
+                                         Toast.makeText(context, context.getString(R.string.qs_tile_already_added), Toast.LENGTH_SHORT).show()
                                      }
                                 }
                             } else {
-                                Toast.makeText(context, "Requires Android 13+", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, context.getString(R.string.qs_tile_requires_android_13), Toast.LENGTH_SHORT).show()
                             }
                         }
                     )
@@ -150,14 +151,14 @@ fun QSTileCard(
         
         Column {
             Text(
-                text = tile.title,
+                text = stringResource(tile.titleRes),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onPrimary,
                 maxLines = 1,
                 overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
             )
             Text(
-                text = "Add",
+                text = stringResource(R.string.action_add),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f),
                 maxLines = 1,

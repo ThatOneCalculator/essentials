@@ -263,7 +263,7 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    fun onSearchQueryChanged(query: String) {
+    fun onSearchQueryChanged(query: String, context: Context) {
         searchQuery.value = query
         if (query.isBlank()) {
             searchResults.value = emptyList()
@@ -272,7 +272,7 @@ class MainViewModel : ViewModel() {
         }
 
         isSearching.value = true
-        searchResults.value = SearchRegistry.search(query)
+        searchResults.value = SearchRegistry.search(context, query)
         isSearching.value = false
     }
 

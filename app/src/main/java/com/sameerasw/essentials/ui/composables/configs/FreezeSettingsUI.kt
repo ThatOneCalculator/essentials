@@ -17,6 +17,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import com.sameerasw.essentials.R
 import com.sameerasw.essentials.ui.components.cards.FeatureCard
 import com.sameerasw.essentials.ui.components.cards.IconToggleItem
@@ -70,7 +71,7 @@ fun FreezeSettingsUI(
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         Text(
-            text = "App Control",
+            text = stringResource(R.string.settings_section_app_control),
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(start = 16.dp, top = 4.dp, bottom = 8.dp),
             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -113,7 +114,7 @@ fun FreezeSettingsUI(
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(Modifier.size(8.dp))
-                    Text("Freeze")
+                    Text(stringResource(R.string.action_freeze))
                 }
 
                 // Unfreeze Button
@@ -132,7 +133,7 @@ fun FreezeSettingsUI(
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(Modifier.size(8.dp))
-                    Text("Unfreeze")
+                    Text(stringResource(R.string.action_unfreeze))
                 }
 
                 // More Menu Button
@@ -145,7 +146,7 @@ fun FreezeSettingsUI(
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.rounded_more_vert_24),
-                        contentDescription = "More options"
+                        contentDescription = stringResource(R.string.content_desc_more_options)
                     )
 
                     DropdownMenu(
@@ -153,7 +154,7 @@ fun FreezeSettingsUI(
                         onDismissRequest = { isMenuExpanded = false }
                     ) {
                         DropdownMenuItem(
-                            text = { Text("Freeze all apps") },
+                            text = { Text(stringResource(R.string.action_freeze_all)) },
                             onClick = {
                                 HapticUtil.performVirtualKeyHaptic(view)
                                 viewModel.freezeAllManual(context)
@@ -168,7 +169,7 @@ fun FreezeSettingsUI(
                             }
                         )
                         DropdownMenuItem(
-                            text = { Text("Unfreeze all apps") },
+                            text = { Text(stringResource(R.string.action_unfreeze_all)) },
                             onClick = {
                                 HapticUtil.performVirtualKeyHaptic(view)
                                 viewModel.unfreezeAllManual(context)
@@ -188,8 +189,8 @@ fun FreezeSettingsUI(
         }
 
             FeatureCard(
-                title = "Pick apps to freeze",
-                description = "Choose which apps can be frozen",
+                title = stringResource(R.string.freeze_pick_apps_title),
+                description = stringResource(R.string.freeze_pick_apps_desc),
                 iconRes = R.drawable.rounded_app_registration_24,
                 isEnabled = true,
                 showToggle = false,
@@ -201,7 +202,7 @@ fun FreezeSettingsUI(
         }
 
         Text(
-            text = "Automation",
+            text = stringResource(R.string.settings_section_automation),
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(start = 16.dp, top = 24.dp, bottom = 8.dp),
             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -214,7 +215,7 @@ fun FreezeSettingsUI(
         ) {
             IconToggleItem(
                 iconRes = R.drawable.rounded_lock_clock_24,
-                title = "Freeze when locked",
+                title = stringResource(R.string.freeze_when_locked_title),
                 isChecked = viewModel.isFreezeWhenLockedEnabled.value,
                 onCheckedChange = { enabled ->
                     if (enabled && !isAccessibilityEnabled) {
@@ -238,13 +239,19 @@ fun FreezeSettingsUI(
                     .highlight(highlightKey == "freeze_lock_delay_index"),
             ) {
                 Text(
-                    text = "Freeze delay",
+                    text = stringResource(R.string.freeze_delay_title),
                     style = MaterialTheme.typography.bodyLarge,
                     color = if (viewModel.isFreezeWhenLockedEnabled.value) 
                         MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
                 )
                 
-                val labels = listOf("Immediate", "1m", "5m", "15m", "Manual")
+                val labels = listOf(
+                    stringResource(R.string.delay_immediate),
+                    stringResource(R.string.delay_1m),
+                    stringResource(R.string.delay_5m),
+                    stringResource(R.string.delay_15m),
+                    stringResource(R.string.delay_manual)
+                )
                 Slider(
                     value = viewModel.freezeLockDelayIndex.intValue.toFloat(),
                     onValueChange = { viewModel.setFreezeLockDelayIndex(it.toInt(), context) },
@@ -292,7 +299,7 @@ fun FreezeSettingsUI(
             }
 
             Text(
-                text = "Auto freeze apps",
+                text = stringResource(R.string.freeze_auto_freeze_section),
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(start = 16.dp, top = 24.dp, bottom = 8.dp),
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -342,14 +349,14 @@ fun FreezeSettingsUI(
         }
 
         Text(
-            text = "Freeze selected apps when the device locks. Choose a delay to avoid freezing apps if you unlock the screen shortly after turning it off.",
+            text = stringResource(R.string.freeze_automation_hint),
             style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.padding(16.dp),
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
         Text(
-            text = "Freezing system apps might be dangerous and may cause unexpected behavior.",
+            text = stringResource(R.string.freeze_warning),
             style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -367,14 +374,14 @@ fun FreezeSettingsUI(
         if (showPermissionSheet) {
             PermissionsBottomSheet(
                 onDismissRequest = { showPermissionSheet = false },
-                featureTitle = "Freeze when locked",
+                featureTitle = stringResource(R.string.permission_feature_freeze_locked),
                 permissions = listOf(
                     PermissionItem(
                         iconRes = R.drawable.rounded_settings_accessibility_24,
-                        title = "Accessibility Service",
-                        description = "Required to detect screen state for automatic freezing.",
+                        title = stringResource(R.string.permission_accessibility_title),
+                        description = stringResource(R.string.permission_accessibility_desc_freeze),
                         dependentFeatures = PermissionRegistry.getFeatures("ACCESSIBILITY"),
-                        actionLabel = "Enable in Settings",
+                        actionLabel = stringResource(R.string.action_enable_in_settings),
                         action = {
                             context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
                         },

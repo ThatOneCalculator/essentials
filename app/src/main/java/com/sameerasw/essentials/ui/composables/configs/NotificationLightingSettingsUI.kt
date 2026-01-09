@@ -34,6 +34,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import com.sameerasw.essentials.R
 import com.sameerasw.essentials.domain.model.NotificationLightingColorMode
 import com.sameerasw.essentials.domain.model.NotificationLightingStyle
@@ -83,7 +84,7 @@ fun NotificationLightingSettingsUI(
         RoundedCardContainer{
             IconToggleItem(
                 iconRes = R.drawable.rounded_power_settings_new_24,
-                title = "Only show when screen off",
+                title = stringResource(R.string.notification_lighting_screen_off_title),
                 isChecked = viewModel.onlyShowWhenScreenOff.value,
                 onCheckedChange = { checked ->
                     viewModel.setOnlyShowWhenScreenOff(checked, context)
@@ -92,7 +93,7 @@ fun NotificationLightingSettingsUI(
             )
             IconToggleItem(
                 iconRes = R.drawable.rounded_notifications_off_24,
-                title = "Skip silent notifications",
+                title = stringResource(R.string.notification_lighting_skip_silent_title),
                 isChecked = viewModel.skipSilentNotifications.value,
                 onCheckedChange = { checked ->
                     viewModel.setSkipSilentNotifications(checked, context)
@@ -101,7 +102,7 @@ fun NotificationLightingSettingsUI(
             )
             IconToggleItem(
                 iconRes = R.drawable.outline_circle_notifications_24,
-                title = "Skip persistent notifications",
+                title = stringResource(R.string.notification_lighting_skip_persistent_title),
                 isChecked = viewModel.skipPersistentNotifications.value,
                 onCheckedChange = { checked ->
                     viewModel.setSkipPersistentNotifications(checked, context)
@@ -113,7 +114,7 @@ fun NotificationLightingSettingsUI(
 
         // Style Picker
         Text(
-            text = "Flashlight Pulse",
+            text = stringResource(R.string.settings_section_flashlight_pulse),
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp),
             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -122,7 +123,7 @@ fun NotificationLightingSettingsUI(
         RoundedCardContainer{
             IconToggleItem(
                 iconRes = R.drawable.rounded_flashlight_on_24,
-                title = "Flashlight pulse",
+                title = stringResource(R.string.flashlight_pulse_title),
                 isChecked = viewModel.isFlashlightPulseEnabled.value,
                 onCheckedChange = { checked ->
                     viewModel.setFlashlightPulseEnabled(checked, context)
@@ -132,7 +133,7 @@ fun NotificationLightingSettingsUI(
             if (viewModel.isFlashlightPulseEnabled.value) {
                 IconToggleItem(
                     iconRes = R.drawable.rounded_mobile_text_24,
-                    title = "Only while facing down",
+                    title = stringResource(R.string.flashlight_pulse_facedown_title),
                     isChecked = viewModel.isFlashlightPulseFacedownOnly.value,
                     onCheckedChange = { checked ->
                         viewModel.setFlashlightPulseFacedownOnly(checked, context)
@@ -144,7 +145,7 @@ fun NotificationLightingSettingsUI(
 
         // Style Picker
         Text(
-            text = "Style",
+            text = stringResource(R.string.settings_section_style),
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp),
             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -162,7 +163,7 @@ fun NotificationLightingSettingsUI(
         val style = viewModel.notificationLightingStyle.value
         if (style == NotificationLightingStyle.STROKE) {
             Text(
-                text = "Stroke adjustment",
+                text = stringResource(R.string.notification_lighting_stroke_adjustment_section),
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp),
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -170,7 +171,7 @@ fun NotificationLightingSettingsUI(
             
             RoundedCardContainer(modifier = Modifier) {
                 ConfigSliderItem(
-                    title = "Corner radius",
+                    title = stringResource(R.string.notification_lighting_corner_radius_title),
                     value = cornerRadiusDp,
                     onValueChange = { newValue ->
                         cornerRadiusDp = newValue
@@ -192,7 +193,7 @@ fun NotificationLightingSettingsUI(
                 )
                 
                 ConfigSliderItem(
-                    title = "Stroke thickness",
+                    title = stringResource(R.string.notification_lighting_stroke_thickness_title),
                     value = strokeThicknessDp,
                     onValueChange = { newValue ->
                         strokeThicknessDp = newValue
@@ -218,7 +219,7 @@ fun NotificationLightingSettingsUI(
         // Glow Adjustment Section (For GLOW style)
         if (style == NotificationLightingStyle.GLOW) {
             Text(
-                text = "Glow adjustment",
+                text = stringResource(R.string.notification_lighting_glow_adjustment_section),
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp),
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -236,7 +237,7 @@ fun NotificationLightingSettingsUI(
                 )
 
                 ConfigSliderItem(
-                    title = "Glow spread",
+                    title = stringResource(R.string.notification_lighting_glow_spread_title),
                     value = strokeThicknessDp,
                     onValueChange = { newValue ->
                         strokeThicknessDp = newValue
@@ -258,7 +259,7 @@ fun NotificationLightingSettingsUI(
         // Indicator Adjustment Section (For INDICATOR style)
         if (style == NotificationLightingStyle.INDICATOR) {
             Text(
-                text = "Placement",
+                text = stringResource(R.string.notification_lighting_placement_section),
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp),
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -266,7 +267,7 @@ fun NotificationLightingSettingsUI(
             
             RoundedCardContainer(modifier = Modifier) {
                 ConfigSliderItem(
-                    title = "Horizontal position",
+                    title = stringResource(R.string.notification_lighting_h_pos_title),
                     value = viewModel.notificationLightingIndicatorX.value,
                     onValueChange = { newValue ->
                         viewModel.saveNotificationLightingIndicatorX(context, newValue)
@@ -278,7 +279,7 @@ fun NotificationLightingSettingsUI(
                 )
                 
                 ConfigSliderItem(
-                    title = "Vertical position",
+                    title = stringResource(R.string.notification_lighting_v_pos_title),
                     value = viewModel.notificationLightingIndicatorY.value,
                     onValueChange = { newValue ->
                         viewModel.saveNotificationLightingIndicatorY(context, newValue)
@@ -291,7 +292,7 @@ fun NotificationLightingSettingsUI(
             }
 
             Text(
-                text = "Indicator adjustment",
+                text = stringResource(R.string.notification_lighting_indicator_adjustment_section),
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp),
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -299,7 +300,7 @@ fun NotificationLightingSettingsUI(
 
             RoundedCardContainer(modifier = Modifier) {
                 ConfigSliderItem(
-                    title = "Scale",
+                    title = stringResource(R.string.notification_lighting_scale_title),
                     value = viewModel.notificationLightingIndicatorScale.value,
                     onValueChange = { newValue ->
                         viewModel.saveNotificationLightingIndicatorScale(context, newValue)
@@ -311,7 +312,7 @@ fun NotificationLightingSettingsUI(
                 )
 
                 ConfigSliderItem(
-                    title = "Duration",
+                    title = stringResource(R.string.notification_lighting_duration_title),
                     value = viewModel.notificationLightingPulseDuration.value,
                     onValueChange = { 
                         viewModel.saveNotificationLightingPulseDuration(context, it)
@@ -328,7 +329,7 @@ fun NotificationLightingSettingsUI(
         // Animation Settings (Only for STROKE and GLOW)
         if (style == NotificationLightingStyle.STROKE || style == NotificationLightingStyle.GLOW) {
             Text(
-                text = "Animation",
+                text = stringResource(R.string.settings_section_animation),
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp),
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -337,7 +338,7 @@ fun NotificationLightingSettingsUI(
             
             RoundedCardContainer(modifier = Modifier) {
                 ConfigSliderItem(
-                    title = "Pulse count",
+                    title = stringResource(R.string.notification_lighting_pulse_count_title),
                     value = viewModel.notificationLightingPulseCount.intValue.toFloat(),
                     onValueChange = { 
                         viewModel.saveNotificationLightingPulseCount(context, it.toInt())
@@ -350,7 +351,7 @@ fun NotificationLightingSettingsUI(
                 )
                     
                 ConfigSliderItem(
-                    title = "Pulse duration",
+                    title = stringResource(R.string.notification_lighting_pulse_duration_title),
                     value = viewModel.notificationLightingPulseDuration.value,
                     onValueChange = { 
                         viewModel.saveNotificationLightingPulseDuration(context, it)
@@ -366,7 +367,7 @@ fun NotificationLightingSettingsUI(
 
         // Color Mode section
         Text(
-            text = "Color Mode",
+            text = stringResource(R.string.settings_section_color_mode),
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp),
             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -494,18 +495,18 @@ fun NotificationLightingSettingsUI(
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Select apps")
+            Text(stringResource(R.string.action_select_apps))
         }
 
         Text(
-            text = "Ambient display",
+            text = stringResource(R.string.settings_section_ambient_display),
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(start = 16.dp, top = 16.dp),
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
         Text(
-            text = "Suitable if you are not using AOD.",
+            text = stringResource(R.string.ambient_display_hint),
             style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 8.dp),
             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -514,8 +515,8 @@ fun NotificationLightingSettingsUI(
         RoundedCardContainer{
             IconToggleItem(
                 iconRes = R.drawable.rounded_nightlight_24,
-                title = "Ambient display",
-                description = "Wake screen and show lighting",
+                title = stringResource(R.string.ambient_display_title),
+                description = stringResource(R.string.ambient_display_desc),
                 isChecked = viewModel.isAmbientDisplayEnabled.value,
                 onCheckedChange = { checked ->
                     viewModel.setAmbientDisplayEnabled(checked, context)
@@ -525,8 +526,8 @@ fun NotificationLightingSettingsUI(
             if (viewModel.isAmbientDisplayEnabled.value) {
                 IconToggleItem(
                     iconRes = R.drawable.rounded_mobile_lock_portrait_24,
-                    title = "Show lock screen",
-                    description = "No black overlay",
+                    title = stringResource(R.string.ambient_show_lock_screen_title),
+                    description = stringResource(R.string.ambient_show_lock_screen_desc),
                     isChecked = viewModel.isAmbientShowLockScreenEnabled.value,
                     onCheckedChange = { checked ->
                         viewModel.setAmbientShowLockScreenEnabled(checked, context)

@@ -124,7 +124,7 @@ class FeatureSettingsActivity : FragmentActivity() {
                 val caffeinateViewModel: CaffeinateViewModel = viewModel()
 
                 // Automatic refresh on resume
-                val lifecycleOwner = LocalLifecycleOwner.current
+                val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
                 DisposableEffect(lifecycleOwner) {
                     val observer = LifecycleEventObserver { _, event ->
                         if (event == Lifecycle.Event.ON_RESUME) {

@@ -18,6 +18,8 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.sameerasw.essentials.utils.HapticUtil
+import androidx.compose.ui.res.stringResource
+import com.sameerasw.essentials.R
 
 enum class NetworkType {
     NETWORK_5G,
@@ -35,7 +37,7 @@ fun NetworkTypePicker(
     modifier: Modifier = Modifier
 ) {
     val view = LocalView.current
-    val labels = listOf("5G", "4G", "3G", "Other")
+    val labels = listOf("5G", "4G", "3G", stringResource(R.string.network_type_other))
     val types = listOf(
         NetworkType.NETWORK_5G,
         NetworkType.NETWORK_4G,
