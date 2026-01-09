@@ -427,6 +427,184 @@
     <string name="update_channel_desc">Notifications for new app updates</string>
     <string name="notification_update_available">Update available</string>
 
+    <string name="label_unknown">Unknown</string>
+    <string name="network_type_5g">5G</string>
+    <string name="network_type_4g">4G</string>
+    <string name="network_type_3g">3G</string>
+    <string name="label_shizuku_ritaka">Shizuku (Rikka)</string>
+    <string name="label_shizuku_tuozi">Shizuku (TuoZi)</string>
+
+    <string name="label_search_content_description">Search</string>
+    <string name="perm_device_admin_explanation">Required to hard-lock the device when unauthorized network changes are attempted on lock screen.</string>
+    <string name="biometric_subtitle_access_settings">Authenticate to access settings</string>
+    <string name="biometric_subtitle_enable_feature">Authenticate to enable this feature</string>
+    <string name="biometric_subtitle_disable_feature">Authenticate to disable this feature</string>
+    <string name="biometric_title_settings_format">%1$s Settings</string>
+
+    <string name="keyword_feature">feature</string>
+    <string name="keyword_settings">settings</string>
+    <string name="keyword_hide">hide</string>
+    <string name="keyword_show">show</string>
+    <string name="keyword_visibility">visibility</string>
+
+    <string name="error_loading_apps">Error loading apps: %1$s</string>
+
+    <string-array name="keywords_haptic">
+        <item>vibration</item>
+        <item>touch</item>
+        <item>feel</item>
+    </string-array>
+    <string-array name="keywords_network_visibility">
+        <item>network</item>
+        <item>visibility</item>
+        <item>auto</item>
+        <item>hide</item>
+    </string-array>
+    <string-array name="keywords_restore_default">
+        <item>restore</item>
+        <item>default</item>
+        <item>icon</item>
+    </string-array>
+    <string-array name="keywords_alert">
+        <item>visible</item>
+        <item>alert</item>
+    </string-array>
+    <string-array name="keywords_flashlight">
+        <item>light</item>
+        <item>torch</item>
+    </string-array>
+    <string-array name="keywords_flashlight_pulse">
+        <item>light</item>
+        <item>torch</item>
+        <item>pulse</item>
+        <item>notification</item>
+    </string-array>
+    <string-array name="keywords_qs_tile">
+        <item>tile</item>
+        <item>qs</item>
+    </string-array>
+    <string-array name="keywords_notification_lighting">
+        <item>glow</item>
+        <item>notification</item>
+        <item>led</item>
+    </string-array>
+    <string-array name="keywords_round_shape">
+        <item>round</item>
+        <item>shape</item>
+        <item>edge</item>
+    </string-array>
+    <string-array name="keywords_privacy">
+        <item>secure</item>
+        <item>privacy</item>
+        <item>biometric</item>
+        <item>face</item>
+        <item>fingerprint</item>
+    </string-array>
+    <string-array name="keywords_sound_accessibility">
+        <item>sound</item>
+        <item>accessibility</item>
+        <item>hear</item>
+    </string-array>
+    <string-array name="keywords_timeout">
+        <item>stay</item>
+        <item>on</item>
+        <item>timeout</item>
+    </string-array>
+    <string-array name="keywords_wake_display">
+        <item>touch</item>
+        <item>wake</item>
+        <item>display</item>
+    </string-array>
+    <string-array name="keywords_mtp">
+        <item>usb</item>
+        <item>file</item>
+        <item>transfer</item>
+        <item>mtp</item>
+    </string-array>
+    <string-array name="keywords_timer">
+        <item>timer</item>
+        <item>wait</item>
+        <item>timeout</item>
+    </string-array>
+    <string-array name="keywords_selection">
+        <item>list</item>
+        <item>picker</item>
+        <item>selection</item>
+    </string-array>
+    <string-array name="keywords_visual_style">
+        <item>animation</item>
+        <item>visual</item>
+        <item>look</item>
+    </string-array>
+    <string-array name="keywords_quiet_filter">
+        <item>quiet</item>
+        <item>ignore</item>
+        <item>filter</item>
+    </string-array>
+    <string-array name="keywords_automation_lock">
+        <item>automation</item>
+        <item>auto</item>
+        <item>lock</item>
+    </string-array>
+    <string-array name="keywords_adb_debug">
+        <item>adb</item>
+        <item>usb</item>
+        <item>debug</item>
+    </string-array>
+    <string-array name="keywords_battery_charge">
+        <item>battery</item>
+        <item>charge</item>
+        <item>power</item>
+    </string-array>
+    <string-array name="keywords_blur_glass">
+        <item>blur</item>
+        <item>glass</item>
+        <item>vignette</item>
+    </string-array>
+    <string-array name="keywords_float_window">
+        <item>float</item>
+        <item>window</item>
+        <item>overlay</item>
+    </string-array>
+    <string-array name="keywords_always_display">
+        <item>always</item>
+        <item>display</item>
+        <item>clock</item>
+    </string-array>
+    <string-array name="keywords_audio_mute">
+        <item>audio</item>
+        <item>mute</item>
+        <item>volume</item>
+    </string-array>
+    <string-array name="keywords_blue_filter">
+        <item>blue</item>
+        <item>filter</item>
+        <item>auto</item>
+    </string-array>
+    <string-array name="keywords_app_freezing">
+        <item>freeze</item>
+        <item>shizuku</item>
+    </string-array>
+    <string-array name="keywords_manual_now">
+        <item>manual</item>
+        <item>now</item>
+        <item>shizuku</item>
+    </string-array>
+    <string-array name="keywords_proximity_sensor">
+        <item>proximity</item>
+        <item>sensor</item>
+        <item>face</item>
+        <item>down</item>
+    </string-array>
+    <string-array name="keywords_switch_master">
+        <item>switch</item>
+        <item>master</item>
+    </string-array>
+    <string-array name="keywords_vibration">
+        <item>vibration</item>
+        <item>feel</item>
+    </string-array>
+
     <!-- App Selection Extra -->
     <string name="action_invert_selection">Invert selection</string>
     <string name="toggle_show_system_apps">Show system apps</string>

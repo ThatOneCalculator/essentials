@@ -49,6 +49,7 @@ import com.sameerasw.essentials.ui.composables.configs.FreezeSettingsUI
 import com.sameerasw.essentials.ui.composables.FreezeGridUI
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 
@@ -151,7 +152,7 @@ class MainActivity : FragmentActivity() {
                 val versionName = try {
                     context.packageManager.getPackageInfo(context.packageName, 0).versionName
                 } catch (_: Exception) {
-                    "Unknown"
+                    stringResource(R.string.label_unknown)
                 }
 
                 var searchRequested by remember { mutableStateOf(false) }

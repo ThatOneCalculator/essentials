@@ -617,7 +617,7 @@ fun SetupFeatures(
             leadingIcon = {
                 Icon(
                     painter = painterResource(id = R.drawable.rounded_search_24),
-                    contentDescription = "Search",
+                    contentDescription = stringResource(R.string.label_search_content_description),
                     modifier = Modifier.size(24.dp)
                 )
             },
@@ -700,8 +700,8 @@ fun SetupFeatures(
                                 if (result.category == "Security and Privacy" && context is FragmentActivity) {
                                     BiometricHelper.showBiometricPrompt(
                                         activity = context,
-                                        title = "${result.title} Settings",
-                                        subtitle = "Authenticate to access settings",
+                                        title = context.getString(R.string.biometric_title_settings_format, result.title),
+                                        subtitle = context.getString(R.string.biometric_subtitle_access_settings),
                                         onSuccess = action
                                     )
                                 } else {
@@ -744,8 +744,8 @@ fun SetupFeatures(
                                 if (feature.category == R.string.cat_security && context is FragmentActivity) {
                                     BiometricHelper.showBiometricPrompt(
                                         activity = context,
-                                        title = context.getString(R.string.feature_settings_format, context.getString(feature.title)),
-                                        subtitle = if (enabled) "Authenticate to enable this feature" else "Authenticate to disable this feature",
+                                        title = context.getString(R.string.biometric_title_settings_format, context.getString(feature.title)),
+                                        subtitle = if (enabled) context.getString(R.string.biometric_subtitle_enable_feature) else context.getString(R.string.biometric_subtitle_disable_feature),
                                         onSuccess = { feature.onToggle(viewModel, context, enabled) }
                                     )
                                 } else {
@@ -756,8 +756,8 @@ fun SetupFeatures(
                                 if (feature.category == R.string.cat_security && context is FragmentActivity) {
                                     BiometricHelper.showBiometricPrompt(
                                         activity = context,
-                                        title = context.getString(R.string.feature_settings_format, context.getString(feature.title)),
-                                        subtitle = "Authenticate to access settings",
+                                        title = context.getString(R.string.biometric_title_settings_format, context.getString(feature.title)),
+                                        subtitle = context.getString(R.string.biometric_subtitle_access_settings),
                                         onSuccess = { feature.onClick(context, viewModel) }
                                     )
                                 } else {

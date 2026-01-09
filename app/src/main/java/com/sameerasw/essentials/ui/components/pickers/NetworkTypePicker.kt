@@ -37,7 +37,12 @@ fun NetworkTypePicker(
     modifier: Modifier = Modifier
 ) {
     val view = LocalView.current
-    val labels = listOf("5G", "4G", "3G", stringResource(R.string.network_type_other))
+    val labels = listOf(
+        stringResource(R.string.network_type_5g),
+        stringResource(R.string.network_type_4g),
+        stringResource(R.string.network_type_3g),
+        stringResource(R.string.network_type_other)
+    )
     val types = listOf(
         NetworkType.NETWORK_5G,
         NetworkType.NETWORK_4G,

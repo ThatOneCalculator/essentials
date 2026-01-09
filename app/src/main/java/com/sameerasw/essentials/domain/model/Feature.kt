@@ -14,7 +14,7 @@ data class SearchSetting(
     @StringRes val title: Int,
     @StringRes val description: Int,
     val targetSettingHighlightKey: String,
-    val keywords: List<String> = emptyList(),
+    @androidx.annotation.ArrayRes val keywordRes: Int = 0,
     @StringRes val category: Int? = null
 )
 

@@ -20,7 +20,7 @@ object FeatureRegistry {
                     R.string.search_haptic_title,
                     R.string.search_haptic_desc,
                     "haptic_picker",
-                    listOf("vibration", "touch", "feel")
+                    R.array.keywords_haptic
                 )
             ),
             showToggle = false
@@ -41,19 +41,19 @@ object FeatureRegistry {
                     R.string.search_smart_wifi_title,
                     R.string.search_smart_wifi_desc,
                     "smart_wifi",
-                    listOf("network", "visibility", "auto", "hide")
+                    R.array.keywords_network_visibility
                 ),
                 SearchSetting(
                     R.string.search_smart_data_title,
                     R.string.search_smart_data_desc,
                     "smart_data",
-                    listOf("network", "visibility", "auto", "hide")
+                    R.array.keywords_network_visibility
                 ),
                 SearchSetting(
                     R.string.search_reset_icons_title,
                     R.string.search_reset_icons_desc,
                     "reset_icons",
-                    listOf("restore", "default", "icon")
+                    R.array.keywords_restore_default
                 )
             )
         ) {
@@ -74,7 +74,7 @@ object FeatureRegistry {
                     R.string.search_caffeinate_notif_title,
                     R.string.search_caffeinate_notif_desc,
                     "show_notification",
-                    listOf("visible", "alert")
+                    R.array.keywords_alert
                 )
             )
         ) {
@@ -112,31 +112,31 @@ object FeatureRegistry {
                     R.string.search_lighting_style_title,
                     R.string.search_lighting_style_desc,
                     "style",
-                    listOf("animation", "visual", "look")
+                    R.array.keywords_visual_style
                 ),
                 SearchSetting(
                     R.string.search_corner_radius_title,
                     R.string.search_corner_radius_desc,
                     "corner_radius",
-                    listOf("round", "shape", "edge")
+                    R.array.keywords_round_shape
                 ),
                 SearchSetting(
                     R.string.search_skip_silent_title,
                     R.string.search_skip_silent_desc,
                     "skip_silent_notifications",
-                    listOf("quiet", "ignore", "filter")
+                    R.array.keywords_quiet_filter
                 ),
                 SearchSetting(
                     R.string.search_flashlight_pulse_title,
                     R.string.search_flashlight_pulse_desc,
                     "flashlight_pulse",
-                    listOf("light", "torch", "pulse", "notification")
+                    R.array.keywords_flashlight_pulse
                 ),
                 SearchSetting(
                     R.string.search_only_facing_down_title,
                     R.string.search_only_facing_down_desc,
                     "flashlight_pulse_facedown",
-                    listOf("proximity", "sensor", "face", "down")
+                    R.array.keywords_proximity_sensor
                 )
             )
         ) {
@@ -184,19 +184,19 @@ object FeatureRegistry {
                     R.string.search_snooze_debug_title,
                     R.string.search_snooze_debug_desc,
                     "snooze_debugging",
-                    listOf("adb", "usb", "debug")
+                    R.array.keywords_adb_debug
                 ),
                 SearchSetting(
                     R.string.search_snooze_file_title,
                     R.string.search_snooze_file_desc,
                     "snooze_file_transfer",
-                    listOf("usb", "file", "transfer", "mtp")
+                    R.array.keywords_mtp
                 ),
                 SearchSetting(
                     R.string.search_snooze_charge_title,
                     R.string.search_snooze_charge_desc,
                     "snooze_charging",
-                    listOf("battery", "charge", "power")
+                    R.array.keywords_battery_charge
                 )
             )
         ) {
@@ -217,98 +217,98 @@ object FeatureRegistry {
                     R.string.search_qs_blur_title,
                     R.string.search_qs_blur_desc,
                     "UI Blur",
-                    listOf("blur", "glass", "vignette", "tile", "qs"),
+                    R.array.keywords_blur_glass,
                     R.string.feat_qs_tiles_title
                 ),
                 SearchSetting(
                     R.string.search_qs_bubbles_title,
                     R.string.search_qs_bubbles_desc,
                     "Bubbles",
-                    listOf("float", "window", "overlay", "tile", "qs"),
+                    R.array.keywords_float_window,
                     R.string.feat_qs_tiles_title
                 ),
                 SearchSetting(
                     R.string.search_qs_sensitive_title,
                     R.string.search_qs_sensitive_desc,
                     "Sensitive Content",
-                    listOf("privacy", "lock", "secure", "tile", "qs"),
+                    R.array.keywords_privacy,
                     R.string.feat_qs_tiles_title
                 ),
                 SearchSetting(
                     R.string.search_qs_wake_title,
                     R.string.search_qs_wake_desc,
                     "Tap to Wake",
-                    listOf("touch", "wake", "display", "tile", "qs"),
+                    R.array.keywords_wake_display,
                     R.string.feat_qs_tiles_title
                 ),
                 SearchSetting(
                     R.string.search_qs_aod_title,
                     R.string.search_qs_aod_desc,
                     "AOD",
-                    listOf("always", "display", "clock", "tile", "qs"),
+                    R.array.keywords_always_display,
                     R.string.feat_qs_tiles_title
                 ),
                 SearchSetting(
                     R.string.search_qs_caffeinate_title,
                     R.string.search_qs_caffeinate_desc,
                     "Caffeinate",
-                    listOf("stay", "on", "timeout", "tile", "qs"),
+                    R.array.keywords_timeout,
                     R.string.feat_qs_tiles_title
                 ),
                 SearchSetting(
                     R.string.search_qs_sound_title,
                     R.string.search_qs_sound_desc,
                     "Sound Mode",
-                    listOf("audio", "mute", "volume", "tile", "qs"),
+                    R.array.keywords_audio_mute,
                     R.string.feat_qs_tiles_title
                 ),
                 SearchSetting(
                     R.string.search_qs_lighting_title,
                     R.string.search_qs_lighting_desc,
                     "Notification Lighting",
-                    listOf("glow", "notification", "led", "tile", "qs"),
+                    R.array.keywords_notification_lighting,
                     R.string.feat_qs_tiles_title
                 ),
                 SearchSetting(
                     R.string.search_qs_night_light_title,
                     R.string.search_qs_night_light_desc,
                     "Dynamic Night Light",
-                    listOf("blue", "filter", "auto", "tile", "qs"),
+                    R.array.keywords_blue_filter,
                     R.string.feat_qs_tiles_title
                 ),
                 SearchSetting(
                     R.string.search_qs_locked_sec_title,
                     R.string.search_qs_locked_sec_desc,
                     "Locked Security",
-                    listOf("wifi", "data", "lock", "tile", "qs"),
+                    R.array.keywords_network_visibility,
                     R.string.feat_qs_tiles_title
                 ),
                 SearchSetting(
                     R.string.search_qs_mono_title,
                     R.string.search_qs_mono_desc,
                     "Mono Audio",
-                    listOf("sound", "accessibility", "hear", "tile", "qs"),
+                    R.array.keywords_sound_accessibility,
                     R.string.feat_qs_tiles_title
                 ),
                 SearchSetting(
                     R.string.search_qs_flashlight_title,
                     R.string.search_qs_flashlight_desc,
                     "Flashlight",
-                    listOf("light", "torch", "tile", "qs"),
+                    R.array.keywords_flashlight,
                     R.string.feat_qs_tiles_title
                 ),
                 SearchSetting(
                     R.string.search_qs_freeze_title,
                     R.string.search_qs_freeze_desc,
                     "App Freezing",
-                    listOf("freeze", "shizuku", "tile", "qs"),
+                    R.array.keywords_app_freezing,
                     R.string.feat_qs_tiles_title
                 ),
                 SearchSetting(
                     R.string.search_qs_pulse_title,
                     R.string.search_qs_pulse_desc,
                     "Flashlight Pulse",
-                    listOf("light", "torch", "pulse", "notification", "tile", "qs"),
+                    R.array.keywords_flashlight_pulse,
                     R.string.feat_qs_tiles_title
                 )
             )
@@ -330,19 +330,19 @@ object FeatureRegistry {
                     R.string.search_remap_enable_title,
                     R.string.search_remap_enable_desc,
                     "enable_remap",
-                    listOf("switch", "master")
+                    R.array.keywords_switch_master
                 ),
                 SearchSetting(
                     R.string.search_remap_haptic_title,
                     R.string.search_remap_haptic_desc,
                     "remap_haptic",
-                    listOf("vibration", "feel")
+                    R.array.keywords_vibration
                 ),
                 SearchSetting(
                     R.string.search_remap_flashlight_title,
                     R.string.search_remap_flashlight_desc,
                     "flashlight_toggle",
-                    listOf("light", "torch")
+                    R.array.keywords_flashlight
                 )
             )
         ) {
@@ -363,7 +363,7 @@ object FeatureRegistry {
                     R.string.search_night_light_enable_title,
                     R.string.search_night_light_enable_desc,
                     "dynamic_night_light_toggle",
-                    listOf("switch", "master")
+                    R.array.keywords_switch_master
                 )
             )
         ) {
@@ -399,13 +399,13 @@ object FeatureRegistry {
                     R.string.search_app_lock_enable_title,
                     R.string.search_app_lock_enable_desc,
                     "app_lock_enabled",
-                    listOf("secure", "privacy", "biometric", "face", "fingerprint")
+                    R.array.keywords_privacy
                 ),
                 SearchSetting(
                     R.string.search_app_lock_pick_title,
                     R.string.search_app_lock_pick_desc,
                     "app_lock_selected_apps",
-                    listOf("list", "picker", "selection")
+                    R.array.keywords_selection
                 )
             )
         ) {
@@ -426,27 +426,28 @@ object FeatureRegistry {
                     R.string.search_freeze_pick_title,
                     R.string.search_freeze_pick_desc,
                     "freeze_selected_apps",
-                    listOf("list", "picker", "selection")
+                    R.array.keywords_selection
                 ),
                 SearchSetting(
                     R.string.search_freeze_all_title,
                     R.string.search_freeze_all_desc,
                     "freeze_all_manual",
-                    listOf("manual", "now", "shizuku")
+                    R.array.keywords_manual_now
                 ),
                 SearchSetting(
                     R.string.search_freeze_locked_title,
                     R.string.search_freeze_locked_desc,
                     "freeze_when_locked_enabled",
-                    listOf("automation", "auto", "lock")
+                    R.array.keywords_automation_lock
                 ),
                 SearchSetting(
                     R.string.search_freeze_delay_title,
                     R.string.search_freeze_delay_desc,
                     "freeze_lock_delay_index",
-                    listOf("timer", "wait", "timeout")
+                    R.array.keywords_timer
                 )
-            ),
+            )
+,
             showToggle = false
         ) {
             override fun isEnabled(viewModel: MainViewModel) = true

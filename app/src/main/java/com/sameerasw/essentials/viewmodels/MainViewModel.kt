@@ -14,6 +14,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sameerasw.essentials.R
 import com.sameerasw.essentials.domain.MapsState
 import com.sameerasw.essentials.domain.registry.SearchRegistry
 import com.sameerasw.essentials.data.repository.SettingsRepository
@@ -346,7 +347,7 @@ class MainViewModel : ViewModel() {
         val adminComponent = ComponentName(context, SecurityDeviceAdminReceiver::class.java)
         val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN).apply {
             putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, adminComponent)
-            putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "Required to hard-lock the device when unauthorized network changes are attempted on lock screen.")
+            putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, context.getString(R.string.perm_device_admin_explanation))
         }
         if (context is Activity) {
             context.startActivity(intent)

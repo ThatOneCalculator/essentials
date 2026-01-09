@@ -26,7 +26,7 @@ object SearchRegistry {
                     category = featureCategory,
                     icon = feature.iconRes,
                     featureKey = feature.id,
-                    keywords = listOf("feature", "settings")
+                    keywords = listOf(context.getString(R.string.keyword_feature), context.getString(R.string.keyword_settings))
                 )
             )
 
@@ -41,7 +41,7 @@ object SearchRegistry {
                         featureKey = feature.id,
                         parentFeature = featureTitle,
                         targetSettingHighlightKey = setting.targetSettingHighlightKey,
-                        keywords = setting.keywords
+                        keywords = if (setting.keywordRes != 0) context.resources.getStringArray(setting.keywordRes).toList() else emptyList()
                     )
                 )
             }
@@ -59,7 +59,11 @@ object SearchRegistry {
                     featureKey = "Statusbar icons",
                     parentFeature = context.getString(R.string.feat_statusbar_icons_title),
                     targetSettingHighlightKey = title,
-                    keywords = icon.blacklistNames + listOf("hide", "show", "visibility")
+                    keywords = icon.blacklistNames + listOf(
+                        context.getString(R.string.keyword_hide),
+                        context.getString(R.string.keyword_show),
+                        context.getString(R.string.keyword_visibility)
+                    )
                 )
             )
         }
