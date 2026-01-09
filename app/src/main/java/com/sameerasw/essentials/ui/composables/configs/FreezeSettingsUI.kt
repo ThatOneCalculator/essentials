@@ -61,6 +61,7 @@ fun FreezeSettingsUI(
 
     var showPermissionSheet by remember { mutableStateOf(false) }
     val isAccessibilityEnabled by viewModel.isAccessibilityEnabled
+    var initialEnabledPackageNames by remember { mutableStateOf<Set<String>?>(null) }
 
     LaunchedEffect(Unit) {
         viewModel.refreshFreezePickedApps(context)
@@ -282,6 +283,18 @@ fun FreezeSettingsUI(
                 LoadingIndicator()
             }
         } else if (pickedApps.isNotEmpty()) {
+            if (initialEnabledPackageNames == null) {
+                initialEnabledPackageNames = pickedApps.filter { it.isEnabled }.map { it.packageName }.toSet()
+            }
+            
+            val sortedApps = remember(pickedApps, initialEnabledPackageNames) {
+                val allowed = initialEnabledPackageNames ?: emptySet()
+                pickedApps.sortedWith(
+                    compareByDescending<com.sameerasw.essentials.domain.model.NotificationApp> { allowed.contains(it.packageName) }
+                        .thenBy { it.appName.lowercase() }
+                )
+            }
+
             Text(
                 text = "Auto freeze apps",
                 style = MaterialTheme.typography.titleMedium,
@@ -294,7 +307,7 @@ fun FreezeSettingsUI(
                 spacing = 1.dp,
                 cornerRadius = 24.dp
             ) {
-                pickedApps.forEach { app ->
+                sortedApps.forEach { app ->
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()

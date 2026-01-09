@@ -721,7 +721,7 @@ class MainViewModel : ViewModel() {
     // Freeze App Selection Methods
     fun saveFreezeSelectedApps(context: Context, apps: List<AppSelection>) {
         settingsRepository.saveFreezeSelectedApps(apps)
-        refreshFreezePickedApps(context)
+        refreshFreezePickedApps(context, silent = false) // Full refresh if list structure changes significantly
     }
 
     fun loadFreezeSelectedApps(context: Context): List<AppSelection> {
@@ -730,7 +730,7 @@ class MainViewModel : ViewModel() {
 
     fun updateFreezeAppEnabled(context: Context, packageName: String, enabled: Boolean) {
         settingsRepository.updateFreezeAppSelection(packageName, enabled)
-        refreshFreezePickedApps(context)
+        refreshFreezePickedApps(context, silent = true)
     }
 
     fun updateFreezeAppAutoFreeze(context: Context, packageName: String, autoFreezeEnabled: Boolean) {
@@ -744,12 +744,12 @@ class MainViewModel : ViewModel() {
         
         settingsRepository.saveFreezeAutoExcludedApps(currentSet)
         
-        refreshFreezePickedApps(context)
+        refreshFreezePickedApps(context, silent = true)
     }
 
-    fun refreshFreezePickedApps(context: Context) {
+    fun refreshFreezePickedApps(context: Context, silent: Boolean = false) {
         viewModelScope.launch {
-            isFreezePickedAppsLoading.value = true
+            if (!silent) isFreezePickedAppsLoading.value = true
             try {
                 // Only load apps that are actually marked as secondary selected (picked)
                 val selections = loadFreezeSelectedApps(context).filter { it.isEnabled }
@@ -775,7 +775,7 @@ class MainViewModel : ViewModel() {
                 freezePickedApps.value = merged.map { it.copy(isEnabled = !filteredExcluded.contains(it.packageName)) }
                     .sortedBy { it.appName.lowercase() }
             } finally {
-                isFreezePickedAppsLoading.value = false
+                if (!silent) isFreezePickedAppsLoading.value = false
             }
         }
     }
