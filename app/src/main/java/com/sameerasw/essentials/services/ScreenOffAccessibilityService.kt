@@ -164,7 +164,7 @@ class ScreenOffAccessibilityService : AccessibilityService(), SensorEventListene
         val action = intent?.action ?: return super.onStartCommand(intent, flags, startId)
         
         when (action) {
-            "LOCK_SCREEN" -> securityHandler.lockDeviceHard()
+            "LOCK_SCREEN" -> securityHandler.lockDevice()
             
             "SHOW_NOTIFICATION_LIGHTING" -> notificationLightingHandler.handleIntent(intent)
             

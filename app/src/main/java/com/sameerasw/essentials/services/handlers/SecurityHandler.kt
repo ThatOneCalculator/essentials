@@ -102,6 +102,10 @@ class SecurityHandler(
         }
     }
 
+    fun lockDevice() {
+        service.performGlobalAction(GLOBAL_ACTION_LOCK_SCREEN)
+    }
+
     fun lockDeviceHard() {
         try {
             val dpm = service.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
