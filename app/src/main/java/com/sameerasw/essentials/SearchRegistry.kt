@@ -3,6 +3,7 @@ package com.sameerasw.essentials
 import com.sameerasw.essentials.domain.model.SearchableItem
 import com.sameerasw.essentials.domain.model.Feature
 import com.sameerasw.essentials.domain.StatusBarIconRegistry
+import com.sameerasw.essentials.domain.model.FeatureRegistry
 
 object SearchRegistry {
 

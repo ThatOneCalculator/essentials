@@ -1,8 +1,7 @@
-package com.sameerasw.essentials
+package com.sameerasw.essentials.domain.model
 
 import android.content.Context
-import com.sameerasw.essentials.domain.model.Feature
-import com.sameerasw.essentials.domain.model.SearchSetting
+import com.sameerasw.essentials.R
 import com.sameerasw.essentials.viewmodels.MainViewModel
 
 object FeatureRegistry {
@@ -68,7 +67,7 @@ object FeatureRegistry {
             hasMoreSettings = false
         ) {
             override fun isEnabled(viewModel: MainViewModel) = viewModel.isMapsPowerSavingEnabled.value
-            override fun isToggleEnabled(viewModel: MainViewModel, context: Context) = 
+            override fun isToggleEnabled(viewModel: MainViewModel, context: Context) =
                 viewModel.isShizukuAvailable.value && viewModel.isShizukuPermissionGranted.value && viewModel.isNotificationListenerEnabled.value
             override fun onToggle(viewModel: MainViewModel, context: Context, enabled: Boolean) = viewModel.setMapsPowerSavingEnabled(enabled, context)
             override fun onClick(context: Context, viewModel: MainViewModel) {}
@@ -90,7 +89,7 @@ object FeatureRegistry {
             )
         ) {
             override fun isEnabled(viewModel: MainViewModel) = viewModel.isNotificationLightingEnabled.value
-            override fun isToggleEnabled(viewModel: MainViewModel, context: Context) = 
+            override fun isToggleEnabled(viewModel: MainViewModel, context: Context) =
                 viewModel.isOverlayPermissionGranted.value && viewModel.isNotificationLightingAccessibilityEnabled.value && viewModel.isNotificationListenerEnabled.value
             override fun onToggle(viewModel: MainViewModel, context: Context, enabled: Boolean) = viewModel.setNotificationLightingEnabled(enabled, context)
         },
@@ -198,7 +197,7 @@ object FeatureRegistry {
             )
         ) {
             override fun isEnabled(viewModel: MainViewModel) = viewModel.isDynamicNightLightEnabled.value
-            override fun isToggleEnabled(viewModel: MainViewModel, context: Context) = 
+            override fun isToggleEnabled(viewModel: MainViewModel, context: Context) =
                 viewModel.isAccessibilityEnabled.value && viewModel.isWriteSecureSettingsEnabled.value
             override fun onToggle(viewModel: MainViewModel, context: Context, enabled: Boolean) = viewModel.setDynamicNightLightEnabled(enabled, context)
         },
@@ -214,11 +213,11 @@ object FeatureRegistry {
             permissionKeys = listOf("ACCESSIBILITY", "WRITE_SECURE_SETTINGS", "DEVICE_ADMIN")
         ) {
             override fun isEnabled(viewModel: MainViewModel) = viewModel.isScreenLockedSecurityEnabled.value
-            override fun isToggleEnabled(viewModel: MainViewModel, context: Context) = 
+            override fun isToggleEnabled(viewModel: MainViewModel, context: Context) =
                 viewModel.isAccessibilityEnabled.value && viewModel.isWriteSecureSettingsEnabled.value && viewModel.isDeviceAdminEnabled.value
             override fun onToggle(viewModel: MainViewModel, context: Context, enabled: Boolean) = viewModel.setScreenLockedSecurityEnabled(enabled, context)
         },
-        
+
         object : Feature(
             id = "App lock",
             title = "App lock",
@@ -252,7 +251,7 @@ object FeatureRegistry {
             showToggle = false
         ) {
             override fun isEnabled(viewModel: MainViewModel) = true
-            override fun isToggleEnabled(viewModel: MainViewModel, context: Context) = 
+            override fun isToggleEnabled(viewModel: MainViewModel, context: Context) =
                 viewModel.isShizukuAvailable.value && viewModel.isShizukuPermissionGranted.value
             override fun onToggle(viewModel: MainViewModel, context: Context, enabled: Boolean) {}
         }

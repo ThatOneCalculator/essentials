@@ -42,7 +42,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
-import com.sameerasw.essentials.FeatureRegistry
+import com.sameerasw.essentials.domain.model.FeatureRegistry
 import com.sameerasw.essentials.FeatureSettingsActivity
 import com.sameerasw.essentials.PermissionRegistry
 import com.sameerasw.essentials.R
