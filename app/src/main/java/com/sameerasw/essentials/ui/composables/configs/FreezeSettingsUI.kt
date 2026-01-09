@@ -189,8 +189,8 @@ fun FreezeSettingsUI(
         }
 
             FeatureCard(
-                title = stringResource(R.string.freeze_pick_apps_title),
-                description = stringResource(R.string.freeze_pick_apps_desc),
+                title = R.string.freeze_pick_apps_title,
+                description = R.string.freeze_pick_apps_desc,
                 iconRes = R.drawable.rounded_app_registration_24,
                 isEnabled = true,
                 showToggle = false,
@@ -374,14 +374,14 @@ fun FreezeSettingsUI(
         if (showPermissionSheet) {
             PermissionsBottomSheet(
                 onDismissRequest = { showPermissionSheet = false },
-                featureTitle = stringResource(R.string.permission_feature_freeze_locked),
+                featureTitle = R.string.permission_feature_freeze_locked,
                 permissions = listOf(
                     PermissionItem(
                         iconRes = R.drawable.rounded_settings_accessibility_24,
-                        title = stringResource(R.string.permission_accessibility_title),
-                        description = stringResource(R.string.permission_accessibility_desc_freeze),
-                        dependentFeatures = PermissionRegistry.getFeatures("ACCESSIBILITY"),
-                        actionLabel = stringResource(R.string.action_enable_in_settings),
+                        title = R.string.permission_accessibility_title,
+                        description = R.string.permission_accessibility_desc_freeze,
+                        dependentFeatures = listOf(R.string.freeze_when_locked_title),
+                        actionLabel = R.string.action_enable_in_settings,
                         action = {
                             context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
                         },

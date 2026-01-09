@@ -229,9 +229,9 @@ fun ButtonRemapSettingsUI(
                         selectedFeedback = viewModel.remapHapticType.value,
                         onFeedbackSelected = { viewModel.setRemapHapticType(it, context) },
                         options = listOf(
-                            stringResource(R.string.haptic_none) to HapticFeedbackType.NONE,
-                            stringResource(R.string.haptic_tick) to HapticFeedbackType.TICK,
-                            stringResource(R.string.haptic_double) to HapticFeedbackType.DOUBLE
+                            R.string.haptic_none to HapticFeedbackType.NONE,
+                            R.string.haptic_tick to HapticFeedbackType.TICK,
+                            R.string.haptic_double to HapticFeedbackType.DOUBLE
                         ),
                         modifier = Modifier.highlight(highlightSetting == "remap_haptic")
                     )
@@ -448,7 +448,7 @@ fun ButtonRemapSettingsUI(
 
 @Composable
 fun RemapActionItem(
-    title: String,
+    title: Any, // Can be Int or String
     iconRes: Int,
     isSelected: Boolean,
     onClick: () -> Unit,
@@ -477,15 +477,21 @@ fun RemapActionItem(
             onClick = onClick
         )
 
+        val resolvedTitle = when (title) {
+            is Int -> stringResource(id = title)
+            is String -> title
+            else -> ""
+        }
+
         Icon(
             painter = painterResource(id = iconRes),
-            contentDescription = title,
+            contentDescription = resolvedTitle,
             modifier = Modifier.size(24.dp),
             tint = MaterialTheme.colorScheme.primary
         )
 
         Text(
-            text = title,
+            text = resolvedTitle,
             style = MaterialTheme.typography.bodyLarge,
             modifier = Modifier.weight(1f),
             color = if (isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant

@@ -50,15 +50,15 @@ fun CaffeinateSettingsUI(
 
     if (showPermissionSheet) {
         PermissionsBottomSheet(
-            onDismissRequest = { },
-            featureTitle = stringResource(R.string.permission_show_notification_title),
+            onDismissRequest = { showPermissionSheet = false },
+            featureTitle = R.string.permission_show_notification_title,
             permissions = listOf(
                 PermissionItem(
                     iconRes = R.drawable.rounded_notifications_unread_24,
-                    title = stringResource(R.string.permission_post_notifications_title),
-                    description = stringResource(R.string.permission_post_notifications_desc),
-                    dependentFeatures = listOf("Show notification"),
-                    actionLabel = stringResource(R.string.permission_grant_action),
+                    title = R.string.permission_post_notifications_title,
+                    description = R.string.permission_post_notifications_desc,
+                    dependentFeatures = listOf(R.string.permission_show_notification_title),
+                    actionLabel = R.string.permission_grant_action,
                     action = {
                         requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                     },

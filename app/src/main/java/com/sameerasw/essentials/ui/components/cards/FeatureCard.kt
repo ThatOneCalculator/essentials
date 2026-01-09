@@ -1,5 +1,6 @@
 package com.sameerasw.essentials.ui.components.cards
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,13 +21,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.sameerasw.essentials.R
 import com.sameerasw.essentials.utils.HapticUtil
 
 @Composable
 fun FeatureCard(
-    title: String,
+    title: Any, // Can be Int (Resource ID) or String
     isEnabled: Boolean,
     onToggle: (Boolean) -> Unit,
     onClick: () -> Unit,
@@ -36,7 +38,8 @@ fun FeatureCard(
     isToggleEnabled: Boolean = true,
     showToggle: Boolean = true,
     onDisabledToggleClick: (() -> Unit)? = null,
-    description: String? = null
+    description: Any? = null, // Can be Int or String
+    descriptionOverride: String? = null // For cases where we search and prepend parent feature name
 ) {
     val view = LocalView.current
 
@@ -61,9 +64,14 @@ fun FeatureCard(
                 if (iconRes != null) {
 
                     Spacer(modifier = Modifier.size(1.dp))
+                    val resolvedTitle = when (title) {
+                        is Int -> stringResource(id = title)
+                        is String -> title
+                        else -> ""
+                    }
                     Icon(
                         painter = painterResource(id = iconRes),
-                        contentDescription = title,
+                        contentDescription = resolvedTitle,
                         modifier = Modifier.size(28.dp),
                         tint = MaterialTheme.colorScheme.primary
                     )
@@ -73,10 +81,26 @@ fun FeatureCard(
                     modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
-                    Text(text = title)
-                    if (description != null) {
+                    val resolvedTitle = when (title) {
+                        is Int -> stringResource(id = title)
+                        is String -> title
+                        else -> ""
+                    }
+                    Text(text = resolvedTitle)
+                    if (descriptionOverride != null) {
                         Text(
-                            text = description,
+                            text = descriptionOverride,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    } else if (description != null) {
+                        val resolvedDescription = when (description) {
+                            is Int -> stringResource(id = description)
+                            is String -> description
+                            else -> ""
+                        }
+                        Text(
+                            text = resolvedDescription,
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

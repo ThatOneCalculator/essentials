@@ -12,11 +12,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.sameerasw.essentials.domain.HapticFeedbackType
+import com.sameerasw.essentials.R
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -24,11 +26,11 @@ fun HapticFeedbackPicker(
     selectedFeedback: HapticFeedbackType,
     onFeedbackSelected: (HapticFeedbackType) -> Unit,
     modifier: Modifier = Modifier,
-    options: List<Pair<String, HapticFeedbackType>> = listOf(
-        "None" to HapticFeedbackType.NONE,
-        "Subtle" to HapticFeedbackType.SUBTLE,
-        "Double" to HapticFeedbackType.DOUBLE,
-        "Click" to HapticFeedbackType.CLICK
+    options: List<Pair<Int, HapticFeedbackType>> = listOf<Pair<Int, HapticFeedbackType>>(
+        R.string.haptic_none to HapticFeedbackType.NONE,
+        R.string.haptic_subtle to HapticFeedbackType.SUBTLE,
+        R.string.haptic_double to HapticFeedbackType.DOUBLE,
+        R.string.haptic_click to HapticFeedbackType.CLICK
     )
 ) {
     val labels = options.map { it.first }
@@ -60,7 +62,7 @@ fun HapticFeedbackPicker(
                     else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
                 },
             ) {
-                Text(label)
+                Text(stringResource(label))
             }
         }
     }

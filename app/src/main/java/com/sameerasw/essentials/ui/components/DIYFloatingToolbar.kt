@@ -28,6 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.sameerasw.essentials.domain.DIYTabs
 import kotlinx.coroutines.delay
@@ -165,7 +166,7 @@ fun DIYFloatingToolbar(
                     ) {
                         Icon(
                             painter = painterResource(id = tab.iconRes),
-                            contentDescription = tab.title,
+                            contentDescription = stringResource(id = tab.title),
                             tint = if (isSelected) {
                                 MaterialTheme.colorScheme.primary
                             } else {

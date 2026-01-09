@@ -1,5 +1,6 @@
 package com.sameerasw.essentials.ui.components.sheets
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,18 +13,22 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.sameerasw.essentials.R
 import com.sameerasw.essentials.ui.components.cards.PermissionCard
 import com.sameerasw.essentials.ui.components.containers.RoundedCardContainer
 
 data class PermissionItem(
     val iconRes: Int,
-    val title: String,
-    val description: String,
-    val dependentFeatures: List<String> = emptyList(),
-    val actionLabel: String? = null,
+    val title: Any, // Can be Int (Resource ID) or String
+    val description: Any, // Can be Int or String
+    val dependentFeatures: List<Any> = emptyList(), // List of Int or String
+    val actionLabel: Any? = null, // Can be Int or String
     val action: (() -> Unit)? = null,
-    val secondaryActionLabel: String? = null,
+    val secondaryActionLabel: Any? = null, // Can be Int or String
     val secondaryAction: (() -> Unit)? = null,
     val isGranted: Boolean = false
 )
@@ -32,10 +37,15 @@ data class PermissionItem(
 @Composable
 fun PermissionsBottomSheet(
     onDismissRequest: () -> Unit,
-    featureTitle: String,
+    featureTitle: Any, // Can be Int (Resource ID) or String
     permissions: List<PermissionItem>,
     onHelpClick: () -> Unit = {}
 ) {
+    val resolvedTitle = when (featureTitle) {
+        is Int -> stringResource(id = featureTitle)
+        is String -> featureTitle
+        else -> ""
+    }
     ModalBottomSheet(onDismissRequest = onDismissRequest) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Row(
@@ -44,7 +54,7 @@ fun PermissionsBottomSheet(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = "$featureTitle requires following permissions",
+                    text = stringResource(id = R.string.requires_following_permissions, resolvedTitle),
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.weight(1f)
                 )
@@ -56,7 +66,7 @@ fun PermissionsBottomSheet(
                         iconRes = perm.iconRes,
                         title = perm.title,
                         dependentFeatures = perm.dependentFeatures,
-                        actionLabel = perm.actionLabel ?: "Open Settings",
+                        actionLabel = perm.actionLabel ?: R.string.perm_action_enable,
                         isGranted = perm.isGranted,
                         onActionClick = { perm.action?.invoke() },
                         secondaryActionLabel = perm.secondaryActionLabel,

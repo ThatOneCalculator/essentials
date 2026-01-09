@@ -1,24 +1,29 @@
 package com.sameerasw.essentials.domain.registry
 
+import android.content.Context
+import com.sameerasw.essentials.R
 import com.sameerasw.essentials.domain.StatusBarIconRegistry
 import com.sameerasw.essentials.domain.model.SearchableItem
 
-import android.content.Context
-import com.sameerasw.essentials.R
-
 object SearchRegistry {
 
-    private val staticItems = mutableListOf<SearchableItem>()
+    fun search(context: Context, query: String): List<SearchableItem> {
+        val q = query.trim().lowercase()
+        if (q.isEmpty()) return emptyList()
 
-    init {
-        // --- Automate Feature and Sub-setting Indexing ---
+        val allItems = mutableListOf<SearchableItem>()
+
+        // --- Index Features and Sub-settings ---
         FeatureRegistry.ALL_FEATURES.forEach { feature ->
+            val featureTitle = context.getString(feature.title)
+            val featureCategory = context.getString(feature.category)
+            
             // Index the feature itself
-            addStaticItem(
+            allItems.add(
                 SearchableItem(
-                    title = feature.title,
-                    description = feature.description,
-                    category = feature.category,
+                    title = featureTitle,
+                    description = context.getString(feature.description),
+                    category = featureCategory,
                     icon = feature.iconRes,
                     featureKey = feature.id,
                     keywords = listOf("feature", "settings")
@@ -27,31 +32,20 @@ object SearchRegistry {
 
             // Index sub-settings
             feature.searchableSettings.forEach { setting ->
-                addStaticItem(
+                allItems.add(
                     SearchableItem(
-                        title = setting.title,
-                        description = setting.description,
-                        category = setting.category ?: feature.category,
+                        title = context.getString(setting.title),
+                        description = context.getString(setting.description),
+                        category = setting.category?.let { context.getString(it) } ?: featureCategory,
                         icon = feature.iconRes,
                         featureKey = feature.id,
-                        parentFeature = feature.title,
+                        parentFeature = featureTitle,
                         targetSettingHighlightKey = setting.targetSettingHighlightKey,
                         keywords = setting.keywords
                     )
                 )
             }
         }
-    }
-
-    private fun addStaticItem(item: SearchableItem) {
-        staticItems.add(item)
-    }
-
-    fun search(context: Context, query: String): List<SearchableItem> {
-        val q = query.trim().lowercase()
-        if (q.isEmpty()) return emptyList()
-
-        val allItems = ArrayList(staticItems)
 
         // --- Dynamic Status Bar Icons ---
         StatusBarIconRegistry.ALL_ICONS.forEach { icon ->
@@ -60,10 +54,10 @@ object SearchRegistry {
                 SearchableItem(
                     title = title,
                     description = context.getString(R.string.search_desc_toggle_visibility, title),
-                    category = "Statusbar icons",
+                    category = context.getString(R.string.feat_statusbar_icons_title),
                     icon = icon.iconRes,
                     featureKey = "Statusbar icons",
-                    parentFeature = "Statusbar icons",
+                    parentFeature = context.getString(R.string.feat_statusbar_icons_title),
                     targetSettingHighlightKey = title,
                     keywords = icon.blacklistNames + listOf("hide", "show", "visibility")
                 )

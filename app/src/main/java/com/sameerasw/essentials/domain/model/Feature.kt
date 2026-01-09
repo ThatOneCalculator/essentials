@@ -3,6 +3,7 @@ package com.sameerasw.essentials.domain.model
 import android.content.Context
 import android.content.Intent
 import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import com.sameerasw.essentials.FeatureSettingsActivity
 import com.sameerasw.essentials.viewmodels.MainViewModel
 
@@ -10,11 +11,11 @@ import com.sameerasw.essentials.viewmodels.MainViewModel
  * Represents a sub-setting within a feature that can be individually searched and highlighted.
  */
 data class SearchSetting(
-    val title: String,
-    val description: String,
+    @StringRes val title: Int,
+    @StringRes val description: Int,
     val targetSettingHighlightKey: String,
     val keywords: List<String> = emptyList(),
-    val category: String? = null
+    @StringRes val category: Int? = null
 )
 
 /**
@@ -22,10 +23,10 @@ data class SearchSetting(
  */
 abstract class Feature(
     val id: String,
-    val title: String,
+    @StringRes val title: Int,
     @DrawableRes val iconRes: Int,
-    val category: String,
-    val description: String,
+    @StringRes val category: Int,
+    @StringRes val description: Int,
     val permissionKeys: List<String> = emptyList(),
     val searchableSettings: List<SearchSetting> = emptyList(),
     val showToggle: Boolean = true,

@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.sameerasw.essentials.R
 import com.sameerasw.essentials.services.receivers.FlashlightActionReceiver
@@ -122,7 +123,7 @@ fun FlashlightIntensityOverlay(onDismiss: () -> Unit) {
                 )
                 
                 Text(
-                    text = "Flashlight Intensity",
+                    text = stringResource(R.string.feature_flashlight_brightness_title),
                     style = MaterialTheme.typography.titleLarge
                 )
                 
@@ -160,7 +161,7 @@ fun FlashlightIntensityOverlay(onDismiss: () -> Unit) {
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(16.dp)
                     ) {
-                        Text("Done")
+                        Text(stringResource(R.string.action_done))
                     }
 
                     Button(
@@ -174,7 +175,7 @@ fun FlashlightIntensityOverlay(onDismiss: () -> Unit) {
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(16.dp)
                     ) {
-                        Text("Turn Off")
+                        Text(stringResource(R.string.action_turn_off))
                     }
                 }
             }

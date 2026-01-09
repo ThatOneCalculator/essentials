@@ -39,6 +39,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
 import com.sameerasw.essentials.R
@@ -123,7 +124,7 @@ fun AppSelectionSheet(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Select Apps",
+                    text = stringResource(R.string.action_select_apps),
                     style = MaterialTheme.typography.headlineSmall
                 )
                 
@@ -142,7 +143,7 @@ fun AppSelectionSheet(
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.rounded_invert_colors_24),
-                        contentDescription = "Invert selection",
+                        contentDescription = stringResource(R.string.action_invert_selection),
                         tint = MaterialTheme.colorScheme.primary
                     )
                 }
@@ -153,11 +154,11 @@ fun AppSelectionSheet(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Search apps") },
+                placeholder = { Text(stringResource(R.string.label_search)) },
                 leadingIcon = {
                     Icon(
                         painter = painterResource(id = R.drawable.rounded_search_24),
-                        contentDescription = "Search"
+                        contentDescription = stringResource(R.string.action_search)
                     )
                 },
                 singleLine = true,
@@ -184,7 +185,7 @@ fun AppSelectionSheet(
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    text = "Show system apps",
+                    text = stringResource(R.string.toggle_show_system_apps),
                     style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier.weight(1f),
                     color = MaterialTheme.colorScheme.onSurface

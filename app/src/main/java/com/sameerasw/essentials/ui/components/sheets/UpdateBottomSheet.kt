@@ -30,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
@@ -84,7 +85,7 @@ fun UpdateBottomSheet(
                     )
 
                     Text(
-                        text = if (updateInfo.isUpdateAvailable) "Update Available" else "You are up to date",
+                        text = if (updateInfo.isUpdateAvailable) stringResource(R.string.update_available_title) else stringResource(R.string.status_up_to_date),
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold
                     )
@@ -111,7 +112,7 @@ fun UpdateBottomSheet(
                                     modifier = Modifier.size(20.dp)
                                 )
                                 Text(
-                                    text = "This is a pre-release version and might be unstable.",
+                                    text = stringResource(R.string.warning_pre_release),
                                     style = MaterialTheme.typography.labelMedium,
                                     color = MaterialTheme.colorScheme.onErrorContainer
                                 )
@@ -126,7 +127,7 @@ fun UpdateBottomSheet(
                             horizontalAlignment = Alignment.Start
                         ) {
                             Text(
-                                text = "Release Notes v${updateInfo.versionName}",
+                                text = stringResource(R.string.release_notes_format, updateInfo.versionName),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold
                             )
@@ -161,7 +162,7 @@ fun UpdateBottomSheet(
                                 modifier = Modifier.size(18.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("View on GitHub")
+                            Text(stringResource(R.string.action_view_on_github))
                         }
                     }
 
@@ -173,7 +174,7 @@ fun UpdateBottomSheet(
                             },
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text("Download APK")
+                            Text(stringResource(R.string.action_download_apk))
                         }
                     }
 

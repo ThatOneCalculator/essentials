@@ -59,14 +59,14 @@ fun StatusBarIconSettingsUI(
     if (showPermissionSheet) {
         PermissionsBottomSheet(
             onDismissRequest = { showPermissionSheet = false },
-            featureTitle = stringResource(R.string.smart_data_title),
+            featureTitle = R.string.smart_data_title,
             permissions = listOf(
                 PermissionItem(
                     iconRes = R.drawable.rounded_android_cell_dual_4_bar_24,
-                    title = stringResource(R.string.permission_read_phone_state_title),
-                    description = stringResource(R.string.permission_read_phone_state_desc),
-                    dependentFeatures = listOf(stringResource(R.string.smart_data_title)),
-                    actionLabel = stringResource(R.string.permission_grant_action),
+                    title = R.string.permission_read_phone_state_title,
+                    description = R.string.permission_read_phone_state_desc,
+                    dependentFeatures = listOf(R.string.smart_data_title),
+                    actionLabel = R.string.permission_grant_action,
                     action = {
                         ActivityCompat.requestPermissions(
                             context as ComponentActivity,
@@ -124,7 +124,7 @@ fun StatusBarIconSettingsUI(
                                 viewModel.setIconVisibility(icon.id, checked, context)
                             },
                             enabled = isPermissionGranted,
-                            modifier = Modifier.highlight(highlightSetting == stringResource(icon.displayNameRes))
+                            modifier = Modifier.highlight(highlightSetting == context.getString(icon.displayNameRes))
                         )
                     }
                 }

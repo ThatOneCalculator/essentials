@@ -16,11 +16,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.sameerasw.essentials.R
 import com.sameerasw.essentials.domain.DIYTabs
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -71,7 +73,7 @@ fun DefaultTabPicker(
                         modifier = Modifier.size(18.dp)
                     )
                     Text(
-                        text = if (tab == DIYTabs.FREEZE) "Frozen" else tab.title,
+                        text = if (tab == DIYTabs.FREEZE) stringResource(R.string.tab_freeze_title) else stringResource(tab.title),
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = if (isChecked) FontWeight.Bold else FontWeight.Normal,
                         maxLines = 1
