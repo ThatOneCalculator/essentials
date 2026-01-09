@@ -17,7 +17,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
-import androidx.core.graphics.drawable.toBitmap
 import com.sameerasw.essentials.R
 import com.sameerasw.essentials.ui.components.cards.FeatureCard
 import com.sameerasw.essentials.ui.components.cards.IconToggleItem
@@ -317,7 +316,7 @@ fun FreezeSettingsUI(
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         Image(
-                            bitmap = app.icon.toBitmap().asImageBitmap(),
+                            bitmap = app.icon,
                             contentDescription = null,
                             modifier = Modifier.size(40.dp),
                             contentScale = ContentScale.Fit

@@ -7,6 +7,8 @@ import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.util.Log
 import androidx.core.graphics.createBitmap
+import androidx.core.graphics.drawable.toBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.palette.graphics.Palette
 import com.sameerasw.essentials.domain.model.AppSelection
 import com.sameerasw.essentials.domain.model.NotificationApp
@@ -44,7 +46,7 @@ object AppUtil {
                         packageName = appInfo.packageName,
                         appName = pm.getApplicationLabel(appInfo).toString(),
                         isEnabled = false,
-                        icon = pm.getApplicationIcon(appInfo),
+                        icon = pm.getApplicationIcon(appInfo).toBitmap().asImageBitmap(),
                         isSystemApp = isSystemApp,
                         lastUpdated = System.currentTimeMillis()
                     )
@@ -84,7 +86,7 @@ suspend fun getAppsByPackageNames(context: Context, packageNames: List<String>):
                     packageName = appInfo.packageName,
                     appName = pm.getApplicationLabel(appInfo).toString(),
                     isEnabled = false,
-                    icon = pm.getApplicationIcon(appInfo),
+                    icon = pm.getApplicationIcon(appInfo).toBitmap().asImageBitmap(),
                     isSystemApp = isSystemApp,
                     lastUpdated = System.currentTimeMillis()
                 )

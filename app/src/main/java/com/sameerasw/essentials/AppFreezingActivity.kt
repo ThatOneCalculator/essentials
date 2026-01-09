@@ -256,7 +256,7 @@ fun AppGridItem(
             ) {
                 // App Icon
                 Image(
-                    bitmap = app.icon.toBitmap().asImageBitmap(),
+                    bitmap = app.icon,
                     contentDescription = app.appName,
                     modifier = Modifier
                         .fillMaxSize()

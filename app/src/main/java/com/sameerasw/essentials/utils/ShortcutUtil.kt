@@ -6,7 +6,7 @@ import android.content.pm.ShortcutInfo
 import android.content.pm.ShortcutManager
 import android.graphics.drawable.Icon
 import android.os.Build
-import androidx.core.graphics.drawable.toBitmap
+import androidx.compose.ui.graphics.asAndroidBitmap
 import com.sameerasw.essentials.ShortcutHandlerActivity
 import com.sameerasw.essentials.domain.model.NotificationApp
 
@@ -27,7 +27,7 @@ object ShortcutUtil {
                 val shortcut = ShortcutInfo.Builder(context, app.packageName)
                     .setShortLabel(app.appName)
                     .setLongLabel(app.appName)
-                    .setIcon(Icon.createWithBitmap(app.icon.toBitmap()))
+                    .setIcon(Icon.createWithBitmap(app.icon.asAndroidBitmap()))
                     .setIntent(intent)
                     .build()
 

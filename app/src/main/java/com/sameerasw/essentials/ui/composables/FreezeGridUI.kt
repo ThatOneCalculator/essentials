@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -45,6 +46,7 @@ import com.sameerasw.essentials.utils.FreezeManager
 import com.sameerasw.essentials.utils.HapticUtil
 import com.sameerasw.essentials.utils.ShortcutUtil
 import com.sameerasw.essentials.viewmodels.MainViewModel
+import coil.compose.AsyncImage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import androidx.compose.material3.ToggleFloatingActionButtonDefaults.animateIcon
@@ -206,7 +208,7 @@ fun AppGridItem(
             ) {
                 // App Icon
                 Image(
-                    bitmap = app.icon.toBitmap().asImageBitmap(),
+                    bitmap = app.icon,
                     contentDescription = app.appName,
                     modifier = Modifier
                         .fillMaxSize()

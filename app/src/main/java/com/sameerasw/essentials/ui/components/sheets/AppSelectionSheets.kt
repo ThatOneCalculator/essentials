@@ -230,7 +230,7 @@ fun AppSelectionSheet(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Image(
-                                bitmap = app.icon.toBitmap().asImageBitmap(),
+                                bitmap = app.icon,
                                 contentDescription = null,
                                 modifier = Modifier.size(40.dp),
                                 contentScale = ContentScale.Fit
