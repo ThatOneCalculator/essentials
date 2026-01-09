@@ -44,6 +44,7 @@ import com.sameerasw.essentials.ui.theme.EssentialsTheme
 import com.sameerasw.essentials.utils.HapticUtil
 import com.sameerasw.essentials.viewmodels.MainViewModel
 import com.sameerasw.essentials.ui.components.sheets.UpdateBottomSheet
+import com.sameerasw.essentials.ui.components.sheets.InstructionsBottomSheet
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
@@ -149,6 +150,7 @@ class MainActivity : FragmentActivity() {
                 var searchRequested by remember { mutableStateOf(false) }
                 val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
                 var showUpdateSheet by remember { mutableStateOf(false) }
+                var showInstructionsSheet by remember { mutableStateOf(false) }
                 val isUpdateAvailable by viewModel.isUpdateAvailable
                 val updateInfo by viewModel.updateInfo
 
@@ -173,6 +175,12 @@ class MainActivity : FragmentActivity() {
                         onDismissRequest = { showUpdateSheet = false }
                     )
                 }
+
+                if (showInstructionsSheet) {
+                    InstructionsBottomSheet(
+                        onDismissRequest = { showInstructionsSheet = false }
+                    )
+                }
                 Scaffold(
                     contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0),
                     modifier = Modifier
@@ -189,9 +197,11 @@ class MainActivity : FragmentActivity() {
                             hasBack = false,
                             hasSearch = true,
                             hasSettings = true,
+                            hasHelp = true,
                             onSearchClick = { searchRequested = true },
                             onSettingsClick = { startActivity(Intent(this, SettingsActivity::class.java)) },
                             onUpdateClick = { showUpdateSheet = true },
+                            onHelpClick = { showInstructionsSheet = true },
                             hasUpdateAvailable = isUpdateAvailable,
                             scrollBehavior = scrollBehavior,
                             subtitle = "v$versionName"

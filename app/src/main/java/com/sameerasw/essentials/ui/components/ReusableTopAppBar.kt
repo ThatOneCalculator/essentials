@@ -41,7 +41,9 @@ fun ReusableTopAppBar(
     onSearchClick: (() -> Unit)? = null,
     onSettingsClick: (() -> Unit)? = null,
     onUpdateClick: (() -> Unit)? = null,
+    onHelpClick: (() -> Unit)? = null,
     hasUpdateAvailable: Boolean = false,
+    hasHelp: Boolean = false,
     scrollBehavior: TopAppBarScrollBehavior? = null,
     subtitle: String? = null,
     actions: @Composable RowScope.() -> Unit = {}
@@ -107,6 +109,30 @@ fun ReusableTopAppBar(
         actions = {
             actions()
             
+            if (hasHelp) {
+                val view = LocalView.current
+                IconButton(
+                    onClick = {
+                        HapticUtil.performVirtualKeyHaptic(view)
+                        onHelpClick?.invoke()
+                    },
+                    colors = IconButtonDefaults.iconButtonColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceBright
+                    ),
+                    modifier = Modifier.size(48.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.rounded_help_24),
+                        contentDescription = "Help Guide",
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
+            }
+
+            if (hasHelp && (hasUpdateAvailable || hasSettings)) {
+                Spacer(modifier = Modifier.width(8.dp))
+            }
+
             if (hasUpdateAvailable) {
                 val view = LocalView.current
                 IconButton(
