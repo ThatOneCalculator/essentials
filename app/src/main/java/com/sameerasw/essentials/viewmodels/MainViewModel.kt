@@ -14,8 +14,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sameerasw.essentials.MapsState
-import com.sameerasw.essentials.SearchRegistry
+import com.sameerasw.essentials.domain.MapsState
+import com.sameerasw.essentials.domain.registry.SearchRegistry
 import com.sameerasw.essentials.data.repository.SettingsRepository
 import com.sameerasw.essentials.data.repository.UpdateRepository
 import com.sameerasw.essentials.domain.model.AppSelection

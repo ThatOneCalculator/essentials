@@ -192,7 +192,7 @@
             android:foregroundServiceType="specialUse" />
 
         <receiver
-            android:name=".ScreenOffWidgetProvider"
+            android:name=".services.ScreenOffWidgetProvider"
             android:exported="false"
             android:label="@string/screen_off_widget_label">
             <intent-filter>

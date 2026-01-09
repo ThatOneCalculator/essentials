@@ -9,7 +9,7 @@ import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.util.Log
 import androidx.annotation.RequiresApi
-import com.sameerasw.essentials.MapsState
+import com.sameerasw.essentials.domain.MapsState
 import com.sameerasw.essentials.domain.model.NotificationLightingColorMode
 import com.sameerasw.essentials.domain.model.NotificationLightingSide
 import com.sameerasw.essentials.services.receivers.FlashlightActionReceiver

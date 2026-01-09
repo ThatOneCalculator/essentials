@@ -1,4 +1,4 @@
-package com.sameerasw.essentials
+package com.sameerasw.essentials.domain.registry
 
 object PermissionRegistry {
     private val registry = mutableMapOf<String, MutableList<String>>()

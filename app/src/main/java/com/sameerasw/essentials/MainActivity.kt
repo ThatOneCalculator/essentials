@@ -9,7 +9,6 @@ import android.view.animation.AnticipateInterpolator
 import androidx.fragment.app.FragmentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.SystemBarStyle
 import androidx.core.view.WindowCompat
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Box
@@ -36,6 +35,7 @@ import androidx.compose.ui.zIndex
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.animation.doOnEnd
 import com.sameerasw.essentials.domain.DIYTabs
+import com.sameerasw.essentials.domain.registry.initPermissionRegistry
 import com.sameerasw.essentials.ui.components.ReusableTopAppBar
 import com.sameerasw.essentials.ui.components.DIYFloatingToolbar
 import com.sameerasw.essentials.ui.composables.SetupFeatures

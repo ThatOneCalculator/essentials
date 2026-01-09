@@ -10,7 +10,6 @@ import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.SystemBarStyle
 import androidx.activity.viewModels
 import android.os.Build
 import androidx.compose.animation.AnimatedVisibility
@@ -67,6 +66,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.RoundedCornerShape
+import com.sameerasw.essentials.domain.registry.PermissionRegistry
 import com.sameerasw.essentials.ui.components.sheets.InstructionsBottomSheet
 import java.text.SimpleDateFormat
 import java.util.Date

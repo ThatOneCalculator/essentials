@@ -1,4 +1,4 @@
-package com.sameerasw.essentials
+package com.sameerasw.essentials.services
 
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
@@ -8,6 +8,7 @@ import android.content.Intent
 import android.provider.Settings
 import android.widget.RemoteViews
 import android.widget.Toast
+import com.sameerasw.essentials.R
 import com.sameerasw.essentials.services.tiles.ScreenOffAccessibilityService
 
 class ScreenOffWidgetProvider : AppWidgetProvider() {

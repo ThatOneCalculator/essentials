@@ -42,9 +42,9 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
-import com.sameerasw.essentials.domain.model.FeatureRegistry
+import com.sameerasw.essentials.domain.registry.FeatureRegistry
 import com.sameerasw.essentials.FeatureSettingsActivity
-import com.sameerasw.essentials.PermissionRegistry
+import com.sameerasw.essentials.domain.registry.PermissionRegistry
 import com.sameerasw.essentials.R
 import com.sameerasw.essentials.ui.components.cards.FeatureCard
 import com.sameerasw.essentials.ui.components.containers.RoundedCardContainer
