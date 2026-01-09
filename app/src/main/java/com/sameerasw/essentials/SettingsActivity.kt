@@ -103,8 +103,17 @@ class SettingsActivity : ComponentActivity() {
                 val context = LocalContext.current
                 val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
 
+                var showBugReportSheet by remember { mutableStateOf(false) }
+
                 LaunchedEffect(Unit) {
                     viewModel.check(context)
+                }
+
+                if (showBugReportSheet) {
+                    com.sameerasw.essentials.ui.components.sheets.BugReportBottomSheet(
+                        viewModel = viewModel,
+                        onDismissRequest = { showBugReportSheet = false }
+                    )
                 }
 
                 Scaffold(
@@ -117,7 +126,22 @@ class SettingsActivity : ComponentActivity() {
                             hasBack = true,
                             hasSearch = false,
                             onBackClick = { finish() },
-                            scrollBehavior = scrollBehavior
+                            scrollBehavior = scrollBehavior,
+                            actions = {
+                                androidx.compose.material3.IconButton(
+                                    onClick = { showBugReportSheet = true },
+                                    colors = androidx.compose.material3.IconButtonDefaults.iconButtonColors(
+                                        containerColor = MaterialTheme.colorScheme.surfaceBright
+                                    ),
+                                    modifier = Modifier.size(48.dp)
+                                ) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.rounded_bug_report_24),
+                                        contentDescription = "Report Bug",
+                                        modifier = Modifier.size(32.dp)
+                                    )
+                                }
+                            }
                         )
                     }
                 ) { innerPadding ->
