@@ -49,6 +49,7 @@ import com.sameerasw.essentials.ui.composables.configs.FreezeSettingsUI
 import com.sameerasw.essentials.ui.composables.FreezeGridUI
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
@@ -238,7 +239,7 @@ class MainActivity : FragmentActivity() {
                         DIYFloatingToolbar(
                             modifier = Modifier
                                 .align(Alignment.BottomCenter)
-                                .offset(y = -ScreenOffset)
+                                .offset(y = -ScreenOffset - 12.dp)
                                 .zIndex(1f),
                             currentPage = pagerState.currentPage,
                             tabs = tabs,
