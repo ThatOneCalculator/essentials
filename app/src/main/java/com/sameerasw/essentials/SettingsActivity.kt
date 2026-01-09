@@ -545,27 +545,6 @@ fun SettingsContent(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                         }
                     }
 
-                    // Report Bug Button
-                    Button(
-                        onClick = {
-                             val report = viewModel.generateBugReport(context)
-                             val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                             val clip = ClipData.newPlainText("Bug Report", report)
-                             clipboard.setPrimaryClip(clip)
-                             Toast.makeText(context, context.getString(R.string.toast_bug_report_copied), Toast.LENGTH_LONG).show()
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 12.dp, vertical = 8.dp)
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.rounded_adb_24),
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(context.getString(R.string.action_report_bug))
-                    }
             }
         }
 
