@@ -33,6 +33,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import com.sameerasw.essentials.ui.components.pickers.HapticFeedbackPicker
+import com.sameerasw.essentials.ui.components.pickers.DefaultTabPicker
+import com.sameerasw.essentials.ui.components.pickers.SegmentedPicker
 import com.sameerasw.essentials.ui.components.ReusableTopAppBar
 import com.sameerasw.essentials.ui.components.containers.RoundedCardContainer
 import com.sameerasw.essentials.ui.theme.EssentialsTheme
@@ -236,6 +239,22 @@ fun SettingsContent(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                     isAppHapticsEnabled.value = isChecked
                     HapticUtil.saveAppHapticsEnabled(context, isChecked)
                 }
+            )
+        }
+
+        Text(
+            text = "Default tab",
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 8.dp),
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        val defaultTab by viewModel.defaultTab
+        RoundedCardContainer {
+            DefaultTabPicker(
+                selectedTab = defaultTab,
+                onTabSelected = { viewModel.setDefaultTab(it, context) },
+                isDeveloperMode = isDeveloperModeEnabled
             )
         }
 

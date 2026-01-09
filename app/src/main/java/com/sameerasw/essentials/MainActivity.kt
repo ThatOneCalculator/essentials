@@ -142,6 +142,8 @@ class MainActivity : FragmentActivity() {
         HapticUtil.initialize(this)
         // initialize permission registry
         initPermissionRegistry()
+        // Initialize viewModel state early for correct initial composition
+        viewModel.check(this)
         setContent {
             EssentialsTheme {
                 val context = LocalContext.current
@@ -178,8 +180,20 @@ class MainActivity : FragmentActivity() {
                     }
                 }
                 
-                val pagerState = rememberPagerState(pageCount = { tabs.size })
+                val defaultTab by viewModel.defaultTab
+                val initialPage = remember(tabs) {
+                    val index = tabs.indexOf(defaultTab)
+                    if (index != -1) index else 0
+                }
+                val pagerState = rememberPagerState(initialPage = initialPage, pageCount = { tabs.size })
                 val scope = rememberCoroutineScope()
+
+                // Gracefully handle tab removal (e.g. disabling Developer Mode)
+                LaunchedEffect(tabs) {
+                    if (pagerState.currentPage >= tabs.size) {
+                        pagerState.scrollToPage(0)
+                    }
+                }
                 val exitAlwaysScrollBehavior = FloatingToolbarDefaults.exitAlwaysScrollBehavior(exitDirection = Bottom)
 
                 if (showUpdateSheet) {
@@ -201,9 +215,12 @@ class MainActivity : FragmentActivity() {
                         .nestedScroll(exitAlwaysScrollBehavior),
                     containerColor = MaterialTheme.colorScheme.surfaceContainer,
                     topBar = {
+                        val currentTab = remember(tabs, pagerState.currentPage) {
+                            tabs.getOrNull(pagerState.currentPage) ?: tabs.firstOrNull() ?: DIYTabs.ESSENTIALS
+                        }
                         ReusableTopAppBar(
-                            title = tabs[pagerState.currentPage].title,
-                            subtitle = tabs[pagerState.currentPage].subtitle,
+                            title = currentTab.title,
+                            subtitle = currentTab.subtitle,
                             hasBack = false,
                             hasSearch = true,
                             hasSettings = true,

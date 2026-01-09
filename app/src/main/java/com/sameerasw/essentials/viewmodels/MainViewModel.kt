@@ -54,6 +54,7 @@ class MainViewModel : ViewModel() {
     val isOverlayPermissionGranted = mutableStateOf(false)
     val isNotificationLightingAccessibilityEnabled = mutableStateOf(false)
     val hapticFeedbackType = mutableStateOf(HapticFeedbackType.SUBTLE)
+    val defaultTab = mutableStateOf(com.sameerasw.essentials.domain.DIYTabs.ESSENTIALS)
     val isDefaultBrowserSet = mutableStateOf(false)
     val onlyShowWhenScreenOff = mutableStateOf(true)
     val isAmbientDisplayEnabled = mutableStateOf(false)
@@ -139,6 +140,13 @@ class MainViewModel : ViewModel() {
                 freezeAutoExcludedApps.value = settingsRepository.getFreezeAutoExcludedApps()
             }
             SettingsRepository.KEY_CHECK_PRE_RELEASES_ENABLED -> isPreReleaseCheckEnabled.value = settingsRepository.getBoolean(key)
+            SettingsRepository.KEY_DEVELOPER_MODE_ENABLED -> {
+                isDeveloperModeEnabled.value = settingsRepository.getBoolean(key)
+                if (!isDeveloperModeEnabled.value && defaultTab.value == com.sameerasw.essentials.domain.DIYTabs.DIY) {
+                    defaultTab.value = com.sameerasw.essentials.domain.DIYTabs.ESSENTIALS
+                    settingsRepository.saveDIYTab(defaultTab.value)
+                }
+            }
         }
     }
 
@@ -188,6 +196,7 @@ class MainViewModel : ViewModel() {
         
         MapsState.isEnabled = isMapsPowerSavingEnabled.value
         hapticFeedbackType.value = settingsRepository.getHapticFeedbackType()
+        defaultTab.value = settingsRepository.getDIYTab()
         checkCaffeinateActive(context)
         
         // Button Remap & Migration
@@ -246,6 +255,12 @@ class MainViewModel : ViewModel() {
         freezeAutoExcludedApps.value = settingsRepository.getFreezeAutoExcludedApps()
         isDeveloperModeEnabled.value = settingsRepository.getBoolean(SettingsRepository.KEY_DEVELOPER_MODE_ENABLED)
         isPreReleaseCheckEnabled.value = settingsRepository.getBoolean(SettingsRepository.KEY_CHECK_PRE_RELEASES_ENABLED)
+        
+        // Gracefully handle DIY tab if developer mode is off
+        if (!isDeveloperModeEnabled.value && defaultTab.value == com.sameerasw.essentials.domain.DIYTabs.DIY) {
+            defaultTab.value = com.sameerasw.essentials.domain.DIYTabs.ESSENTIALS
+            settingsRepository.saveDIYTab(defaultTab.value)
+        }
     }
 
     fun onSearchQueryChanged(query: String) {
@@ -566,6 +581,11 @@ class MainViewModel : ViewModel() {
     fun setHapticFeedback(type: HapticFeedbackType, context: Context) {
         hapticFeedbackType.value = type
         settingsRepository.putString(SettingsRepository.KEY_HAPTIC_FEEDBACK_TYPE, type.name)
+    }
+
+    fun setDefaultTab(tab: com.sameerasw.essentials.domain.DIYTabs, context: Context) {
+        defaultTab.value = tab
+        settingsRepository.saveDIYTab(tab)
     }
 
 

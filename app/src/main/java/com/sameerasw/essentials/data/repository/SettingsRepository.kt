@@ -91,6 +91,7 @@ class SettingsRepository(private val context: Context) {
         
         const val KEY_DEVELOPER_MODE_ENABLED = "developer_mode_enabled"
         const val KEY_HAPTIC_FEEDBACK_TYPE = "haptic_feedback_type"
+        const val KEY_DEFAULT_TAB = "default_tab"
     }
 
     // Observe changes
@@ -184,6 +185,19 @@ class SettingsRepository(private val context: Context) {
         } catch (e: Exception) {
             HapticFeedbackType.SUBTLE
         }
+    }
+
+    fun getDIYTab(): com.sameerasw.essentials.domain.DIYTabs {
+        val tabName = prefs.getString(KEY_DEFAULT_TAB, com.sameerasw.essentials.domain.DIYTabs.ESSENTIALS.name)
+        return try {
+            com.sameerasw.essentials.domain.DIYTabs.valueOf(tabName ?: com.sameerasw.essentials.domain.DIYTabs.ESSENTIALS.name)
+        } catch (e: Exception) {
+            com.sameerasw.essentials.domain.DIYTabs.ESSENTIALS
+        }
+    }
+
+    fun saveDIYTab(tab: com.sameerasw.essentials.domain.DIYTabs) {
+        putString(KEY_DEFAULT_TAB, tab.name)
     }
     
     // App Selection Helper Generic
