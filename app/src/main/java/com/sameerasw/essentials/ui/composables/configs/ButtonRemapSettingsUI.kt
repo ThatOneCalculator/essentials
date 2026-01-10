@@ -97,12 +97,7 @@ fun ButtonRemapSettingsUI(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // Master Toggle
-        AnimatedVisibility(
-            visible = viewModel.isButtonRemapEnabled.value,
-            enter = expandVertically() + fadeIn(),
-            exit = shrinkVertically() + fadeOut()
-        ) {
-            RoundedCardContainer(spacing = 2.dp) {
+        RoundedCardContainer(spacing = 2.dp) {
             IconToggleItem(
                 iconRes = R.drawable.rounded_switch_access_3_24,
                 title = stringResource(R.string.button_remap_enable_title),
@@ -111,75 +106,104 @@ fun ButtonRemapSettingsUI(
                 modifier = Modifier.highlight(highlightSetting == "enable_remap")
             )
 
-                IconToggleItem(
-                    iconRes = R.drawable.rounded_adb_24,
-                    title = stringResource(R.string.button_remap_use_shizuku_title),
-                    description = stringResource(R.string.button_remap_use_shizuku_desc),
-                    isChecked = viewModel.isButtonRemapUseShizuku.value,
-                    onCheckedChange = {  enabled ->
-                        if (enabled) {
-                            if (shizukuHelper.getStatus() == ShizukuStatus.READY) {
-                                viewModel.setButtonRemapUseShizuku(true, context)
-                                ContextCompat.startForegroundService(context, Intent(context, InputEventListenerService::class.java))
-                            } else if (shizukuHelper.getStatus() == ShizukuStatus.PERMISSION_NEEDED) {
-                                shizukuHelper.requestPermission { requestCode, grantResult ->
-                                    if (grantResult == android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                                        viewModel.setButtonRemapUseShizuku(true, context)
-                                        ContextCompat.startForegroundService(context, Intent(context, InputEventListenerService::class.java))
+            AnimatedVisibility(
+                visible = viewModel.isButtonRemapEnabled.value,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    IconToggleItem(
+                        iconRes = R.drawable.rounded_adb_24,
+                        title = stringResource(R.string.button_remap_use_shizuku_title),
+                        description = stringResource(R.string.button_remap_use_shizuku_desc),
+                        isChecked = viewModel.isButtonRemapUseShizuku.value,
+                        onCheckedChange = { enabled ->
+                            if (enabled) {
+                                if (shizukuHelper.getStatus() == ShizukuStatus.READY) {
+                                    viewModel.setButtonRemapUseShizuku(true, context)
+                                    ContextCompat.startForegroundService(
+                                        context,
+                                        Intent(context, InputEventListenerService::class.java)
+                                    )
+                                } else if (shizukuHelper.getStatus() == ShizukuStatus.PERMISSION_NEEDED) {
+                                    shizukuHelper.requestPermission { requestCode, grantResult ->
+                                        if (grantResult == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                                            viewModel.setButtonRemapUseShizuku(true, context)
+                                            ContextCompat.startForegroundService(
+                                                context,
+                                                Intent(context, InputEventListenerService::class.java)
+                                            )
+                                        }
                                     }
+                                } else {
+                                    // Shizuku not running
+                                    viewModel.setButtonRemapUseShizuku(true, context)
+                                    android.widget.Toast.makeText(
+                                        context,
+                                        context.getString(R.string.shizuku_not_running_toast),
+                                        android.widget.Toast.LENGTH_SHORT
+                                    ).show()
                                 }
                             } else {
-                                // Shizuku not running
-                                viewModel.setButtonRemapUseShizuku(true, context)
-                                android.widget.Toast.makeText(context, context.getString(R.string.shizuku_not_running_toast), android.widget.Toast.LENGTH_SHORT).show()
+                                viewModel.setButtonRemapUseShizuku(false, context)
+                                context.stopService(Intent(context, InputEventListenerService::class.java))
                             }
-                        } else {
-                            viewModel.setButtonRemapUseShizuku(false, context)
-                            context.stopService(Intent(context, InputEventListenerService::class.java))
-                        }
-                    },
-                    modifier = Modifier.highlight(highlightSetting == "shizuku_remap")
-                )
-                
-                if (viewModel.isButtonRemapUseShizuku.value) {
-                     // Status indicator
-                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(
-                                color = MaterialTheme.colorScheme.surfaceBright,
-                                shape = RoundedCornerShape(MaterialTheme.shapes.extraSmall.bottomEnd)
-                            )
-                            .padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        val statusText = if (viewModel.shizukuDetectedDevicePath.value != null && shizukuStatus == ShizukuStatus.READY) {
-                            stringResource(R.string.shizuku_detected_prefix, viewModel.shizukuDetectedDevicePath.value ?: "")
-                        } else {
-                            stringResource(R.string.shizuku_status_prefix, shizukuStatus.name)
-                        }
+                        },
+                        modifier = Modifier.highlight(highlightSetting == "shizuku_remap")
+                    )
 
-                        Text(
-                            text = statusText,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = if (shizukuStatus == ShizukuStatus.READY) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
-                            maxLines = 1,
-                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-                            modifier = Modifier.weight(1f)
-                        )
-                        if (shizukuStatus != ShizukuStatus.READY && shizukuStatus != ShizukuStatus.PERMISSION_NEEDED) {
-                             Button(
-                                onClick = { 
-                                    try {
-                                        val intent = context.packageManager.getLaunchIntentForPackage("moe.shizuku.privileged.api")
-                                        if (intent != null) context.startActivity(intent)
-                                    } catch(_: Exception) {}
-                                },
-                                modifier = Modifier.height(32.dp),
-                                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 0.dp)
-                            ) {
-                                Text(stringResource(R.string.shizuku_open_button), style = MaterialTheme.typography.labelSmall)
+                    if (viewModel.isButtonRemapUseShizuku.value) {
+                        // Status indicator
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    color = MaterialTheme.colorScheme.surfaceBright,
+                                    shape = RoundedCornerShape(MaterialTheme.shapes.extraSmall.bottomEnd)
+                                )
+                                .padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            val statusText =
+                                if (viewModel.shizukuDetectedDevicePath.value != null && shizukuStatus == ShizukuStatus.READY) {
+                                    stringResource(
+                                        R.string.shizuku_detected_prefix,
+                                        viewModel.shizukuDetectedDevicePath.value ?: ""
+                                    )
+                                } else {
+                                    stringResource(R.string.shizuku_status_prefix, shizukuStatus.name)
+                                }
+
+                            Text(
+                                text = statusText,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = if (shizukuStatus == ShizukuStatus.READY) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+                                maxLines = 1,
+                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                                modifier = Modifier.weight(1f)
+                            )
+                            if (shizukuStatus != ShizukuStatus.READY && shizukuStatus != ShizukuStatus.PERMISSION_NEEDED) {
+                                Button(
+                                    onClick = {
+                                        try {
+                                            val intent =
+                                                context.packageManager.getLaunchIntentForPackage("moe.shizuku.privileged.api")
+                                            if (intent != null) context.startActivity(intent)
+                                        } catch (_: Exception) {
+                                        }
+                                    },
+                                    modifier = Modifier.height(32.dp),
+                                    contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                                        horizontal = 12.dp,
+                                        vertical = 0.dp
+                                    )
+                                ) {
+                                    Text(
+                                        stringResource(R.string.shizuku_open_button),
+                                        style = MaterialTheme.typography.labelSmall
+                                    )
+                                }
                             }
                         }
                     }
