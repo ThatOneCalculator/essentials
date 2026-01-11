@@ -431,7 +431,8 @@ class FeatureSettingsActivity : FragmentActivity() {
                             hasSearch = false,
                             onBackClick = { finish() },
                             scrollBehavior = scrollBehavior,
-                            subtitle = if (featureObj != null) stringResource(featureObj.description) else ""
+                            subtitle = if (featureObj != null) stringResource(featureObj.description) else "",
+                            isBeta = featureObj?.isBeta ?: false
                         )
                     },
                     floatingActionButton = {

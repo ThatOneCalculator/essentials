@@ -421,7 +421,8 @@ object FeatureRegistry {
             category = R.string.cat_tools,
             description = R.string.feat_location_reached_desc,
             permissionKeys = listOf("LOCATION", "BACKGROUND_LOCATION", "USE_FULL_SCREEN_INTENT"),
-            showToggle = false
+            showToggle = false,
+            isBeta = true
         ) {
             override fun isEnabled(viewModel: MainViewModel) = true
             override fun onToggle(viewModel: MainViewModel, context: Context, enabled: Boolean) {}
