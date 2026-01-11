@@ -124,15 +124,15 @@ fun ReusableTopAppBar(
                     if (isBeta) {
                         androidx.compose.material3.Card(
                             colors = androidx.compose.material3.CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.primary
+                                containerColor = MaterialTheme.colorScheme.background
                             ),
                             shape = MaterialTheme.shapes.extraSmall
                         ) {
                             Text(
-                                text = "BETA",
+                                text = stringResource(R.string.label_beta),
                                 modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
                                 style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onPrimary
+                                color = MaterialTheme.colorScheme.primary
                             )
                         }
                     }

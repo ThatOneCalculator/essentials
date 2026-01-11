@@ -91,7 +91,7 @@ fun FeatureCard(
                         if (isBeta) {
                             Card(
                                 colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.primary
+                                    containerColor = MaterialTheme.colorScheme.background
                                 ),
                                 shape = MaterialTheme.shapes.extraSmall
                             ) {
@@ -99,7 +99,7 @@ fun FeatureCard(
                                     text = stringResource(R.string.label_beta),
                                     modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
                                     style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onPrimary
+                                    color = MaterialTheme.colorScheme.primary
                                 )
                             }
                         }
