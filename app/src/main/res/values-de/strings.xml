@@ -149,6 +149,9 @@
     <string name="tile_flashlight">Taschenlampe</string>
     <string name="tile_app_freezing">Apps einfrieren</string>
     <string name="tile_flashlight_pulse">Taschenlampenimpuls</string>
+    <string name="nfc_tile_label">NFC</string>
+    <string name="on">On</string>
+    <string name="off">Off</string>
     <!-- Screen Locked Security -->
     <string name="screen_locked_security_title">Sicherheit bei Bildschirmsperre</string>
     <string name="screen_locked_security_dialog_title">Sicherheit bei Bildschirmsperre</string>
