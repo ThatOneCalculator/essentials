@@ -116,7 +116,21 @@ class SettingsRepository(private val context: Context) {
     fun getBoolean(key: String, default: Boolean = false): Boolean = prefs.getBoolean(key, default)
     fun getString(key: String, default: String? = null): String? = prefs.getString(key, default)
     fun getInt(key: String, default: Int = 0): Int = prefs.getInt(key, default)
-    fun getFloat(key: String, default: Float = 0f): Float = prefs.getFloat(key, default)
+    fun getFloat(key: String, default: Float = 0f): Float {
+        return try {
+            prefs.getFloat(key, default)
+        } catch (e: ClassCastException) {
+            try {
+                // Migrate from Int to Float if necessary
+                val intValue = prefs.getInt(key, default.toInt())
+                val floatValue = intValue.toFloat()
+                putFloat(key, floatValue)
+                floatValue
+            } catch (e2: Exception) {
+                default
+            }
+        }
+    }
     fun getLong(key: String, default: Long = 0L): Long = prefs.getLong(key, default)
     
     // General Setters
