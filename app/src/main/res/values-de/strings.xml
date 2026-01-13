@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Essentials</string>
+    <string name="label_beta">BETA</string>
     <string name="accessibility_service_description"><b>Essentials Barrierefreiheitsdienst</b>\n\nDieser Dienst ist für die folgenden erweiterten Funktionen erforderlich:\n\n<b>• Neuzuordnung physischer Tasten:</b>\nErkennt das Drücken der Lautstärketasten auch bei ausgeschaltetem Display, um Aktionen wie die Taschenlampe auszulösen.\n\n<b>• Einstellungen pro App:</b>\nÜberwacht die aktuell aktive App, um bestimmte Profile für dynamisches Nachtlicht, Benachrichtigungsfarben und App-Sperre anzuwenden.\n\n<b>• Displaysteuerung:</b>\nErmöglicht es der App, das Display zu sperren (z. B. durch Doppeltippen oder Widgets) und Änderungen des Bildschirmstatus zu erkennen.\n\n<b>• Sicherheit:</b>\nVerhindert unbefugte Änderungen, indem der Fensterinhalt erkennt wird, wenn das Gerät gesperrt ist.\n\n<small>Es werden keine eingegebenen Texte oder sensiblen Benutzerdaten erfasst oder übertragen.</small></string>
     <string name="app_icon">App-Icon</string>
     <string name="freeze_activity_title">Apps einfrieren</string>
@@ -26,7 +27,7 @@
     <string name="app_lock_biometric_note">Noch ein Hinweis: Die biometrische Authentifizierungsaufforderung unterstützt ausschließlich sichere Methoden der Klasse STARK. Gesichtserkennungsmethoden der Klasse SCHWACH auf Geräten wie dem Pixel 7 können nur die sonstig verfügbaren STARK-Authentifizierungsmethoden wie Fingerabdruck oder PIN nutzen.</string>
     <!-- Button Remap -->
     <string name="button_remap_enable_title">Aktiviere Tastenneubelegung</string>
-    <string name="button_remap_use_shizuku_title">Nutze Shizuku</string>
+    <string name="button_remap_use_shizuku_title">Use Shizuku or Root or Root</string>
     <string name="button_remap_use_shizuku_desc">Funktioniert mit ausgeschaltetem Display (Empfohlen)</string>
     <string name="shizuku_not_running_toast">Shizuku läuft nicht</string>
     <string name="shizuku_detected_prefix">Erkannte %1$s</string>
@@ -148,6 +149,9 @@
     <string name="tile_flashlight">Taschenlampe</string>
     <string name="tile_app_freezing">Apps einfrieren</string>
     <string name="tile_flashlight_pulse">Taschenlampenimpuls</string>
+    <string name="nfc_tile_label">NFC</string>
+    <string name="on">On</string>
+    <string name="off">Off</string>
     <!-- Screen Locked Security -->
     <string name="screen_locked_security_title">Sicherheit bei Bildschirmsperre</string>
     <string name="screen_locked_security_dialog_title">Sicherheit bei Bildschirmsperre</string>
@@ -338,8 +342,10 @@
     <string name="perm_shizuku_title">Shizuku</string>
     <string name="perm_shizuku_desc">Benötigt für erweiterte Befehle. Installiere Shizuku aus dem Play Store.</string>
     <string name="perm_shizuku_install_action">Installiere Shizuku</string>
-    <string name="perm_shizuku_grant_title">Shizuku-Berechtigung</string>
+    <string name="perm_shizuku_grant_title">Grant Permission</string>
     <string name="perm_shizuku_grant_desc">Benötigt, um Energiesparbefehle auszuführen, während Maps navigiert.</string>
+    <string name="perm_root_title">Root Access</string>
+    <string name="perm_root_desc">Permissions required for system actions using Root privileges.</string>
     <string name="perm_notif_listener_title">Benachrichtigungs-Beobachter</string>
     <string name="perm_notif_listener_desc_maps">Benötigt, um zu erkennen, wann Maps navigiert.</string>
     <string name="perm_notif_listener_desc_lighting">Benötigt, um neue Benachrichtigungen zu erkennen</string>
@@ -640,7 +646,7 @@
     <string name="instruction_section_lighting_title">Das Benachrichtigungslicht funktioniert nicht</string>
     <string name="instruction_section_lighting_desc">Das hängt vom OEM ab. Einige wie OneUI scheinen keine Überlagerungen über dem Always-On-Display zuzulassen, wodurch die Lichteffekte nicht angezeigt werden können. Versuche in diesem Fall, das Ambient-Display als Workaround zu verwenden. </string>
     <string name="instruction_section_button_title">Die Neuzuweisung der Tasten funktioniert nicht, wenn das Display ausgeschaltet ist</string>
-    <string name="instruction_section_button_desc">Einige OEMs schränken die Barrierefreiheitsdienste ein, sobald das Display ausgeschaltet ist, aber sie funktionieren möglicherweise weiterhin, wenn das Always-on-Display eingeschaltet ist. \nIn diesem Fall kannst du möglicherweise die Tastenbelegung mit eingeschaltetem Always-on-Display verwenden, jedoch nicht mit ausgeschaltetem Always-on-Display. \n\nAls Workaround musst du die Shizuku-Berechtigungen verwenden und in den Einstellungen für die Tastenbelegung die Option „Shizuku verwenden” aktivieren, die Hardware-Eingabeereignisse identifiziert und abhört. \nEs kann nicht garantiert werden, dass dies auf allen Geräten funktioniert, daher muss es getestet werden. \n\nSelbst wenn diese Option aktiviert ist, wird die Shizuku-Methode nur bei Bedarf verwendet. Andernfalls wird immer auf den Barrierefreiheitsdienst zurückgegriffen, welcher auch das Blockieren der tatsächlichen Eingabe bei langem Drücken übernimmt.</string>
+    <string name="instruction_section_button_desc">Some OEMs limit the accessibility service reporting once the display is actually off but they may still work while the AOD is on. \nIn this case, you may able to use button remaps with AOD on but not with off. \n\nAs a workaround, you will need to use Shizuku permissions and turn on the \'Use Shizuku or Root\' toggle in button remap settings which identifies and listen to hardware input events.\nThis is not guaranteed to work on all devices and needs testing.\n\nAnd even if it\'s on, Shizuku method only will be used when it\'s needed. Otherwise it will always fallback to Accessibility which also handles the blocking of the actual input during long press.</string>
     <string name="instruction_section_flashlight_title">Die Helligkeit der Taschenlampe funktioniert nicht</string>
     <string name="instruction_section_flashlight_desc">Nur eine begrenzte Anzahl von Geräten verfügt über Hardware- und Software-Unterstützung zur Einstellung der Taschenlampenintensität. \n\nDie Mindestversion von Android ist 13 (SDK33).\nDie Helligkeitseinstellung der Taschenlampe unterstützt nur HAL Version 3.8 und höher, daher gehören zu den unterstützten Geräten die neuesten Modelle (z. B. Pixel 6/7, Samsung S23 usw.).\'\npolodarb/Flashlight-Tiramisu</string>
     <string name="instruction_section_about_title">Was zum Teufel ist das für eine App?</string>
@@ -658,4 +664,48 @@
     <string name="action_copy_clipboard">In die Zwischenablage kopieren</string>
     <string name="bug_report_email_subject">Essentials Fehlerbericht</string>
     <string name="bug_report_send_via">Senden über</string>
+    <!-- Location Reached -->
+    <string name="feat_location_reached_title">Sind wir schon da?</string>
+    <string name="feat_location_reached_desc">Alarm bei Zielnähe</string>
+    <string name="location_reached_pick_destination">Ziel</string>
+    <string name="location_reached_set_destination_btn">Ziel setzen</string>
+    <string name="location_reached_status_tracking">Erfassung: %1$.4f, %2$.4f</string>
+    <string name="location_reached_status_none">Kein Ziel gesetzt</string>
+    <string name="location_reached_how_to">Öffne Google Maps, wähle einen Ort aus und teile ihn mit Essentials.</string>
+    <string name="location_reached_radius_title">Alarmradius: %d m</string>
+    <string name="location_reached_radius_desc">Entfernung zum Auslösen des Alarms</string>
+    <string name="location_reached_enable_title">Benachrichtigung aktivieren</string>
+    <string name="perm_location_title">Standort</string>
+    <string name="perm_location_desc">Dient zur Erkennung der Ankunft am Zielort.</string>
+    <string name="perm_bg_location_title">Hintergrundstandort</string>
+    <string name="perm_bg_location_desc">Benötigt, um deine Ankunft zu überwachen, während die App geschlossen oder der Bildschirm ausgeschaltet ist.</string>
+    <string name="location_reached_notification_title">Ziel erreicht!</string>
+    <string name="location_reached_notification_desc">Du hast dein Ziel erreicht.</string>
+    <string name="location_reached_current_distance">Derzeit %1$.1f km entfernt</string>
+    <string name="location_reached_clear_btn">Ziel leeren</string>
+    <string name="location_reached_processing">Verarbeite Standort…</string>
+    <string name="location_reached_dist_remaining">VERBLEIBENDE ENTFERNUNG</string>
+    <string name="location_reached_calculating">Berechne…</string>
+    <string name="location_reached_stop_tracking">Verfolgung beenden</string>
+    <string name="location_reached_dest_ready">Ziel bereit</string>
+    <string name="location_reached_start_tracking">Verfolgung starten</string>
+    <string name="location_reached_view_map">Karte sehen</string>
+    <string name="location_reached_clear">Leeren</string>
+    <string name="location_reached_no_dest">Kein Ziel</string>
+    <string name="location_reached_open_maps">Öffne Maps</string>
+    <string name="location_reached_fsi_title">Berechtigung für Vollbild-Alarme</string>
+    <string name="location_reached_fsi_desc">Benötigt, um dein Gerät bei der Ankunft zu wecken. Tippe zum Gewähren.</string>
+    <string name="location_reached_dist_m">%1$d m</string>
+    <string name="location_reached_dist_km">%1$.1f km</string>
+    <string name="location_reached_service_title">Reisealarm aktiv</string>
+    <string name="location_reached_service_remaining">%1$s verbleibend</string>
+    <string name="location_reached_channel_name">Reisefortschritt</string>
+    <string name="location_reached_channel_desc">Zeigt die Entfernung zum Zielort in Echtzeit an</string>
+    <string name="location_reached_alarm_title">Ziel in der Nähe</string>
+    <string name="location_reached_alarm_subtitle">Bereitmachen zum Aussteigen</string>
+    <string name="location_reached_dismiss">Verwerfen</string>
+    <string name="location_reached_toast_set">Ziel gesetzt: %1$.4f, %2$.4f</string>
+    <string name="setting_use_root_title">Use Root</string>
+    <string name="setting_use_root_desc">Instead of Shizuku</string>
+    <string name="root_not_available_toast">Root access not available. Please check your root manager.</string>
 </resources>
