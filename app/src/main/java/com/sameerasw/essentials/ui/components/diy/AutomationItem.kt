@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -14,7 +15,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -33,7 +33,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import com.sameerasw.essentials.R
 import com.sameerasw.essentials.domain.diy.Action
 import com.sameerasw.essentials.domain.diy.Automation
@@ -67,12 +66,14 @@ fun AutomationItem(
         ) {
             RoundedCardContainer(
                 cornerRadius = 18.dp,
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxHeight(),
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight(),
             ) {
-                val icon = if (automation.type == Automation.Type.TRIGGER) automation.trigger?.icon else automation.state?.icon
-                val title = if (automation.type == Automation.Type.TRIGGER) automation.trigger?.title else automation.state?.title
+                val icon =
+                    if (automation.type == Automation.Type.TRIGGER) automation.trigger?.icon else automation.state?.icon
+                val title =
+                    if (automation.type == Automation.Type.TRIGGER) automation.trigger?.title else automation.state?.title
 
                 if (icon != null && title != null) {
                     Surface(
@@ -81,7 +82,9 @@ fun AutomationItem(
                         modifier = Modifier.fillMaxSize()
                     ) {
                         Row(
-                            modifier = Modifier.padding(12.dp).fillMaxHeight(),
+                            modifier = Modifier
+                                .padding(12.dp)
+                                .fillMaxHeight(),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
@@ -104,26 +107,62 @@ fun AutomationItem(
                 }
             }
 
-            // Separator Icon
-            Box(
-                modifier = Modifier
-                    .size(32.dp)
-                    .clip(CircleShape)
-                    .padding(horizontal = 4.dp)
-                    .background(MaterialTheme.colorScheme.primaryContainer),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    painter = painterResource(
-                        id = if (automation.type == Automation.Type.TRIGGER) 
-                            R.drawable.rounded_arrow_forward_24 
-                        else 
-                            R.drawable.rounded_arrows_outward_24
-                    ),
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp),
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer
-                )
+
+            if (automation.type == Automation.Type.TRIGGER) {
+                // Separator Icon
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(CircleShape)
+                        .padding(horizontal = 4.dp)
+                        .background(MaterialTheme.colorScheme.primaryContainer),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.rounded_arrow_forward_24),
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp),
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+            } else {
+                Column(
+                    modifier = Modifier.fillMaxHeight(),
+                    verticalArrangement = Arrangement.SpaceAround,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clip(CircleShape)
+                            .padding(horizontal = 4.dp)
+                            .background(MaterialTheme.colorScheme.primaryContainer),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.rounded_arrow_forward_24),
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clip(CircleShape)
+                            .padding(horizontal = 4.dp)
+                            .background(MaterialTheme.colorScheme.primaryContainer),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.rounded_arrow_back_24),
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
+                }
             }
 
             // Right Side: Actions (Weight 1 to fill space)
