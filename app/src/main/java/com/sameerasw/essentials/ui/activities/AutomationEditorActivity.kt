@@ -355,7 +355,7 @@ class AutomationEditorActivity : ComponentActivity() {
 
                                             // None option
                                             EditorActionItem(
-                                                title = stringResource(R.string.action_none),
+                                                title = stringResource(R.string.haptic_none),
                                                 iconRes = R.drawable.rounded_do_not_disturb_on_24,
                                                 isSelected = currentSelection == null,
                                                 onClick = {
