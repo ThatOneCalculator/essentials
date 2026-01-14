@@ -19,7 +19,7 @@ android {
 
     defaultConfig {
         applicationId = "com.sameerasw.essentials"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 36
         versionCode = 20
         versionName = "8.6"
@@ -101,4 +101,7 @@ dependencies {
     
     // Kotlin Reflect for dynamic sealed class serialization
     implementation(kotlin("reflect"))
+
+    // SymSpell for word suggestions
+    implementation("com.darkrockstudios:symspellkt:3.4.0")
 }

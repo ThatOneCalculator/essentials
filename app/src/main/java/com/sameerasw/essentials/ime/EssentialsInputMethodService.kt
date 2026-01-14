@@ -36,11 +36,14 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 
 class EssentialsInputMethodService : InputMethodService(), LifecycleOwner, ViewModelStoreOwner, SavedStateRegistryOwner {
     private val lifecycleRegistry by lazy { LifecycleRegistry(this) }
     private val store by lazy { ViewModelStore() }
     private val savedStateRegistryController by lazy { SavedStateRegistryController.create(this) }
+    private val suggestionEngine by lazy { SuggestionEngine(this) }
     
     // Internal state for Insets calculation
     private var currentKeyboardShape: Int = 0
@@ -55,6 +58,9 @@ class EssentialsInputMethodService : InputMethodService(), LifecycleOwner, ViewM
         super.onCreate()
         savedStateRegistryController.performRestore(null)
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
+        
+        // Initialize suggestion engine
+        suggestionEngine.initialize(lifecycleScope)
     }
 
     override fun onCreateInputView(): View {
@@ -144,6 +150,7 @@ class EssentialsInputMethodService : InputMethodService(), LifecycleOwner, ViewM
                 }
 
                 val useDarkTheme = isAlwaysDark || androidx.compose.foundation.isSystemInDarkTheme()
+                val suggestions by suggestionEngine.suggestions.collectAsState()
 
                 EssentialsTheme(
                     darkTheme = useDarkTheme,
@@ -158,6 +165,19 @@ class EssentialsInputMethodService : InputMethodService(), LifecycleOwner, ViewM
                     hapticStrength = hapticStrength,
                     isFunctionsBottom = isFunctionsBottom,
                     functionsPadding = functionsPadding.dp,
+                    suggestions = suggestions,
+                    onSuggestionClick = { word ->
+                        val ic = currentInputConnection
+                        if (ic != null) {
+                            val textBefore = ic.getTextBeforeCursor(50, 0)?.toString() ?: ""
+                            val lastWord = textBefore.split(Regex("\\s+")).lastOrNull() ?: ""
+                            if (lastWord.isNotEmpty()) {
+                                ic.deleteSurroundingText(lastWord.length, 0)
+                            }
+                            ic.commitText(word + " ", 1)
+                            suggestionEngine.clearSuggestions()
+                        }
+                    },
                     onType = { text ->
                         currentInputConnection?.commitText(text, 1)
                     },
@@ -238,6 +258,35 @@ class EssentialsInputMethodService : InputMethodService(), LifecycleOwner, ViewM
                 outInsets.contentTopInsets = outInsets.contentTopInsets + extraPaddingPx
                 outInsets.visibleTopInsets = outInsets.visibleTopInsets + extraPaddingPx
             }
+        }
+    }
+
+    override fun onUpdateSelection(
+        oldSelStart: Int, oldSelEnd: Int,
+        newSelStart: Int, newSelEnd: Int,
+        candidatesStart: Int, candidatesEnd: Int
+    ) {
+        super.onUpdateSelection(oldSelStart, oldSelEnd, newSelStart, newSelEnd, candidatesStart, candidatesEnd)
+        
+        // Lookup suggestion for current word
+        if (newSelStart == newSelEnd) {
+             val ic = currentInputConnection
+             if (ic != null) {
+                  val textBefore = ic.getTextBeforeCursor(50, 0)?.toString()
+                  if (!textBefore.isNullOrEmpty()) {
+                       val lastWord = textBefore.split(Regex("\\s+")).lastOrNull() ?: ""
+                       // Run lookup
+                       if (lastWord.isNotEmpty() && lastWord.all { it.isLetter() }) {
+                           lifecycleScope.launch(kotlinx.coroutines.Dispatchers.Default) {
+                                suggestionEngine.lookup(lastWord)
+                           }
+                       } else {
+                           suggestionEngine.clearSuggestions()
+                       }
+                  } else {
+                       suggestionEngine.clearSuggestions()
+                  }
+             }
         }
     }
 }

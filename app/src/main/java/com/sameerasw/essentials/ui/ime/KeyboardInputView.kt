@@ -158,6 +158,8 @@ fun KeyboardInputView(
     hapticStrength: Float = 0.5f,
     isFunctionsBottom: Boolean = false,
     functionsPadding: Dp = 0.dp,
+    suggestions: List<String> = emptyList(),
+    onSuggestionClick: (String) -> Unit = {},
     onType: (String) -> Unit,
     onKeyPress: (Int) -> Unit
 ) {
@@ -215,6 +217,8 @@ fun KeyboardInputView(
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         val FunctionRow = @Composable {
+            val hasSuggestions = suggestions.isNotEmpty()
+            
             ButtonGroup(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -222,33 +226,60 @@ fun KeyboardInputView(
                     .padding(horizontal = functionsPadding),
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 content = {
-                    val functions = listOf(
-                        R.drawable.ic_emoji to "Emoji",
-                        R.drawable.ic_clipboard to "Clipboard",
-                        R.drawable.ic_undo to "Undo"
-                    )
-                    
-                    functions.forEach { (iconRes, desc) ->
-                        val fnInteraction = remember { MutableInteractionSource() }
-                        val isPressed by fnInteraction.collectIsPressedAsState()
-                        val animatedRadius by animateDpAsState(targetValue = if (isPressed) 4.dp else keyRoundness, label = "cornerRadius")
+                    if (hasSuggestions) {
+                        suggestions.forEach { suggestion ->
+                             val suggInteraction = remember { MutableInteractionSource() }
+                             val isPressed by suggInteraction.collectIsPressedAsState()
+                             val animatedRadius by animateDpAsState(targetValue = if (isPressed) 4.dp else keyRoundness, label = "cornerRadius")
+                             
+                             KeyButton(
+                                onClick = { onSuggestionClick(suggestion) },
+                                onPress = { performLightHaptic() },
+                                interactionSource = suggInteraction,
+                                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                                shape = RoundedCornerShape(animatedRadius),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxHeight()
+                            ) {
+                                Text(
+                                    text = suggestion,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    fontFamily = CustomFontFamily
+                                )
+                            }
+                        }
+                    } else {
+                        val functions = listOf(
+                            R.drawable.ic_emoji to "Emoji",
+                            R.drawable.ic_clipboard to "Clipboard",
+                            R.drawable.ic_undo to "Undo"
+                        )
                         
-                        KeyButton(
-                            onClick = { },
-                            onPress = { performLightHaptic() },
-                            interactionSource = fnInteraction,
-                            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-                            contentColor = MaterialTheme.colorScheme.onSurface,
-                            shape = RoundedCornerShape(animatedRadius),
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxHeight()
-                        ) {
-                            Icon(
-                                painter = painterResource(id = iconRes),
-                                contentDescription = desc,
-                                modifier = Modifier.size(20.dp)
-                            )
+                        functions.forEach { (iconRes, desc) ->
+                            val fnInteraction = remember { MutableInteractionSource() }
+                            val isPressed by fnInteraction.collectIsPressedAsState()
+                            val animatedRadius by animateDpAsState(targetValue = if (isPressed) 4.dp else keyRoundness, label = "cornerRadius")
+                            
+                            KeyButton(
+                                onClick = { },
+                                onPress = { performLightHaptic() },
+                                interactionSource = fnInteraction,
+                                containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                                contentColor = MaterialTheme.colorScheme.onSurface,
+                                shape = RoundedCornerShape(animatedRadius),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxHeight()
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = iconRes),
+                                    contentDescription = desc,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
                         }
                     }
                 }
