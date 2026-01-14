@@ -134,6 +134,7 @@ class MainViewModel : ViewModel() {
     val isKeyboardHapticsEnabled = mutableStateOf(true)
     val isKeyboardFunctionsBottom = mutableStateOf(false)
     val keyboardFunctionsPadding = mutableFloatStateOf(0f)
+    val keyboardHapticStrength = mutableFloatStateOf(0.5f)
 
     private var lastUpdateCheckTime: Long = 0
     private lateinit var settingsRepository: SettingsRepository
@@ -175,6 +176,7 @@ class MainViewModel : ViewModel() {
             SettingsRepository.KEY_KEYBOARD_HAPTICS_ENABLED -> isKeyboardHapticsEnabled.value = settingsRepository.getBoolean(key)
             SettingsRepository.KEY_KEYBOARD_FUNCTIONS_BOTTOM -> isKeyboardFunctionsBottom.value = settingsRepository.getBoolean(key)
             SettingsRepository.KEY_KEYBOARD_FUNCTIONS_PADDING -> keyboardFunctionsPadding.floatValue = settingsRepository.getFloat(key, 0f)
+            SettingsRepository.KEY_KEYBOARD_HAPTIC_STRENGTH -> keyboardHapticStrength.floatValue = settingsRepository.getFloat(key, 0.5f)
         }
     }
 
@@ -285,6 +287,7 @@ class MainViewModel : ViewModel() {
         isKeyboardHapticsEnabled.value = settingsRepository.getBoolean(SettingsRepository.KEY_KEYBOARD_HAPTICS_ENABLED, true)
         isKeyboardFunctionsBottom.value = settingsRepository.getBoolean(SettingsRepository.KEY_KEYBOARD_FUNCTIONS_BOTTOM, false)
         keyboardFunctionsPadding.floatValue = settingsRepository.getFloat(SettingsRepository.KEY_KEYBOARD_FUNCTIONS_PADDING, 0f)
+        keyboardHapticStrength.floatValue = settingsRepository.getFloat(SettingsRepository.KEY_KEYBOARD_HAPTIC_STRENGTH, 0.5f)
 
         isScreenLockedSecurityEnabled.value = settingsRepository.getBoolean(SettingsRepository.KEY_SCREEN_LOCKED_SECURITY_ENABLED)
         isDeviceAdminEnabled.value = isDeviceAdminActive(context)
@@ -691,6 +694,11 @@ class MainViewModel : ViewModel() {
     fun setKeyboardFunctionsPadding(padding: Float, context: Context) {
         keyboardFunctionsPadding.floatValue = padding
         settingsRepository.putFloat(SettingsRepository.KEY_KEYBOARD_FUNCTIONS_PADDING, padding)
+    }
+
+    fun setKeyboardHapticStrength(strength: Float, context: Context) {
+        keyboardHapticStrength.floatValue = strength
+        settingsRepository.putFloat(SettingsRepository.KEY_KEYBOARD_HAPTIC_STRENGTH, strength)
     }
 
 

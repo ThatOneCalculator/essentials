@@ -121,6 +121,21 @@ fun KeyboardSettingsUI(
                 onCheckedChange = { viewModel.setKeyboardHapticsEnabled(it, context) },
                 modifier = Modifier.highlight(highlightSetting == "keyboard_haptics")
             )
+
+            if (viewModel.isKeyboardHapticsEnabled.value) {
+                ConfigSliderItem(
+                    title = stringResource(R.string.label_keyboard_haptic_strength),
+                    value = viewModel.keyboardHapticStrength.floatValue,
+                    onValueChange = {
+                        viewModel.setKeyboardHapticStrength(it, context)
+                        // Preview the haptic strength
+                        com.sameerasw.essentials.utils.HapticUtil.performCustomHaptic(view, it)
+                    },
+                    valueRange = 0.01f..1.0f,
+                    steps = 0,
+                    modifier = Modifier.highlight(highlightSetting == "keyboard_haptic_strength")
+                )
+            }
         }
     }
 }

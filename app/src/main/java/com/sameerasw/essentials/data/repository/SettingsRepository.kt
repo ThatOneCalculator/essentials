@@ -101,6 +101,7 @@ class SettingsRepository(private val context: Context) {
         const val KEY_KEYBOARD_ROUNDNESS = "keyboard_roundness"
         const val KEY_KEYBOARD_FUNCTIONS_BOTTOM = "keyboard_functions_bottom"
         const val KEY_KEYBOARD_FUNCTIONS_PADDING = "keyboard_functions_padding"
+        const val KEY_KEYBOARD_HAPTIC_STRENGTH = "keyboard_haptic_strength"
     }
 
     // Observe changes

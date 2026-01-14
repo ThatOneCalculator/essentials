@@ -79,6 +79,7 @@ class EssentialsInputMethodService : InputMethodService(), LifecycleOwner, ViewM
                 var isFunctionsBottom by remember { mutableStateOf(prefs.getBoolean(SettingsRepository.KEY_KEYBOARD_FUNCTIONS_BOTTOM, false)) }
                 var functionsPadding by remember { mutableFloatStateOf(prefs.getFloat(SettingsRepository.KEY_KEYBOARD_FUNCTIONS_PADDING, 0f)) }
                 var isHapticsEnabled by remember { mutableStateOf(prefs.getBoolean(SettingsRepository.KEY_KEYBOARD_HAPTICS_ENABLED, true)) }
+                var hapticStrength by remember { mutableFloatStateOf(prefs.getFloat(SettingsRepository.KEY_KEYBOARD_HAPTIC_STRENGTH, 0.5f)) }
 
                 // Observe SharedPreferences changes
                 DisposableEffect(prefs) {
@@ -102,6 +103,9 @@ class EssentialsInputMethodService : InputMethodService(), LifecycleOwner, ViewM
                             SettingsRepository.KEY_KEYBOARD_HAPTICS_ENABLED -> {
                                 isHapticsEnabled = sharedPreferences.getBoolean(SettingsRepository.KEY_KEYBOARD_HAPTICS_ENABLED, true)
                             }
+                            SettingsRepository.KEY_KEYBOARD_HAPTIC_STRENGTH -> {
+                                hapticStrength = sharedPreferences.getFloat(SettingsRepository.KEY_KEYBOARD_HAPTIC_STRENGTH, 0.5f)
+                            }
                         }
                     }
                     prefs.registerOnSharedPreferenceChangeListener(listener)
@@ -115,6 +119,7 @@ class EssentialsInputMethodService : InputMethodService(), LifecycleOwner, ViewM
                     bottomPadding = bottomPadding.dp,
                     keyRoundness = keyboardRoundness.dp,
                     isHapticsEnabled = isHapticsEnabled,
+                    hapticStrength = hapticStrength,
                     isFunctionsBottom = isFunctionsBottom,
                     functionsPadding = functionsPadding.dp,
                     onType = { text ->
