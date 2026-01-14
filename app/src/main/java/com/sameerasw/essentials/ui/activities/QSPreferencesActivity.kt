@@ -32,11 +32,19 @@ class QSPreferencesActivity : ComponentActivity() {
                 return
             }
 
+            if (componentName.className == "com.sameerasw.essentials.services.tiles.FlashlightTileService") {
+                val intent = Intent(this, FlashlightIntensityActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                }
+                startActivity(intent)
+                finish()
+                return
+            }
+
             val feature = when (componentName.className) {
                 "com.sameerasw.essentials.services.tiles.CaffeinateTileService" -> "Caffeinate"
                 "com.sameerasw.essentials.services.tiles.NotificationLightingTileService" -> "Notification lighting"
                 "com.sameerasw.essentials.services.tiles.DynamicNightLightTileService" -> "Dynamic night light"
-                "com.sameerasw.essentials.services.tiles.FlashlightTileService" -> "Button remap"
                 "com.sameerasw.essentials.services.tiles.AppLockTileService" -> "App lock"
                 "com.sameerasw.essentials.services.tiles.ScreenLockedSecurityTileService" -> "Screen locked security"
                 "com.sameerasw.essentials.services.tiles.AppFreezingTileService" -> "Freeze"
