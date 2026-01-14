@@ -2,7 +2,6 @@ package com.sameerasw.essentials.ui.ime
 
 import android.view.KeyEvent
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -20,10 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonGroup
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.FilledIconButton
-import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.carousel.HorizontalMultiBrowseCarousel
@@ -42,6 +38,10 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.geometry.Offset
 import com.sameerasw.essentials.R
 import com.sameerasw.essentials.utils.HapticUtil
 import androidx.compose.foundation.interaction.PressInteraction
@@ -50,9 +50,8 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.ui.composed
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.Dp
@@ -178,6 +177,11 @@ fun KeyboardInputView(
             HapticUtil.performHeavyHaptic(view)
         }
     }
+    fun performScrollHaptic() {
+        if (isHapticsEnabled) {
+            HapticUtil.performCustomHaptic(view, hapticStrength * 0.4f)
+        }
+    }
 
     var isSymbols by remember { mutableStateOf(false) }
     var shiftState by remember { mutableStateOf(ShiftState.OFF) }
@@ -224,11 +228,32 @@ fun KeyboardInputView(
             val hasSuggestions = suggestions.isNotEmpty()
             
             if (hasSuggestions) {
+                val carouselState = rememberCarouselState { suggestions.count() }
+
+                val nestedScrollConnection = remember {
+                    object : NestedScrollConnection {
+                        var accumulatedScroll = 0f
+                        val threshold = 70f
+
+                        override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                            if (source == NestedScrollSource.Drag) {
+                                accumulatedScroll += available.x
+                                if (kotlin.math.abs(accumulatedScroll) >= threshold) {
+                                    performScrollHaptic()
+                                    accumulatedScroll = 0f
+                                }
+                            }
+                            return Offset.Zero
+                        }
+                    }
+                }
+
                 HorizontalMultiBrowseCarousel(
-                    state = rememberCarouselState { suggestions.count() },
+                    state = carouselState,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(keyHeight * 0.65f),
+                        .height(keyHeight * 0.65f)
+                        .nestedScroll(nestedScrollConnection),
                     preferredItemWidth = 80.dp,
                     itemSpacing = 4.dp,
                     minSmallItemWidth = 10.dp,
@@ -308,8 +333,6 @@ fun KeyboardInputView(
 
         if (!isFunctionsBottom) {
             FunctionRow()
-            // Add extra spacing when functions are at top to separate from number row
-            // Spacer(modifier = Modifier.height(2.dp)) 
         }
 
         // Dedicated Number Row
@@ -384,7 +407,7 @@ fun KeyboardInputView(
         )
 
         // Row 2
-        androidx.compose.foundation.layout.Row(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(keyHeight),
