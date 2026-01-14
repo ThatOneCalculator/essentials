@@ -157,6 +157,8 @@
     <string name="tile_app_freezing">App Freezing</string>
     <string name="tile_flashlight_pulse">Flashlight Pulse</string>
     <string name="tile_stay_awake">Stay awake</string>
+    <string name="input_method_label">Essentials Keyboard</string>
+    <string name="subtype_en_us">English (US)</string>
     <string name="tile_active">Active</string>
     <string name="tile_inactive">Inactive</string>
     <string name="nfc_tile_label">NFC</string>

@@ -211,29 +211,48 @@ object OverlayHelper {
      * A lightweight implementation of the owners required by Jetpack Compose
      * to run inside a WindowManager overlay.
      */
-    private class OverlayLifecycleOwner : LifecycleOwner, SavedStateRegistryOwner, ViewModelStoreOwner {
+    private class OverlayLifecycleOwner :
+        LifecycleOwner,
+        SavedStateRegistryOwner,
+        ViewModelStoreOwner {
+
         private val lifecycleRegistry = LifecycleRegistry(this)
-        private val savedStateRegistryController = SavedStateRegistryController.create(this)
+        private val savedStateRegistryController =
+            SavedStateRegistryController.create(this)
         private val store = ViewModelStore()
 
-        override val lifecycle: Lifecycle = lifecycleRegistry
-        override val savedStateRegistry: SavedStateRegistry = savedStateRegistryController.savedStateRegistry
-        override val viewModelStore: ViewModelStore = store
+        override val lifecycle: Lifecycle
+            get() = lifecycleRegistry
 
+        override val savedStateRegistry: SavedStateRegistry
+            get() = savedStateRegistryController.savedStateRegistry
+
+        override val viewModelStore: ViewModelStore
+            get() = store
+
+        /** Call once when the overlay / IME view is created */
         fun onCreate() {
             savedStateRegistryController.performRestore(null)
-            lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
-            lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
-            lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
+            lifecycleRegistry.currentState = Lifecycle.State.CREATED
         }
 
+        /** Call when the view becomes visible / active */
+        fun onShow() {
+            lifecycleRegistry.currentState = Lifecycle.State.RESUMED
+        }
+
+        /** Call when the view is hidden but not destroyed */
+        fun onHide() {
+            lifecycleRegistry.currentState = Lifecycle.State.CREATED
+        }
+
+        /** Call when the overlay / IME is permanently destroyed */
         fun onDestroy() {
-            lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_PAUSE)
-            lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
-            lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+            lifecycleRegistry.currentState = Lifecycle.State.DESTROYED
             store.clear()
         }
     }
+
 
     /**
      * Creates WindowManager.LayoutParams configured for an notification lighting overlay.
