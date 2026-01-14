@@ -258,7 +258,7 @@
     <string name="feat_snooze_notifications_title">Systembenachrichtigungen stumm schalten</string>
     <string name="feat_snooze_notifications_desc">Persistente Benachrichtigungen stumm schalten</string>
     <string name="feat_qs_tiles_title">Schnelleinstellungs-Kacheln</string>
-    <string name="feat_qs_tiles_desc">Alle zeigen</string>
+    <string name="feat_qs_tiles_desc">Alle anzeigen</string>
     <string name="feat_button_remap_title">Tastenbelegung anpassen</string>
     <string name="feat_button_remap_desc">Hardwaretasten-Aktionen neu belegen</string>
     <string name="feat_dynamic_night_light_title">Dynamisches Nachtlicht</string>
@@ -398,8 +398,8 @@
     <string name="diy_trigger_label">Auslöser</string>
     <string name="diy_state_label">Zustand</string>
     <string name="diy_action_label">Aktion</string>
-    <string name="diy_in_label">In</string>
-    <string name="diy_out_label">Out</string>
+    <string name="diy_in_label">Eintritt</string>
+    <string name="diy_out_label">Austritt</string>
     <string name="diy_automation_label">Automatisierung</string>
     <string name="diy_trigger_screen_off">Display aus</string>
     <string name="diy_trigger_screen_on">Display an</string>
@@ -419,8 +419,8 @@
     <string name="diy_select_trigger">Auslöser auswählen</string>
     <string name="diy_select_state">Zustand auswählen</string>
     <string name="diy_select_action">Aktion auswählen</string>
-    <string name="diy_in_action_label">In Action</string>
-    <string name="diy_out_action_label">Out Action</string>
+    <string name="diy_in_action_label">Eintrittsaktion</string>
+    <string name="diy_out_action_label">Austrittsaktion</string>
     <string name="action_cancel">Abbrechen</string>
     <string name="action_save">Speichern</string>
     <string name="action_edit">Bearbeiten</string>
