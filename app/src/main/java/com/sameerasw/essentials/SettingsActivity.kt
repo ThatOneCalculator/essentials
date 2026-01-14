@@ -100,7 +100,8 @@ class SettingsActivity : ComponentActivity() {
         // Register Shizuku permission listener
         Shizuku.addRequestPermissionResultListener(shizukuPermissionResultListener)
         setContent {
-            EssentialsTheme {
+            val isPitchBlackThemeEnabled by viewModel.isPitchBlackThemeEnabled
+            EssentialsTheme(pitchBlackTheme = isPitchBlackThemeEnabled) {
                 val context = LocalContext.current
                 val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
 
@@ -270,6 +271,13 @@ fun SettingsContent(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                     isAppHapticsEnabled.value = isChecked
                     HapticUtil.saveAppHapticsEnabled(context, isChecked)
                 }
+            )
+            IconToggleItem(
+                iconRes = R.drawable.rounded_invert_colors_24,
+                title = stringResource(R.string.setting_pitch_black_theme_title),
+                description = stringResource(R.string.setting_pitch_black_theme_desc),
+                isChecked = viewModel.isPitchBlackThemeEnabled.value,
+                onCheckedChange = { viewModel.setPitchBlackThemeEnabled(it, context) }
             )
             IconToggleItem(
                 iconRes = R.drawable.rounded_numbers_24,

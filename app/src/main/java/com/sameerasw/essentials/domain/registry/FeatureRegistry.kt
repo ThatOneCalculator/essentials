@@ -160,18 +160,7 @@ object FeatureRegistry {
             override fun onToggle(viewModel: MainViewModel, context: Context, enabled: Boolean) {}
         },
 
-        object : Feature(
-            id = "Stay awake tile",
-            title = R.string.feat_stay_awake_tile_title,
-            iconRes = R.drawable.rounded_av_timer_24,
-            category = R.string.cat_tools,
-            description = R.string.feat_stay_awake_tile_desc,
-            permissionKeys = listOf("WRITE_SECURE_SETTINGS"),
-            showToggle = false
-        ) {
-            override fun isEnabled(viewModel: MainViewModel) = true
-            override fun onToggle(viewModel: MainViewModel, context: Context, enabled: Boolean) {}
-        },
+
 
         object : Feature(
             id = "Link actions",

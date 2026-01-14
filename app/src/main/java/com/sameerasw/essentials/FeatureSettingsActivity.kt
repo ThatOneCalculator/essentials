@@ -96,7 +96,13 @@ class FeatureSettingsActivity : FragmentActivity() {
 
         if (featureId == "Link actions") {
             setContent {
-                EssentialsTheme {
+                val viewModel: MainViewModel = viewModel()
+                val context = LocalContext.current
+                LaunchedEffect(Unit) {
+                    viewModel.check(context)
+                }
+                val isPitchBlackThemeEnabled by viewModel.isPitchBlackThemeEnabled
+                EssentialsTheme(pitchBlackTheme = isPitchBlackThemeEnabled) {
                     LinkPickerScreen(
                         uri = "https://sameerasw.com".toUri(),
                         onFinish = { finish() },
@@ -109,8 +115,38 @@ class FeatureSettingsActivity : FragmentActivity() {
         }
 
         setContent {
-            EssentialsTheme {
-                val context = LocalContext.current
+            val context = LocalContext.current
+            val viewModel: MainViewModel = viewModel()
+            val statusBarViewModel: StatusBarIconViewModel = viewModel()
+            val caffeinateViewModel: CaffeinateViewModel = viewModel()
+            
+            // Automatic refresh on resume
+            val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+            DisposableEffect(lifecycleOwner) {
+                val observer = LifecycleEventObserver { _, event ->
+                    if (event == Lifecycle.Event.ON_RESUME) {
+                        viewModel.check(context)
+                        if (featureId == "Statusbar icons") {
+                            statusBarViewModel.check(context)
+                        }
+                        if (featureId == "Caffeinate") {
+                            caffeinateViewModel.check(context)
+                        }
+                    }
+                }
+                lifecycleOwner.lifecycle.addObserver(observer)
+                onDispose {
+                    lifecycleOwner.lifecycle.removeObserver(observer)
+                }
+            }
+
+            LaunchedEffect(Unit) {
+                viewModel.check(context)
+            }
+            
+            val isPitchBlackThemeEnabled by viewModel.isPitchBlackThemeEnabled
+            
+            EssentialsTheme(pitchBlackTheme = isPitchBlackThemeEnabled) {
                 val view = LocalView.current
                 val prefs = context.getSharedPreferences("essentials_prefs", MODE_PRIVATE)
 
@@ -119,34 +155,6 @@ class FeatureSettingsActivity : FragmentActivity() {
                 } else {
                     @Suppress("DEPRECATION")
                     context.getSystemService(VIBRATOR_SERVICE) as? Vibrator
-                }
-
-                val viewModel: MainViewModel = viewModel()
-                val statusBarViewModel: StatusBarIconViewModel = viewModel()
-                val caffeinateViewModel: CaffeinateViewModel = viewModel()
-
-                // Automatic refresh on resume
-                val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
-                DisposableEffect(lifecycleOwner) {
-                    val observer = LifecycleEventObserver { _, event ->
-                        if (event == Lifecycle.Event.ON_RESUME) {
-                            viewModel.check(context)
-                            if (featureId == "Statusbar icons") {
-                                statusBarViewModel.check(context)
-                            }
-                            if (featureId == "Caffeinate") {
-                                caffeinateViewModel.check(context)
-                            }
-                        }
-                    }
-                    lifecycleOwner.lifecycle.addObserver(observer)
-                    onDispose {
-                        lifecycleOwner.lifecycle.removeObserver(observer)
-                    }
-                }
-
-                LaunchedEffect(Unit) {
-                    viewModel.check(context)
                 }
 
                 var selectedHaptic by remember {

@@ -109,7 +109,8 @@ fun AppSelectionSheet(
 
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
-        sheetState = sheetState
+        sheetState = sheetState,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
     ) {
         Column(
             modifier = Modifier

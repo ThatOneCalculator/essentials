@@ -123,6 +123,7 @@ class MainViewModel : ViewModel() {
     val isRootEnabled = mutableStateOf(false)
     val isRootAvailable = mutableStateOf(false)
     val isRootPermissionGranted = mutableStateOf(false)
+    val isPitchBlackThemeEnabled = mutableStateOf(false)
     private var lastUpdateCheckTime: Long = 0
     private lateinit var settingsRepository: SettingsRepository
     private lateinit var updateRepository: UpdateRepository
@@ -156,6 +157,7 @@ class MainViewModel : ViewModel() {
                     settingsRepository.saveDIYTab(defaultTab.value)
                 }
             }
+            SettingsRepository.KEY_PITCH_BLACK_THEME_ENABLED -> isPitchBlackThemeEnabled.value = settingsRepository.getBoolean(key)
         }
     }
 
@@ -258,6 +260,7 @@ class MainViewModel : ViewModel() {
         flashlightLastIntensity.value = settingsRepository.getInt(SettingsRepository.KEY_FLASHLIGHT_LAST_INTENSITY, 1)
         isFlashlightPulseEnabled.value = settingsRepository.getBoolean(SettingsRepository.KEY_FLASHLIGHT_PULSE_ENABLED)
         isFlashlightPulseFacedownOnly.value = settingsRepository.getBoolean(SettingsRepository.KEY_FLASHLIGHT_PULSE_FACEDOWN_ONLY, true)
+        isPitchBlackThemeEnabled.value = settingsRepository.getBoolean(SettingsRepository.KEY_PITCH_BLACK_THEME_ENABLED)
 
         isScreenLockedSecurityEnabled.value = settingsRepository.getBoolean(SettingsRepository.KEY_SCREEN_LOCKED_SECURITY_ENABLED)
         isDeviceAdminEnabled.value = isDeviceAdminActive(context)
@@ -316,6 +319,11 @@ class MainViewModel : ViewModel() {
         settingsRepository.putBoolean(SettingsRepository.KEY_USE_ROOT, enabled)
         isRootEnabled.value = enabled
         check(context)
+    }
+
+    fun setPitchBlackThemeEnabled(enabled: Boolean, context: Context) {
+        isPitchBlackThemeEnabled.value = enabled
+        settingsRepository.putBoolean(SettingsRepository.KEY_PITCH_BLACK_THEME_ENABLED, enabled)
     }
 
     fun checkForUpdates(context: Context, manual: Boolean = false) {
