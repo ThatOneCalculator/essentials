@@ -23,6 +23,18 @@ import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.sameerasw.essentials.ui.ime.KeyboardInputView
 import com.sameerasw.essentials.ui.theme.EssentialsTheme
+import com.sameerasw.essentials.data.repository.SettingsRepository
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.sameerasw.essentials.viewmodels.MainViewModel
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 
 class EssentialsInputMethodService : InputMethodService(), LifecycleOwner, ViewModelStoreOwner, SavedStateRegistryOwner {
     private val lifecycleRegistry by lazy { LifecycleRegistry(this) }
@@ -57,7 +69,44 @@ class EssentialsInputMethodService : InputMethodService(), LifecycleOwner, ViewM
 
         view.setContent {
             EssentialsTheme {
+                val context = androidx.compose.ui.platform.LocalContext.current
+                val prefs = remember { context.getSharedPreferences("essentials_prefs", MODE_PRIVATE) }
+                
+                // State variables for settings
+                var keyboardHeight by remember { mutableFloatStateOf(prefs.getFloat(SettingsRepository.KEY_KEYBOARD_HEIGHT, 54f)) }
+                var bottomPadding by remember { mutableFloatStateOf(prefs.getFloat(SettingsRepository.KEY_KEYBOARD_BOTTOM_PADDING, 0f)) }
+                var keyboardRoundness by remember { mutableFloatStateOf(prefs.getFloat(SettingsRepository.KEY_KEYBOARD_ROUNDNESS, 24f)) }
+                var isHapticsEnabled by remember { mutableStateOf(prefs.getBoolean(SettingsRepository.KEY_KEYBOARD_HAPTICS_ENABLED, true)) }
+
+                // Observe SharedPreferences changes
+                DisposableEffect(prefs) {
+                    val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->
+                        when (key) {
+                            SettingsRepository.KEY_KEYBOARD_HEIGHT -> {
+                                keyboardHeight = sharedPreferences.getFloat(SettingsRepository.KEY_KEYBOARD_HEIGHT, 54f)
+                            }
+                            SettingsRepository.KEY_KEYBOARD_BOTTOM_PADDING -> {
+                                bottomPadding = sharedPreferences.getFloat(SettingsRepository.KEY_KEYBOARD_BOTTOM_PADDING, 0f)
+                            }
+                            SettingsRepository.KEY_KEYBOARD_ROUNDNESS -> {
+                                keyboardRoundness = sharedPreferences.getFloat(SettingsRepository.KEY_KEYBOARD_ROUNDNESS, 24f)
+                            }
+                            SettingsRepository.KEY_KEYBOARD_HAPTICS_ENABLED -> {
+                                isHapticsEnabled = sharedPreferences.getBoolean(SettingsRepository.KEY_KEYBOARD_HAPTICS_ENABLED, true)
+                            }
+                        }
+                    }
+                    prefs.registerOnSharedPreferenceChangeListener(listener)
+                    onDispose {
+                        prefs.unregisterOnSharedPreferenceChangeListener(listener)
+                    }
+                }
+
                 KeyboardInputView(
+                    keyboardHeight = keyboardHeight.dp,
+                    bottomPadding = bottomPadding.dp,
+                    keyRoundness = keyboardRoundness.dp,
+                    isHapticsEnabled = isHapticsEnabled,
                     onType = { text ->
                         currentInputConnection?.commitText(text, 1)
                     },

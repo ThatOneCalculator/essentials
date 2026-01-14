@@ -94,6 +94,11 @@ class SettingsRepository(private val context: Context) {
         const val KEY_DEFAULT_TAB = "default_tab"
         const val KEY_USE_ROOT = "use_root"
         const val KEY_PITCH_BLACK_THEME_ENABLED = "pitch_black_theme_enabled"
+        
+        const val KEY_KEYBOARD_HEIGHT = "keyboard_height"
+        const val KEY_KEYBOARD_BOTTOM_PADDING = "keyboard_bottom_padding"
+        const val KEY_KEYBOARD_HAPTICS_ENABLED = "keyboard_haptics_enabled"
+        const val KEY_KEYBOARD_ROUNDNESS = "keyboard_roundness"
     }
 
     // Observe changes

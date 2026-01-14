@@ -477,6 +477,39 @@ object FeatureRegistry {
             override fun isToggleEnabled(viewModel: MainViewModel, context: Context) =
                 com.sameerasw.essentials.utils.ShellUtils.hasPermission(context)
             override fun onToggle(viewModel: MainViewModel, context: Context, enabled: Boolean) {}
+        },
+
+        object : Feature(
+            id = "System Keyboard",
+            title = R.string.feat_system_keyboard_title,
+            iconRes = R.drawable.rounded_keyboard_24,
+            category = R.string.cat_system,
+            description = R.string.feat_system_keyboard_desc,
+            hasMoreSettings = true,
+            showToggle = false,
+            searchableSettings = listOf(
+                SearchSetting(
+                    R.string.search_keyboard_height_title,
+                    R.string.search_keyboard_height_desc,
+                    "keyboard_height",
+                    R.array.keywords_keyboard
+                ),
+                SearchSetting(
+                    R.string.search_keyboard_padding_title,
+                    R.string.search_keyboard_padding_desc,
+                    "keyboard_bottom_padding",
+                    R.array.keywords_keyboard
+                ),
+                SearchSetting(
+                    R.string.search_keyboard_haptics_title,
+                    R.string.search_keyboard_haptics_desc,
+                    "keyboard_haptics",
+                    R.array.keywords_vibration
+                )
+            )
+        ) {
+            override fun isEnabled(viewModel: MainViewModel) = true
+            override fun onToggle(viewModel: MainViewModel, context: Context, enabled: Boolean) {}
         }
     )
 }

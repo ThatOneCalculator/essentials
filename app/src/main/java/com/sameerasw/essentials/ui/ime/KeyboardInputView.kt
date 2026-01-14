@@ -47,6 +47,8 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.unit.Dp
+
 
 enum class ShiftState {
     OFF,
@@ -66,21 +68,31 @@ private fun Modifier.bounceClick(interactionSource: MutableInteractionSource): M
 @OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun KeyboardInputView(
+    keyboardHeight: Dp = 54.dp,
+    bottomPadding: Dp = 0.dp,
+    keyRoundness: Dp = 24.dp,
+    isHapticsEnabled: Boolean = true,
     onType: (String) -> Unit,
     onKeyPress: (Int) -> Unit
 ) {
     val view = LocalView.current
     fun performLightHaptic() {
-        HapticUtil.performLightHaptic(view)
+        if (isHapticsEnabled) {
+            HapticUtil.performLightHaptic(view)
+        }
     }
     fun performHeavyHaptic() {
-        HapticUtil.performHeavyHaptic(view)
+        if (isHapticsEnabled) {
+            HapticUtil.performHeavyHaptic(view)
+        }
     }
 
     var isSymbols by remember { mutableStateOf(false) }
     var shiftState by remember { mutableStateOf(ShiftState.OFF) }
 
-    val keyHeight = 64.dp
+
+
+    val keyHeight = keyboardHeight
     val CustomFontFamily = FontFamily(Font(R.font.google_sans_flex))
 
     // Layers
@@ -104,7 +116,7 @@ fun KeyboardInputView(
             .fillMaxWidth()
             .clip(RoundedCornerShape(28.dp))
             .background(MaterialTheme.colorScheme.surfaceContainer)
-            .padding(bottom = 48.dp, start = 6.dp, end = 6.dp, top = 6.dp),
+            .padding(bottom = bottomPadding, start = 6.dp, end = 6.dp, top = 6.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
@@ -127,6 +139,7 @@ fun KeyboardInputView(
                             containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
                             contentColor = MaterialTheme.colorScheme.onSurface
                         ),
+                        shape = RoundedCornerShape(keyRoundness),
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxHeight()
@@ -164,6 +177,7 @@ fun KeyboardInputView(
                             containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
                             contentColor = MaterialTheme.colorScheme.onSurface
                         ),
+                        shape = RoundedCornerShape(keyRoundness),
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxHeight()
@@ -203,6 +217,7 @@ fun KeyboardInputView(
                             containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
                             contentColor = MaterialTheme.colorScheme.onSurface
                         ),
+                        shape = RoundedCornerShape(keyRoundness),
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxHeight()
@@ -237,7 +252,7 @@ fun KeyboardInputView(
                             .weight(1.5f)
                             .fillMaxHeight()
                             .bounceClick(shiftInteraction)
-                            .clip(RoundedCornerShape(24.dp))
+                            .clip(RoundedCornerShape(keyRoundness))
                             .combinedClickable(
                                 onClick = {
                                     performLightHaptic()
@@ -283,6 +298,7 @@ fun KeyboardInputView(
                             containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
                             contentColor = MaterialTheme.colorScheme.onSurface
                         ),
+                        shape = RoundedCornerShape(keyRoundness),
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxHeight()
@@ -308,7 +324,7 @@ fun KeyboardInputView(
                         .weight(1.5f)
                         .fillMaxHeight()
                         .bounceClick(backspaceInteraction)
-                        .clip(RoundedCornerShape(24.dp))
+                        .clip(RoundedCornerShape(keyRoundness))
                         .pointerInput(Unit) {
                             detectHorizontalDragGestures(
                                 onDragStart = { delAccumulatedDx = 0f },
@@ -363,6 +379,7 @@ fun KeyboardInputView(
                         isSymbols = !isSymbols
                     },
                     interactionSource = symInteraction,
+                    shape = RoundedCornerShape(keyRoundness),
                     modifier = Modifier
                         .weight(1.2f)
                         .fillMaxHeight()
@@ -384,6 +401,7 @@ fun KeyboardInputView(
                         onType(",")
                     },
                     interactionSource = commaInteraction,
+                    shape = RoundedCornerShape(keyRoundness),
                     modifier = Modifier
                         .weight(0.7f)
                         .fillMaxHeight()
@@ -407,7 +425,7 @@ fun KeyboardInputView(
                         .weight(3f)
                         .fillMaxHeight()
                         .bounceClick(spaceInteraction)
-                        .clip(RoundedCornerShape(24.dp))
+                        .clip(RoundedCornerShape(keyRoundness))
                         .pointerInput(Unit) {
                             detectHorizontalDragGestures(
                                 onDragStart = { accumulatedDx = 0f },
@@ -449,6 +467,7 @@ fun KeyboardInputView(
                         onType(".")
                     },
                     interactionSource = dotInteraction,
+                    shape = RoundedCornerShape(keyRoundness),
                     modifier = Modifier
                         .weight(0.7f)
                         .fillMaxHeight()
@@ -470,6 +489,7 @@ fun KeyboardInputView(
                         onKeyPress(KeyEvent.KEYCODE_ENTER)
                     },
                     interactionSource = returnInteraction,
+                    shape = RoundedCornerShape(keyRoundness),
                     modifier = Modifier
                         .weight(1.5f)
                         .fillMaxHeight()
