@@ -76,6 +76,8 @@ class EssentialsInputMethodService : InputMethodService(), LifecycleOwner, ViewM
                 var keyboardHeight by remember { mutableFloatStateOf(prefs.getFloat(SettingsRepository.KEY_KEYBOARD_HEIGHT, 54f)) }
                 var bottomPadding by remember { mutableFloatStateOf(prefs.getFloat(SettingsRepository.KEY_KEYBOARD_BOTTOM_PADDING, 0f)) }
                 var keyboardRoundness by remember { mutableFloatStateOf(prefs.getFloat(SettingsRepository.KEY_KEYBOARD_ROUNDNESS, 24f)) }
+                var isFunctionsBottom by remember { mutableStateOf(prefs.getBoolean(SettingsRepository.KEY_KEYBOARD_FUNCTIONS_BOTTOM, false)) }
+                var functionsPadding by remember { mutableFloatStateOf(prefs.getFloat(SettingsRepository.KEY_KEYBOARD_FUNCTIONS_PADDING, 0f)) }
                 var isHapticsEnabled by remember { mutableStateOf(prefs.getBoolean(SettingsRepository.KEY_KEYBOARD_HAPTICS_ENABLED, true)) }
 
                 // Observe SharedPreferences changes
@@ -90,6 +92,12 @@ class EssentialsInputMethodService : InputMethodService(), LifecycleOwner, ViewM
                             }
                             SettingsRepository.KEY_KEYBOARD_ROUNDNESS -> {
                                 keyboardRoundness = sharedPreferences.getFloat(SettingsRepository.KEY_KEYBOARD_ROUNDNESS, 24f)
+                            }
+                            SettingsRepository.KEY_KEYBOARD_FUNCTIONS_BOTTOM -> {
+                                isFunctionsBottom = sharedPreferences.getBoolean(SettingsRepository.KEY_KEYBOARD_FUNCTIONS_BOTTOM, false)
+                            }
+                            SettingsRepository.KEY_KEYBOARD_FUNCTIONS_PADDING -> {
+                                functionsPadding = sharedPreferences.getFloat(SettingsRepository.KEY_KEYBOARD_FUNCTIONS_PADDING, 0f)
                             }
                             SettingsRepository.KEY_KEYBOARD_HAPTICS_ENABLED -> {
                                 isHapticsEnabled = sharedPreferences.getBoolean(SettingsRepository.KEY_KEYBOARD_HAPTICS_ENABLED, true)
@@ -107,6 +115,8 @@ class EssentialsInputMethodService : InputMethodService(), LifecycleOwner, ViewM
                     bottomPadding = bottomPadding.dp,
                     keyRoundness = keyboardRoundness.dp,
                     isHapticsEnabled = isHapticsEnabled,
+                    isFunctionsBottom = isFunctionsBottom,
+                    functionsPadding = functionsPadding.dp,
                     onType = { text ->
                         currentInputConnection?.commitText(text, 1)
                     },

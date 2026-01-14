@@ -41,6 +41,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.sameerasw.essentials.R
 import com.sameerasw.essentials.utils.HapticUtil
+import androidx.compose.foundation.interaction.PressInteraction
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.ui.composed
 import androidx.compose.ui.graphics.graphicsLayer
@@ -72,6 +74,8 @@ fun KeyboardInputView(
     bottomPadding: Dp = 0.dp,
     keyRoundness: Dp = 24.dp,
     isHapticsEnabled: Boolean = true,
+    isFunctionsBottom: Boolean = false,
+    functionsPadding: Dp = 0.dp,
     onType: (String) -> Unit,
     onKeyPress: (Int) -> Unit
 ) {
@@ -120,6 +124,55 @@ fun KeyboardInputView(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
+        val FunctionRow = @Composable {
+            ButtonGroup(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(keyHeight * 0.5f)
+                    .padding(horizontal = functionsPadding),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                content = {
+                    val functions = listOf(
+                        R.drawable.ic_emoji to "Emoji",
+                        R.drawable.ic_clipboard to "Clipboard",
+                        R.drawable.ic_undo to "Undo"
+                    )
+                    
+                    functions.forEach { (iconRes, desc) ->
+                        val fnInteraction = remember { MutableInteractionSource() }
+                        val isPressed by fnInteraction.collectIsPressedAsState()
+                        val animatedRadius by animateDpAsState(targetValue = if (isPressed) 4.dp else keyRoundness, label = "cornerRadius")
+                        
+                        FilledTonalIconButton(
+                            onClick = { performLightHaptic() },
+                            interactionSource = fnInteraction,
+                            colors = IconButtonDefaults.iconButtonVibrantColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                                contentColor = MaterialTheme.colorScheme.onSurface
+                            ),
+                            shape = RoundedCornerShape(animatedRadius),
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .bounceClick(fnInteraction)
+                        ) {
+                            Icon(
+                                painter = painterResource(id = iconRes),
+                                contentDescription = desc,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+                }
+            )
+        }
+
+        if (!isFunctionsBottom) {
+            FunctionRow()
+            // Add extra spacing when functions are at top to separate from number row
+            // Spacer(modifier = Modifier.height(2.dp)) 
+        }
+
         // Dedicated Number Row
         ButtonGroup(
             modifier = Modifier
@@ -129,6 +182,8 @@ fun KeyboardInputView(
             content = {
                 numberRow.forEach { char ->
                     val numInteraction = remember { MutableInteractionSource() }
+                    val isPressed by numInteraction.collectIsPressedAsState()
+                    val animatedRadius by animateDpAsState(targetValue = if (isPressed) 4.dp else keyRoundness, label = "cornerRadius")
                     FilledTonalIconButton(
                         onClick = {
                             performLightHaptic()
@@ -166,6 +221,8 @@ fun KeyboardInputView(
                 currentRow1.forEach { char ->
                     val displayLabel = if (shiftState != ShiftState.OFF && !isSymbols) char.uppercase() else char
                     val row1Interaction = remember { MutableInteractionSource() }
+                    val isPressed by row1Interaction.collectIsPressedAsState()
+                    val animatedRadius by animateDpAsState(targetValue = if (isPressed) 4.dp else keyRoundness, label = "cornerRadius")
                     FilledTonalIconButton(
                         onClick = {
                             performLightHaptic()
@@ -177,7 +234,7 @@ fun KeyboardInputView(
                             containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
                             contentColor = MaterialTheme.colorScheme.onSurface
                         ),
-                        shape = RoundedCornerShape(keyRoundness),
+                        shape = RoundedCornerShape(animatedRadius),
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxHeight()
@@ -206,6 +263,8 @@ fun KeyboardInputView(
                 currentRow2.forEach { char ->
                     val displayLabel = if (shiftState != ShiftState.OFF && !isSymbols) char.uppercase() else char
                     val row2Interaction = remember { MutableInteractionSource() }
+                    val isPressed by row2Interaction.collectIsPressedAsState()
+                    val animatedRadius by animateDpAsState(targetValue = if (isPressed) 4.dp else keyRoundness, label = "cornerRadius")
                     FilledTonalIconButton(
                         onClick = {
                             performLightHaptic()
@@ -217,7 +276,7 @@ fun KeyboardInputView(
                             containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
                             contentColor = MaterialTheme.colorScheme.onSurface
                         ),
-                        shape = RoundedCornerShape(keyRoundness),
+                        shape = RoundedCornerShape(animatedRadius),
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxHeight()
@@ -246,13 +305,16 @@ fun KeyboardInputView(
                 // Shift Key - Only show if not in symbols mode
                 if (!isSymbols) {
                     val shiftInteraction = remember { MutableInteractionSource() }
+                    val isPressed by shiftInteraction.collectIsPressedAsState()
+                    val animatedRadius by animateDpAsState(targetValue = if (isPressed) 4.dp else keyRoundness, label = "cornerRadius")
+
 
                     Box(
                         modifier = Modifier
                             .weight(1.5f)
                             .fillMaxHeight()
                             .bounceClick(shiftInteraction)
-                            .clip(RoundedCornerShape(keyRoundness))
+                            .clip(RoundedCornerShape(animatedRadius))
                             .combinedClickable(
                                 onClick = {
                                     performLightHaptic()
@@ -287,6 +349,8 @@ fun KeyboardInputView(
                 currentRow3.forEach { char ->
                     val displayLabel = if (shiftState != ShiftState.OFF && !isSymbols) char.uppercase() else char
                     val row3Interaction = remember { MutableInteractionSource() }
+                    val isPressed by row3Interaction.collectIsPressedAsState()
+                    val animatedRadius by animateDpAsState(targetValue = if (isPressed) 4.dp else keyRoundness, label = "cornerRadius")
                     FilledTonalIconButton(
                         onClick = {
                             performLightHaptic()
@@ -298,7 +362,7 @@ fun KeyboardInputView(
                             containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
                             contentColor = MaterialTheme.colorScheme.onSurface
                         ),
-                        shape = RoundedCornerShape(keyRoundness),
+                        shape = RoundedCornerShape(animatedRadius),
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxHeight()
@@ -316,6 +380,8 @@ fun KeyboardInputView(
 
                 // Backspace Key
                 val backspaceInteraction = remember { MutableInteractionSource() }
+                val isPressedDel by backspaceInteraction.collectIsPressedAsState()
+                val animatedRadiusDel by animateDpAsState(targetValue = if (isPressedDel) 4.dp else keyRoundness, label = "cornerRadius")
                 var delAccumulatedDx by remember { mutableStateOf(0f) }
                 val delSweepThreshold = 25f
 
@@ -324,7 +390,7 @@ fun KeyboardInputView(
                         .weight(1.5f)
                         .fillMaxHeight()
                         .bounceClick(backspaceInteraction)
-                        .clip(RoundedCornerShape(keyRoundness))
+                        .clip(RoundedCornerShape(animatedRadiusDel))
                         .pointerInput(Unit) {
                             detectHorizontalDragGestures(
                                 onDragStart = { delAccumulatedDx = 0f },
@@ -345,6 +411,12 @@ fun KeyboardInputView(
                         }
                         .pointerInput(Unit) {
                             detectTapGestures(
+                                onPress = { offset ->
+                                    val press = PressInteraction.Press(offset)
+                                    backspaceInteraction.emit(press)
+                                    tryAwaitRelease()
+                                    backspaceInteraction.emit(PressInteraction.Release(press))
+                                },
                                 onTap = {
                                     performLightHaptic()
                                     onKeyPress(KeyEvent.KEYCODE_DEL)
@@ -373,13 +445,15 @@ fun KeyboardInputView(
             content = {
                 // Symbols Toggle
                 val symInteraction = remember { MutableInteractionSource() }
+                val isPressedSym by symInteraction.collectIsPressedAsState()
+                val animatedRadiusSym by animateDpAsState(targetValue = if (isPressedSym) 4.dp else keyRoundness, label = "cornerRadius")
                 FilledIconButton(
                     onClick = {
                         performLightHaptic()
                         isSymbols = !isSymbols
                     },
                     interactionSource = symInteraction,
-                    shape = RoundedCornerShape(keyRoundness),
+                    shape = RoundedCornerShape(animatedRadiusSym),
                     modifier = Modifier
                         .weight(1.2f)
                         .fillMaxHeight()
@@ -395,13 +469,15 @@ fun KeyboardInputView(
 
                 // Comma Key
                 val commaInteraction = remember { MutableInteractionSource() }
+                val isPressedComma by commaInteraction.collectIsPressedAsState()
+                val animatedRadiusComma by animateDpAsState(targetValue = if (isPressedComma) 4.dp else keyRoundness, label = "cornerRadius")
                 FilledIconButton(
                     onClick = {
                         performLightHaptic()
                         onType(",")
                     },
                     interactionSource = commaInteraction,
-                    shape = RoundedCornerShape(keyRoundness),
+                    shape = RoundedCornerShape(animatedRadiusComma),
                     modifier = Modifier
                         .weight(0.7f)
                         .fillMaxHeight()
@@ -417,6 +493,8 @@ fun KeyboardInputView(
 
                 // Space
                 val spaceInteraction = remember { MutableInteractionSource() }
+                val isPressedSpace by spaceInteraction.collectIsPressedAsState()
+                val animatedRadiusSpace by animateDpAsState(targetValue = if (isPressedSpace) 4.dp else keyRoundness, label = "cornerRadius")
                 var accumulatedDx by remember { mutableStateOf(0f) }
                 val sweepThreshold = 25f // pixels per cursor move
 
@@ -425,7 +503,7 @@ fun KeyboardInputView(
                         .weight(3f)
                         .fillMaxHeight()
                         .bounceClick(spaceInteraction)
-                        .clip(RoundedCornerShape(keyRoundness))
+                        .clip(RoundedCornerShape(animatedRadiusSpace))
                         .pointerInput(Unit) {
                             detectHorizontalDragGestures(
                                 onDragStart = { accumulatedDx = 0f },
@@ -447,6 +525,12 @@ fun KeyboardInputView(
                         }
                         .pointerInput(Unit) {
                             detectTapGestures(
+                                onPress = { offset ->
+                                    val press = PressInteraction.Press(offset)
+                                    spaceInteraction.emit(press)
+                                    tryAwaitRelease()
+                                    spaceInteraction.emit(PressInteraction.Release(press))
+                                },
                                 onTap = {
                                     performLightHaptic()
                                     onType(" ")
@@ -461,13 +545,15 @@ fun KeyboardInputView(
 
                 // Dot Key
                 val dotInteraction = remember { MutableInteractionSource() }
+                val isPressedDot by dotInteraction.collectIsPressedAsState()
+                val animatedRadiusDot by animateDpAsState(targetValue = if (isPressedDot) 4.dp else keyRoundness, label = "cornerRadius")
                 FilledIconButton(
                     onClick = {
                         performLightHaptic()
                         onType(".")
                     },
                     interactionSource = dotInteraction,
-                    shape = RoundedCornerShape(keyRoundness),
+                    shape = RoundedCornerShape(animatedRadiusDot),
                     modifier = Modifier
                         .weight(0.7f)
                         .fillMaxHeight()
@@ -483,13 +569,15 @@ fun KeyboardInputView(
 
                 // Return
                 val returnInteraction = remember { MutableInteractionSource() }
+                val isPressedReturn by returnInteraction.collectIsPressedAsState()
+                val animatedRadiusReturn by animateDpAsState(targetValue = if (isPressedReturn) 4.dp else keyRoundness, label = "cornerRadius")
                 FilledIconButton(
                     onClick = {
                         performLightHaptic()
                         onKeyPress(KeyEvent.KEYCODE_ENTER)
                     },
                     interactionSource = returnInteraction,
-                    shape = RoundedCornerShape(keyRoundness),
+                    shape = RoundedCornerShape(animatedRadiusReturn),
                     modifier = Modifier
                         .weight(1.5f)
                         .fillMaxHeight()
@@ -503,5 +591,9 @@ fun KeyboardInputView(
                 }
             }
         )
+
+        if (isFunctionsBottom) {
+            FunctionRow()
+        }
     }
 }

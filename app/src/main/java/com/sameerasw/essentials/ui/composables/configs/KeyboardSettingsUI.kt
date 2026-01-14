@@ -95,6 +95,26 @@ fun KeyboardSettingsUI(
             )
 
             IconToggleItem(
+                iconRes = R.drawable.rounded_keyboard_arrow_down_24,
+                title = stringResource(R.string.label_keyboard_functions_bottom),
+                isChecked = viewModel.isKeyboardFunctionsBottom.value,
+                onCheckedChange = { viewModel.setKeyboardFunctionsBottom(it, context) },
+                modifier = Modifier.highlight(highlightSetting == "keyboard_functions_bottom")
+            )
+
+            ConfigSliderItem(
+                title = stringResource(R.string.label_keyboard_functions_padding),
+                value = viewModel.keyboardFunctionsPadding.floatValue,
+                onValueChange = { 
+                    viewModel.setKeyboardFunctionsPadding(it, context)
+                    com.sameerasw.essentials.utils.HapticUtil.performSliderHaptic(view)
+                },
+                valueRange = 0f..100f,
+                steps = 0,
+                modifier = Modifier.highlight(highlightSetting == "keyboard_functions_padding")
+            )
+
+            IconToggleItem(
                 iconRes = R.drawable.rounded_mobile_vibrate_24,
                 title = stringResource(R.string.label_keyboard_haptics),
                 isChecked = viewModel.isKeyboardHapticsEnabled.value,

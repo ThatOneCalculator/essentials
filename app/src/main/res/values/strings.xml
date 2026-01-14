@@ -845,4 +845,6 @@
     <string name="label_keyboard_roundness">Key Roundness</string>
     <string name="search_keyboard_roundness_title">Key Roundness</string>
     <string name="search_keyboard_roundness_desc">Adjust the corner radius of keys</string>
+    <string name="label_keyboard_functions_bottom">Move functions to bottom</string>
+    <string name="label_keyboard_functions_padding">Functions side padding</string>
 </resources>

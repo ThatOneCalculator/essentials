@@ -132,6 +132,8 @@ class MainViewModel : ViewModel() {
     val keyboardBottomPadding = mutableFloatStateOf(0f)
     val keyboardRoundness = mutableFloatStateOf(24f)
     val isKeyboardHapticsEnabled = mutableStateOf(true)
+    val isKeyboardFunctionsBottom = mutableStateOf(false)
+    val keyboardFunctionsPadding = mutableFloatStateOf(0f)
 
     private var lastUpdateCheckTime: Long = 0
     private lateinit var settingsRepository: SettingsRepository
@@ -171,6 +173,8 @@ class MainViewModel : ViewModel() {
             SettingsRepository.KEY_KEYBOARD_BOTTOM_PADDING -> keyboardBottomPadding.floatValue = settingsRepository.getFloat(key, 0f)
             SettingsRepository.KEY_KEYBOARD_ROUNDNESS -> keyboardRoundness.floatValue = settingsRepository.getFloat(key, 24f)
             SettingsRepository.KEY_KEYBOARD_HAPTICS_ENABLED -> isKeyboardHapticsEnabled.value = settingsRepository.getBoolean(key)
+            SettingsRepository.KEY_KEYBOARD_FUNCTIONS_BOTTOM -> isKeyboardFunctionsBottom.value = settingsRepository.getBoolean(key)
+            SettingsRepository.KEY_KEYBOARD_FUNCTIONS_PADDING -> keyboardFunctionsPadding.floatValue = settingsRepository.getFloat(key, 0f)
         }
     }
 
@@ -279,6 +283,8 @@ class MainViewModel : ViewModel() {
         keyboardBottomPadding.floatValue = settingsRepository.getFloat(SettingsRepository.KEY_KEYBOARD_BOTTOM_PADDING, 0f)
         keyboardRoundness.floatValue = settingsRepository.getFloat(SettingsRepository.KEY_KEYBOARD_ROUNDNESS, 24f)
         isKeyboardHapticsEnabled.value = settingsRepository.getBoolean(SettingsRepository.KEY_KEYBOARD_HAPTICS_ENABLED, true)
+        isKeyboardFunctionsBottom.value = settingsRepository.getBoolean(SettingsRepository.KEY_KEYBOARD_FUNCTIONS_BOTTOM, false)
+        keyboardFunctionsPadding.floatValue = settingsRepository.getFloat(SettingsRepository.KEY_KEYBOARD_FUNCTIONS_PADDING, 0f)
 
         isScreenLockedSecurityEnabled.value = settingsRepository.getBoolean(SettingsRepository.KEY_SCREEN_LOCKED_SECURITY_ENABLED)
         isDeviceAdminEnabled.value = isDeviceAdminActive(context)
@@ -675,6 +681,16 @@ class MainViewModel : ViewModel() {
     fun setKeyboardHapticsEnabled(enabled: Boolean, context: Context) {
         isKeyboardHapticsEnabled.value = enabled
         settingsRepository.putBoolean(SettingsRepository.KEY_KEYBOARD_HAPTICS_ENABLED, enabled)
+    }
+
+    fun setKeyboardFunctionsBottom(isBottom: Boolean, context: Context) {
+        isKeyboardFunctionsBottom.value = isBottom
+        settingsRepository.putBoolean(SettingsRepository.KEY_KEYBOARD_FUNCTIONS_BOTTOM, isBottom)
+    }
+
+    fun setKeyboardFunctionsPadding(padding: Float, context: Context) {
+        keyboardFunctionsPadding.floatValue = padding
+        settingsRepository.putFloat(SettingsRepository.KEY_KEYBOARD_FUNCTIONS_PADDING, padding)
     }
 
 
