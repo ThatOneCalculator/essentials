@@ -53,6 +53,7 @@ import com.sameerasw.essentials.ui.components.containers.RoundedCardContainer
 import com.sameerasw.essentials.ui.components.menus.SegmentedDropdownMenu
 import com.sameerasw.essentials.ui.components.menus.SegmentedDropdownMenuItem
 import com.sameerasw.essentials.utils.HapticUtil
+import androidx.compose.ui.platform.LocalContext
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -167,8 +168,17 @@ fun AutomationItem(
                                 .fillMaxHeight(),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
+                            val context = LocalContext.current
+                            val validatedIcon = remember(icon) {
+                                try {
+                                    if (context.resources.getResourceTypeName(icon) == "drawable") icon
+                                    else R.drawable.rounded_do_not_disturb_on_24
+                                } catch (e: Exception) {
+                                    R.drawable.rounded_do_not_disturb_on_24
+                                }
+                            }
                             Icon(
-                                painter = painterResource(id = icon),
+                                painter = painterResource(id = validatedIcon),
                                 contentDescription = null,
                                 modifier = Modifier.size(24.dp),
                                 tint = MaterialTheme.colorScheme.onSecondaryContainer
@@ -281,8 +291,18 @@ fun ActionItem(
             modifier = Modifier.padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            val context = LocalContext.current
+            val iconId = action?.icon ?: R.drawable.rounded_do_not_disturb_on_24
+            val validatedIcon = remember(iconId) {
+                try {
+                    if (context.resources.getResourceTypeName(iconId) == "drawable") iconId
+                    else R.drawable.rounded_do_not_disturb_on_24
+                } catch (e: Exception) {
+                    R.drawable.rounded_do_not_disturb_on_24
+                }
+            }
             Icon(
-                painter = painterResource(id = action?.icon ?: R.drawable.rounded_do_not_disturb_on_24),
+                painter = painterResource(id = validatedIcon),
                 contentDescription = null,
                 modifier = Modifier.size(24.dp),
                 tint = MaterialTheme.colorScheme.onSurface

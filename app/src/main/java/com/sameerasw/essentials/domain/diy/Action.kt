@@ -45,8 +45,8 @@ sealed interface Action {
     }
 
     data class DimWallpaper(val dimAmount: Float = 0f) : Action {
-        override val title: Int = R.string.diy_action_dim_wallpaper
-        override val icon: Int = R.drawable.rounded_mobile_screensaver_24
+        override val title: Int get() = R.string.diy_action_dim_wallpaper
+        override val icon: Int get() = R.drawable.rounded_mobile_screensaver_24
         override val permissions: List<String> = listOf("shizuku", "root")
         override val isConfigurable: Boolean = true
     }
