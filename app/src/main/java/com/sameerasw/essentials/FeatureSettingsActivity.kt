@@ -69,6 +69,7 @@ import com.sameerasw.essentials.ui.components.sheets.PermissionsBottomSheet
 
 import com.sameerasw.essentials.ui.composables.configs.AppLockSettingsUI
 import com.sameerasw.essentials.ui.composables.configs.ScreenLockedSecuritySettingsUI
+import com.sameerasw.essentials.ui.composables.configs.KeyboardSettingsUI
 import com.sameerasw.essentials.utils.HapticUtil
 import com.sameerasw.essentials.domain.registry.FeatureRegistry
 
@@ -569,6 +570,13 @@ class FeatureSettingsActivity : FragmentActivity() {
                             "Location reached" -> {
                                 LocationReachedSettingsUI(
                                     mainViewModel = viewModel,
+                                    modifier = Modifier.padding(top = 16.dp),
+                                    highlightSetting = highlightSetting
+                                )
+                            }
+                            "System Keyboard" -> {
+                                KeyboardSettingsUI(
+                                    viewModel = viewModel,
                                     modifier = Modifier.padding(top = 16.dp),
                                     highlightSetting = highlightSetting
                                 )
