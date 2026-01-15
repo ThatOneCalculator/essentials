@@ -14,7 +14,8 @@ class BatteriesWidgetReceiver : GlanceAppWidgetReceiver() {
         if (intent.action == Intent.ACTION_POWER_CONNECTED ||
             intent.action == Intent.ACTION_POWER_DISCONNECTED ||
             intent.action == Intent.ACTION_BATTERY_LOW ||
-            intent.action == Intent.ACTION_BATTERY_OKAY) {
+            intent.action == Intent.ACTION_BATTERY_OKAY ||
+            intent.action == android.appwidget.AppWidgetManager.ACTION_APPWIDGET_UPDATE) {
             
             // Trigger update
             val glanceAppWidgetManager = androidx.glance.appwidget.GlanceAppWidgetManager(context)
@@ -23,6 +24,15 @@ class BatteriesWidgetReceiver : GlanceAppWidgetReceiver() {
                  glanceIds.forEach { glanceId ->
                      glanceAppWidget.update(context, glanceId)
                  }
+            }
+
+            try {
+                val requestIntent = Intent("com.sameerasw.airsync.action.REQUEST_MAC_BATTERY").apply {
+                    setPackage("com.sameerasw.airsync")
+                }
+                context.sendBroadcast(requestIntent, "com.sameerasw.permission.ESSENTIALS_AIRSYNC_BRIDGE")
+            } catch (e: Exception) {
+                // Ignore if AirSync not installed/found
             }
         }
     }

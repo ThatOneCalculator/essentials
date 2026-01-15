@@ -144,6 +144,13 @@ class MainViewModel : ViewModel() {
     val isKeyboardSelected = mutableStateOf(false)
     val isWriteSettingsEnabled = mutableStateOf(false)
 
+    // AirSync Bridge
+    val isAirSyncConnectionEnabled = mutableStateOf(false)
+    val macBatteryLevel = mutableIntStateOf(-1)
+    val isMacBatteryCharging = mutableStateOf(false)
+    val macBatteryLastUpdated = mutableStateOf(0L)
+    val isMacConnected = mutableStateOf(false)
+
     private var lastUpdateCheckTime: Long = 0
     private lateinit var settingsRepository: SettingsRepository
     private lateinit var updateRepository: UpdateRepository
@@ -185,6 +192,11 @@ class MainViewModel : ViewModel() {
             SettingsRepository.KEY_KEYBOARD_ALWAYS_DARK -> isKeyboardAlwaysDark.value = settingsRepository.getBoolean(key, false)
             SettingsRepository.KEY_KEYBOARD_PITCH_BLACK -> isKeyboardPitchBlack.value = settingsRepository.getBoolean(key, false)
             SettingsRepository.KEY_KEYBOARD_CLIPBOARD_ENABLED -> isKeyboardClipboardEnabled.value = settingsRepository.getBoolean(key, true)
+            SettingsRepository.KEY_AIRSYNC_CONNECTION_ENABLED -> isAirSyncConnectionEnabled.value = settingsRepository.getBoolean(key)
+            SettingsRepository.KEY_MAC_BATTERY_LEVEL -> macBatteryLevel.intValue = settingsRepository.getInt(key, -1)
+            SettingsRepository.KEY_MAC_BATTERY_IS_CHARGING -> isMacBatteryCharging.value = settingsRepository.getBoolean(key, false)
+            SettingsRepository.KEY_MAC_BATTERY_LAST_UPDATED -> macBatteryLastUpdated.value = settingsRepository.getLong(key, 0L)
+            SettingsRepository.KEY_AIRSYNC_MAC_CONNECTED -> isMacConnected.value = settingsRepository.getBoolean(key, false)
         }
     }
 
@@ -303,6 +315,12 @@ class MainViewModel : ViewModel() {
         isKeyboardAlwaysDark.value = settingsRepository.getBoolean(SettingsRepository.KEY_KEYBOARD_ALWAYS_DARK, false)
         isKeyboardPitchBlack.value = settingsRepository.getBoolean(SettingsRepository.KEY_KEYBOARD_PITCH_BLACK, false)
         isKeyboardClipboardEnabled.value = settingsRepository.getBoolean(SettingsRepository.KEY_KEYBOARD_CLIPBOARD_ENABLED, true)
+
+        isAirSyncConnectionEnabled.value = settingsRepository.getBoolean(SettingsRepository.KEY_AIRSYNC_CONNECTION_ENABLED)
+        macBatteryLevel.intValue = settingsRepository.getInt(SettingsRepository.KEY_MAC_BATTERY_LEVEL, -1)
+        isMacBatteryCharging.value = settingsRepository.getBoolean(SettingsRepository.KEY_MAC_BATTERY_IS_CHARGING, false)
+        macBatteryLastUpdated.value = settingsRepository.getLong(SettingsRepository.KEY_MAC_BATTERY_LAST_UPDATED, 0L)
+        isMacConnected.value = settingsRepository.getBoolean(SettingsRepository.KEY_AIRSYNC_MAC_CONNECTED, false)
 
         isScreenLockedSecurityEnabled.value = settingsRepository.getBoolean(SettingsRepository.KEY_SCREEN_LOCKED_SECURITY_ENABLED)
         isDeviceAdminEnabled.value = isDeviceAdminActive(context)
@@ -739,6 +757,15 @@ class MainViewModel : ViewModel() {
     fun setKeyboardClipboardEnabled(enabled: Boolean, context: Context) {
         isKeyboardClipboardEnabled.value = enabled
         settingsRepository.putBoolean(SettingsRepository.KEY_KEYBOARD_CLIPBOARD_ENABLED, enabled)
+    }
+
+    fun setAirSyncConnectionEnabled(enabled: Boolean, context: Context) {
+        if (enabled) {
+            // Request permission if not granted, though it's signature level so should be automatic if signed correctly
+            // but we can check it
+        }
+        isAirSyncConnectionEnabled.value = enabled
+        settingsRepository.putBoolean(SettingsRepository.KEY_AIRSYNC_CONNECTION_ENABLED, enabled)
     }
 
 

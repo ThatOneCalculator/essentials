@@ -4,12 +4,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.sameerasw.essentials.R
+import com.sameerasw.essentials.ui.components.containers.RoundedCardContainer
 import com.sameerasw.essentials.viewmodels.MainViewModel
 
 @OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
@@ -18,29 +21,48 @@ fun BatteriesSettingsUI(
     viewModel: MainViewModel,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     Column(
         modifier = modifier.padding(16.dp),
         horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
     ) {
-        Text(
-            text = stringResource(R.string.feat_batteries_desc),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 32.dp)
-        )
+        // AirSync Interaction
+        RoundedCardContainer {
+            val isAirSyncInstalled = try {
+                context.packageManager.getPackageInfo("com.sameerasw.airsync", 0)
+                true
+            } catch (e: android.content.pm.PackageManager.NameNotFoundException) {
+                false
+            }
 
-        // Preview of the Battery Indicator
-        androidx.compose.material3.CircularWavyProgressIndicator(
-            progress = { 0.75f }, // Demo value
-            modifier = Modifier.size(120.dp),
-            color = androidx.compose.ui.graphics.Color(0xFF4CAF50),
-            trackColor = androidx.compose.ui.graphics.Color.Gray.copy(alpha = 0.2f)
-        )
-        
-        Text(
-            text = "Widget Preview Style",
-            style = androidx.compose.material3.MaterialTheme.typography.labelMedium,
-            modifier = Modifier.padding(top = 16.dp)
-        )
+            if (isAirSyncInstalled) {
+                ListItem(
+                    headlineContent = { Text(stringResource(R.string.connect_to_airsync)) },
+                    supportingContent = { Text(stringResource(R.string.connect_to_airsync_summary)) },
+                    trailingContent = {
+                        androidx.compose.material3.Switch(
+                            checked = viewModel.isAirSyncConnectionEnabled.value,
+                            onCheckedChange = { viewModel.setAirSyncConnectionEnabled(it, context) }
+                        )
+                    }
+                )
+            } else {
+                ListItem(
+                    headlineContent = { Text(stringResource(R.string.download_airsync)) },
+                    supportingContent = { Text(stringResource(R.string.download_airsync_summary)) },
+                    trailingContent = {
+                        androidx.compose.material3.Button(
+                            onClick = {
+                                val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("https://play.google.com/store/apps/details?id=com.sameerasw.airsync"))
+                                intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+                                context.startActivity(intent)
+                            }
+                        ) {
+                            Text("Download")
+                        }
+                    }
+                )
+            }
+        }
     }
 }

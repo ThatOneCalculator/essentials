@@ -107,6 +107,12 @@ class SettingsRepository(private val context: Context) {
         const val KEY_KEYBOARD_PITCH_BLACK = "keyboard_pitch_black"
         const val KEY_KEYBOARD_CLIPBOARD_ENABLED = "keyboard_clipboard_enabled"
 
+        // Essentials-AirSync Bridge
+        const val KEY_AIRSYNC_CONNECTION_ENABLED = "airsync_connection_enabled"
+        const val KEY_MAC_BATTERY_LEVEL = "mac_battery_level"
+        const val KEY_MAC_BATTERY_IS_CHARGING = "mac_battery_is_charging"
+        const val KEY_MAC_BATTERY_LAST_UPDATED = "mac_battery_last_updated"
+        const val KEY_AIRSYNC_MAC_CONNECTED = "airsync_mac_connected"
     }
 
     // Observe changes
@@ -300,8 +306,8 @@ class SettingsRepository(private val context: Context) {
                 val wrapperMap = mutableMapOf<String, Map<String, Any>>()
                 
                 p.all.forEach { (key, value) ->
-                    // Skip app lists as requested
-                    if (key.endsWith("_selected_apps") || key == "freeze_auto_excluded_apps") {
+                    // Skip app lists as requested, and stale data
+                    if (key.endsWith("_selected_apps") || key == "freeze_auto_excluded_apps" || key.startsWith("mac_battery_") || key == "airsync_mac_connected") {
                         return@forEach
                     }
 
