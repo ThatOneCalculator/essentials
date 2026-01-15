@@ -36,8 +36,8 @@
     <string name="settings_section_flashlight">フラッシュライト</string>
     <string name="flashlight_options_title">フラッシュライトの設定</string>
     <string name="flashlight_options_desc">フェードアウトなどの設定を調整</string>
-    <string name="setting_pitch_black_theme_title">Pitch black theme</string>
-    <string name="setting_pitch_black_theme_desc">Use pure black background in dark mode</string>
+    <string name="setting_pitch_black_theme_title">ブラックテーマにする</string>
+    <string name="setting_pitch_black_theme_desc">ダークモードでピュアブラックの背景にします</string>
     <string name="settings_section_haptic">触覚フィードバック</string>
     <string name="button_remap_section_long_press">長押しをリマップ</string>
     <string name="screen_off">画面オフ</string>
