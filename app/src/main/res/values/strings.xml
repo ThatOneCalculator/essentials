@@ -442,6 +442,9 @@
     <string name="tile_adaptive_brightness">Adaptive Brightness</string>
     <string name="tile_adaptive_brightness_desc">Toggle adaptive brightness</string>
 
+    <string name="tile_maps_power_saving">Maps Power Saving</string>
+    <string name="tile_maps_power_saving_desc">Toggle maps power saving mode</string>
+
     <string name="search_placeholder_short">Search for Tools, Mods and Tweaks</string>
     <string name="action_search">Search</string>
     <string name="action_stop">Stop</string>
