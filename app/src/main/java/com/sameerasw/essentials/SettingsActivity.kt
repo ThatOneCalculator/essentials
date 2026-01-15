@@ -299,8 +299,7 @@ fun SettingsContent(viewModel: MainViewModel, modifier: Modifier = Modifier) {
         RoundedCardContainer {
             DefaultTabPicker(
                 selectedTab = defaultTab,
-                onTabSelected = { viewModel.setDefaultTab(it, context) },
-                isDeveloperMode = isDeveloperModeEnabled
+                onTabSelected = { viewModel.setDefaultTab(it, context) }
             )
         }
 

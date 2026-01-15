@@ -168,10 +168,6 @@ class MainViewModel : ViewModel() {
             SettingsRepository.KEY_CHECK_PRE_RELEASES_ENABLED -> isPreReleaseCheckEnabled.value = settingsRepository.getBoolean(key)
             SettingsRepository.KEY_DEVELOPER_MODE_ENABLED -> {
                 isDeveloperModeEnabled.value = settingsRepository.getBoolean(key)
-                if (!isDeveloperModeEnabled.value && defaultTab.value == com.sameerasw.essentials.domain.DIYTabs.DIY) {
-                    defaultTab.value = com.sameerasw.essentials.domain.DIYTabs.ESSENTIALS
-                    settingsRepository.saveDIYTab(defaultTab.value)
-                }
             }
             SettingsRepository.KEY_PITCH_BLACK_THEME_ENABLED -> isPitchBlackThemeEnabled.value = settingsRepository.getBoolean(key)
             SettingsRepository.KEY_KEYBOARD_HEIGHT -> keyboardHeight.floatValue = settingsRepository.getFloat(key, 54f)
@@ -313,12 +309,6 @@ class MainViewModel : ViewModel() {
         freezeAutoExcludedApps.value = settingsRepository.getFreezeAutoExcludedApps()
         isDeveloperModeEnabled.value = settingsRepository.getBoolean(SettingsRepository.KEY_DEVELOPER_MODE_ENABLED)
         isPreReleaseCheckEnabled.value = settingsRepository.getBoolean(SettingsRepository.KEY_CHECK_PRE_RELEASES_ENABLED)
-        
-        // Gracefully handle DIY tab if developer mode is off
-        if (!isDeveloperModeEnabled.value && defaultTab.value == com.sameerasw.essentials.domain.DIYTabs.DIY) {
-            defaultTab.value = com.sameerasw.essentials.domain.DIYTabs.ESSENTIALS
-            settingsRepository.saveDIYTab(defaultTab.value)
-        }
     }
 
     fun onSearchQueryChanged(query: String, context: Context) {
