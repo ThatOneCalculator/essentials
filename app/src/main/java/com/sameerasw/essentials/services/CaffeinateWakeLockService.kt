@@ -141,7 +141,7 @@ class CaffeinateWakeLockService : Service() {
             val totalSeconds = (remainingMillis / 1000).toInt()
             val minutes = totalSeconds / 60
             val seconds = totalSeconds % 60
-            if (minutes > 0) "${minutes}m ${seconds}s" else "${seconds}s"
+            if (minutes > 0) "${minutes}m" else "${seconds}s"
         }
         
         val descText = if (timeoutMinutes == -1) {
@@ -150,7 +150,7 @@ class CaffeinateWakeLockService : Service() {
             val totalSeconds = (remainingMillis / 1000).toInt()
             val minutes = totalSeconds / 60
             val seconds = totalSeconds % 60
-            val timeStr = if (minutes > 0) "${minutes}m ${seconds}s" else "${seconds}s"
+            val timeStr = if (minutes > 0) "${minutes}m" else "${seconds}s"
             getString(R.string.caffeinate_remaining, timeStr)
         }
 
