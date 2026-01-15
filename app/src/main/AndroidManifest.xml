@@ -23,6 +23,7 @@
 
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
     <uses-permission android:name="android.permission.POST_PROMOTED_NOTIFICATIONS" tools:ignore="UnusedAttribute" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
 
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
@@ -259,7 +260,10 @@
         <service
             android:name=".services.CaffeinateWakeLockService"
             android:exported="false"
-            android:foregroundServiceType="specialUse" />
+            android:foregroundServiceType="specialUse">
+            <property android:name="android.app.property.FOREGROUND_SERVICE_TYPE_SPECIAL_USE_DESCRIPTION"
+                android:value="Caffeinate Service" />
+        </service>
         <service
             android:name=".services.tiles.SoundModeTileService"
             android:exported="true"

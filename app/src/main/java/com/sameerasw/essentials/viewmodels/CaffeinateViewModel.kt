@@ -12,17 +12,18 @@ import com.sameerasw.essentials.services.CaffeinateWakeLockService
 
 class CaffeinateViewModel : ViewModel() {
     val isActive = mutableStateOf(false)
-    val showNotification = mutableStateOf(false)
     val postNotificationsGranted = mutableStateOf(false)
+    val batteryOptimizationGranted = mutableStateOf(false)
 
     fun check(context: Context) {
         isActive.value = isWakeLockServiceRunning(context)
-        val prefs = context.getSharedPreferences("caffeinate_prefs", Context.MODE_PRIVATE)
-        showNotification.value = prefs.getBoolean("show_notification", false)
         postNotificationsGranted.value = ContextCompat.checkSelfPermission(
             context,
             Manifest.permission.POST_NOTIFICATIONS
         ) == PackageManager.PERMISSION_GRANTED
+        
+        val powerManager = context.getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
+        batteryOptimizationGranted.value = powerManager.isIgnoringBatteryOptimizations(context.packageName)
     }
 
     fun toggle(context: Context) {
@@ -32,15 +33,9 @@ class CaffeinateViewModel : ViewModel() {
             isActive.value = false
         } else {
             // Start service
-            context.startService(Intent(context, CaffeinateWakeLockService::class.java))
+            ContextCompat.startForegroundService(context, Intent(context, CaffeinateWakeLockService::class.java))
             isActive.value = true
         }
-    }
-
-    fun setShowNotification(value: Boolean, context: Context) {
-        val prefs = context.getSharedPreferences("caffeinate_prefs", Context.MODE_PRIVATE)
-        prefs.edit().putBoolean("show_notification", value).apply()
-        showNotification.value = value
     }
 
     private fun isWakeLockServiceRunning(context: Context): Boolean {

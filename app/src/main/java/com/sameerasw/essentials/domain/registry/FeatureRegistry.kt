@@ -70,14 +70,7 @@ object FeatureRegistry {
             category = R.string.cat_tools,
             description = R.string.feat_caffeinate_desc,
             permissionKeys = listOf("POST_NOTIFICATIONS"),
-            searchableSettings = listOf(
-                SearchSetting(
-                    R.string.search_caffeinate_notif_title,
-                    R.string.search_caffeinate_notif_desc,
-                    "show_notification",
-                    R.array.keywords_alert
-                )
-            )
+            searchableSettings = emptyList()
         ) {
             override fun isEnabled(viewModel: MainViewModel) = viewModel.isCaffeinateActive.value
             override fun onToggle(viewModel: MainViewModel, context: Context, enabled: Boolean) {

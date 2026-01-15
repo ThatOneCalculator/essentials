@@ -4,6 +4,7 @@ import android.app.ActivityManager
 import android.content.Intent
 import android.provider.Settings
 import android.service.quicksettings.Tile
+import androidx.core.content.ContextCompat
 import com.sameerasw.essentials.services.CaffeinateWakeLockService
 
 class CaffeinateTileService : BaseTileService() {
@@ -15,7 +16,7 @@ class CaffeinateTileService : BaseTileService() {
             stopService(Intent(this, CaffeinateWakeLockService::class.java))
         } else {
             // Turn on: start the wake lock service
-            startService(Intent(this, CaffeinateWakeLockService::class.java))
+            ContextCompat.startForegroundService(this, Intent(this, CaffeinateWakeLockService::class.java))
         }
     }
 
