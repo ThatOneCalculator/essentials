@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.provider.Settings
+import android.view.inputmethod.InputMethodManager
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -139,6 +140,8 @@ class MainViewModel : ViewModel() {
     val isKeyboardAlwaysDark = mutableStateOf(false)
     val isKeyboardPitchBlack = mutableStateOf(false)
     val isKeyboardClipboardEnabled = mutableStateOf(true)
+    val isKeyboardEnabled = mutableStateOf(false)
+    val isKeyboardSelected = mutableStateOf(false)
 
     private var lastUpdateCheckTime: Long = 0
     private lateinit var settingsRepository: SettingsRepository
@@ -207,6 +210,8 @@ class MainViewModel : ViewModel() {
         isLocationPermissionGranted.value = PermissionUtils.hasLocationPermission(context)
         isBackgroundLocationPermissionGranted.value = PermissionUtils.hasBackgroundLocationPermission(context)
         isFullScreenIntentPermissionGranted.value = PermissionUtils.canUseFullScreenIntent(context)
+        isKeyboardEnabled.value = PermissionUtils.isKeyboardEnabled(context)
+        isKeyboardSelected.value = PermissionUtils.isKeyboardSelected(context)
         
         isRootAvailable.value = com.sameerasw.essentials.utils.RootUtils.isRootAvailable()
         isRootPermissionGranted.value = com.sameerasw.essentials.utils.RootUtils.isRootPermissionGranted()
@@ -598,6 +603,17 @@ class MainViewModel : ViewModel() {
     }
 
     // Helper to show the overlay service with custom corner radius and stroke thickness
+    
+    fun openImeSettings(context: Context) {
+        val intent = Intent(Settings.ACTION_INPUT_METHOD_SETTINGS)
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        context.startActivity(intent)
+    }
+
+    fun showImePicker(context: Context) {
+        val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.showInputMethodPicker()
+    }
     fun triggerNotificationLightingWithRadiusAndThickness(context: Context, cornerRadiusDp: Float, strokeThicknessDp: Float) {
         try {
             val intent = Intent(context, com.sameerasw.essentials.services.NotificationLightingService::class.java).apply {

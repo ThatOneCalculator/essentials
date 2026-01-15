@@ -428,6 +428,12 @@
     <string name="tab_freeze_subtitle">Disabled apps</string>
     <string name="tab_diy_subtitle">Do It Yourself</string>
 
+    <!-- Keyboard Setup -->
+    <string name="label_keyboard_setup">Keyboard Setup</string>
+    <string name="btn_enable_keyboard">Enable in settings</string>
+    <string name="btn_select_keyboard">Switch to Essentials</string>
+    <string name="status_keyboard_ready">Keyboard is active and ready!</string>
+
     <string name="search_placeholder_short">Search for Tools, Mods and Tweaks</string>
     <string name="action_search">Search</string>
     <string name="action_stop">Stop</string>

@@ -8,20 +8,31 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
 import com.sameerasw.essentials.R
 import com.sameerasw.essentials.ui.components.cards.IconToggleItem
 import com.sameerasw.essentials.ui.components.containers.RoundedCardContainer
@@ -39,19 +50,75 @@ fun KeyboardSettingsUI(
     val context = LocalContext.current
     val view = LocalView.current
     var text by remember { mutableStateOf("") }
+    val isKeyboardEnabled by viewModel.isKeyboardEnabled
+    val isKeyboardSelected by viewModel.isKeyboardSelected
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            viewModel.check(context)
+            delay(2000)
+        }
+    }
 
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        // Keyboard Setup Section
+        if (!isKeyboardEnabled || !isKeyboardSelected) {
+            Text(
+                text = stringResource(R.string.label_keyboard_setup),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(start = 12.dp),
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    if (!isKeyboardEnabled) {
+                        Button(
+                            onClick = { viewModel.openImeSettings(context) },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.rounded_settings_24),
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(stringResource(R.string.btn_enable_keyboard))
+                        }
+                    } else if (!isKeyboardSelected) {
+                        Button(
+                            onClick = { viewModel.showImePicker(context) },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.rounded_keyboard_24),
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(stringResource(R.string.btn_select_keyboard))
+                        }
+                    }
+                }
+        }
+
         // Test Field
         OutlinedTextField(
             value = text,
             onValueChange = { text = it },
             label = { Text(stringResource(R.string.test_keyboard_hint)) },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+            shape = RoundedCornerShape(24.dp)
         )
 
         // Customization
@@ -214,5 +281,7 @@ fun KeyboardSettingsUI(
                 modifier = Modifier.highlight(highlightSetting == "keyboard_clipboard_enabled")
             )
         }
+
+        Spacer(Modifier.height(32.dp))
     }
 }
