@@ -72,10 +72,9 @@ object FeatureRegistry {
             permissionKeys = listOf("POST_NOTIFICATIONS"),
             searchableSettings = listOf(
                 SearchSetting(
-                    R.string.search_caffeinate_notif_title,
-                    R.string.search_caffeinate_notif_desc,
-                    "show_notification",
-                    R.array.keywords_alert
+                    title = R.string.search_caffeinate_abort_screen_off_title,
+                    description = R.string.search_caffeinate_abort_screen_off_desc,
+                    targetSettingHighlightKey = "abort_screen_off"
                 )
             )
         ) {
@@ -159,6 +158,8 @@ object FeatureRegistry {
             override fun isEnabled(viewModel: MainViewModel) = true
             override fun onToggle(viewModel: MainViewModel, context: Context, enabled: Boolean) {}
         },
+
+
 
         object : Feature(
             id = "Link actions",
@@ -311,6 +312,13 @@ object FeatureRegistry {
                     "Flashlight Pulse",
                     R.array.keywords_flashlight_pulse,
                     R.string.feat_qs_tiles_title
+                ),
+                SearchSetting(
+                    R.string.tile_stay_awake,
+                    R.string.search_qs_stay_awake_desc,
+                    "Stay awake",
+                    R.array.keywords_qs_stay_awake,
+                    R.string.feat_qs_tiles_title
                 )
             )
         ) {
@@ -422,8 +430,7 @@ object FeatureRegistry {
             category = R.string.cat_tools,
             description = R.string.feat_location_reached_desc,
             permissionKeys = listOf("LOCATION", "BACKGROUND_LOCATION", "USE_FULL_SCREEN_INTENT"),
-            showToggle = false,
-            isBeta = true
+            showToggle = false
         ) {
             override fun isEnabled(viewModel: MainViewModel) = true
             override fun onToggle(viewModel: MainViewModel, context: Context, enabled: Boolean) {}
@@ -468,6 +475,39 @@ object FeatureRegistry {
             override fun isEnabled(viewModel: MainViewModel) = true
             override fun isToggleEnabled(viewModel: MainViewModel, context: Context) =
                 com.sameerasw.essentials.utils.ShellUtils.hasPermission(context)
+            override fun onToggle(viewModel: MainViewModel, context: Context, enabled: Boolean) {}
+        },
+
+        object : Feature(
+            id = "System Keyboard",
+            title = R.string.feat_system_keyboard_title,
+            iconRes = R.drawable.rounded_keyboard_24,
+            category = R.string.cat_system,
+            description = R.string.feat_system_keyboard_desc,
+            hasMoreSettings = true,
+            showToggle = false,
+            searchableSettings = listOf(
+                SearchSetting(
+                    R.string.search_keyboard_height_title,
+                    R.string.search_keyboard_height_desc,
+                    "keyboard_height",
+                    R.array.keywords_keyboard
+                ),
+                SearchSetting(
+                    R.string.search_keyboard_padding_title,
+                    R.string.search_keyboard_padding_desc,
+                    "keyboard_bottom_padding",
+                    R.array.keywords_keyboard
+                ),
+                SearchSetting(
+                    R.string.search_keyboard_haptics_title,
+                    R.string.search_keyboard_haptics_desc,
+                    "keyboard_haptics",
+                    R.array.keywords_vibration
+                )
+            )
+        ) {
+            override fun isEnabled(viewModel: MainViewModel) = true
             override fun onToggle(viewModel: MainViewModel, context: Context, enabled: Boolean) {}
         }
     )

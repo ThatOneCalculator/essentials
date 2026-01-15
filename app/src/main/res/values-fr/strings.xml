@@ -44,7 +44,7 @@
     <string name="screen_on">Écran allumé</string>
     <string name="volume_up">Volume Haut</string>
     <string name="volume_down">Volume Bas</string>
-    <string name="action_toggle_flashlight">Allumer/éteindre la lampe-torche</string>
+    <string name="action_toggle_flashlight">Basculer la lampe-torche</string>
     <string name="action_media_play_pause">Jouer/mettre en pause le média</string>
     <string name="action_media_next">Prochain média</string>
     <string name="action_media_previous">Média précédent</string>
@@ -402,8 +402,8 @@
     <string name="perm_battery_optimization_desc">Ensure the service is not killed by the system to save power.</string>
     <!-- Tabs -->
     <string name="tab_essentials">Essentials</string>
-    <string name="tab_freeze">Gel d\'applis</string>
-    <string name="tab_freeze_title">Gel d\'applis</string>
+    <string name="tab_freeze">Geler</string>
+    <string name="tab_freeze_title">Gelée</string>
     <string name="tab_diy">DIY</string>
     <string name="tab_freeze_subtitle">Applications désactivées</string>
     <string name="tab_diy_subtitle">Do It Yourself</string>
