@@ -20,6 +20,11 @@ class NotificationListener : NotificationListenerService() {
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onNotificationPosted(sbn: StatusBarNotification) {
+        // Skip our own app's notifications early to avoid flooding logs and redundant processing
+        if (sbn.packageName == packageName) {
+            return
+        }
+
         val prefs = applicationContext.getSharedPreferences("essentials_prefs", Context.MODE_PRIVATE)
 
         // Maps navigation state update
@@ -77,7 +82,6 @@ class NotificationListener : NotificationListenerService() {
                     extras.getString(Notification.EXTRA_TEMPLATE) == "android.app.Notification\$MediaStyle"
             
             if (isMedia) {
-                Log.d("NotificationListener", "Skipping notification lighting for media notification from $packageName")
                 return
             }
 
@@ -95,7 +99,6 @@ class NotificationListener : NotificationListenerService() {
                         importance <= android.app.NotificationManager.IMPORTANCE_LOW
 
                     if (isSilent) {
-                        Log.d("NotificationListener", "Skipping notification lighting for silent notification from $packageName")
                         return
                     }
                 }
@@ -104,7 +107,6 @@ class NotificationListener : NotificationListenerService() {
             // Skip persistent notifications if enabled
             val skipPersistent = prefs.getBoolean("edge_lighting_skip_persistent", false)
             if (skipPersistent && isPersistentNotification(notification)) {
-                Log.d("NotificationListener", "Skipping notification lighting for persistent notification from $packageName")
                 return
             }
 
@@ -114,7 +116,6 @@ class NotificationListener : NotificationListenerService() {
                 if (hasAllRequiredPermissions()) {
                     // Check if the app is selected for notification lighting
                     val appSelected = isAppSelectedForNotificationLighting(sbn.packageName)
-                    Log.d("NotificationListener", "Notification lighting enabled, app ${sbn.packageName} selected: $appSelected")
                     if (appSelected) {
                         val cornerRadius = try {
                             prefs.getInt("edge_lighting_corner_radius", 20)
@@ -276,7 +277,6 @@ class NotificationListener : NotificationListenerService() {
                 val isScreenOn =
                     powerManager.isInteractive
                 if (isScreenOn) {
-                    Log.d("NotificationListener", "Screen is ON and 'Only show when screen off' is enabled. Skipping notification lighting.")
                     return false
                 }
             }
