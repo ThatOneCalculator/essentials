@@ -105,6 +105,14 @@ fun CaffeinateSettingsUI(
             cornerRadius = 24.dp
         ) {
             IconToggleItem(
+                title = stringResource(R.string.caffeinate_abort_screen_off_title),
+                description = stringResource(R.string.caffeinate_abort_screen_off_desc),
+                isChecked = viewModel.abortWithScreenOff.value,
+                onCheckedChange = { viewModel.setAbortWithScreenOff(it, context) },
+                iconRes = R.drawable.rounded_power_settings_new_24,
+            )
+            
+            IconToggleItem(
                 title = stringResource(R.string.caffeinate_battery_optimization_title),
                 isChecked = viewModel.batteryOptimizationGranted.value,
                 onCheckedChange = { _ ->

@@ -5,7 +5,10 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.graphics.drawable.Icon
 import android.os.Build
 import android.os.IBinder
@@ -18,21 +21,34 @@ import com.sameerasw.essentials.MainActivity
 class CaffeinateWakeLockService : Service() {
 
     private var wakeLock: PowerManager.WakeLock? = null
+    private var abortWithScreenOff = true
+
+    private val screenOffReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == Intent.ACTION_SCREEN_OFF && abortWithScreenOff) {
+                stopSelf()
+            }
+        }
+    }
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
+        updatePrefs()
 
         val pm = getSystemService(POWER_SERVICE) as PowerManager
         wakeLock = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP, "Caffeinate::WakeLock")
         wakeLock?.acquire()
+
+        registerReceiver(screenOffReceiver, IntentFilter(Intent.ACTION_SCREEN_OFF))
 
         // Initial state - Always show notification for foreground service
         startForeground(2, createNotification())
     }
 
     override fun onDestroy() {
+        try { unregisterReceiver(screenOffReceiver) } catch (_: Exception) {}
         super.onDestroy()
         wakeLock?.release()
         wakeLock = null
@@ -41,12 +57,21 @@ class CaffeinateWakeLockService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent?.action == "STOP") {
-            stopForeground(STOP_FOREGROUND_REMOVE)
-            stopSelf()
-            return START_NOT_STICKY
+        when (intent?.action) {
+            "STOP" -> {
+                stopForeground(STOP_FOREGROUND_REMOVE)
+                stopSelf()
+            }
+            "UPDATE_PREFS" -> {
+                updatePrefs()
+            }
         }
         return START_STICKY
+    }
+
+    private fun updatePrefs() {
+        val prefs = getSharedPreferences("caffeinate_prefs", MODE_PRIVATE)
+        abortWithScreenOff = prefs.getBoolean("abort_screen_off", true)
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

@@ -70,7 +70,13 @@ object FeatureRegistry {
             category = R.string.cat_tools,
             description = R.string.feat_caffeinate_desc,
             permissionKeys = listOf("POST_NOTIFICATIONS"),
-            searchableSettings = emptyList()
+            searchableSettings = listOf(
+                SearchSetting(
+                    title = R.string.search_caffeinate_abort_screen_off_title,
+                    description = R.string.search_caffeinate_abort_screen_off_desc,
+                    targetSettingHighlightKey = "abort_screen_off"
+                )
+            )
         ) {
             override fun isEnabled(viewModel: MainViewModel) = viewModel.isCaffeinateActive.value
             override fun onToggle(viewModel: MainViewModel, context: Context, enabled: Boolean) {

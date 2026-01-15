@@ -79,6 +79,8 @@
     <string name="caffeinate_notification_desc">Screen is being kept awake</string>
     <string name="caffeinate_battery_optimization_title">Ignore battery optimization</string>
     <string name="caffeinate_battery_optimization_desc">Recommended for reliable service on some devices</string>
+    <string name="caffeinate_abort_screen_off_title">Abort with screen off</string>
+    <string name="caffeinate_abort_screen_off_desc">Disable Caffeinate automatically when the screen is turned off</string>
     <string name="caffeinate_live_channel_desc">Persistent notification for Caffeinate</string>
 
     <!-- Dynamic Night Light -->
@@ -307,6 +309,8 @@
     <string name="search_smart_data_desc">Hide mobile data in certain modes</string>
     <string name="search_reset_icons_title">Reset All Icons</string>
     <string name="search_reset_icons_desc">Reset status bar icon visibility to default</string>
+    <string name="search_caffeinate_abort_screen_off_title">Abort Caffeinate with screen off</string>
+    <string name="search_caffeinate_abort_screen_off_desc">Automatically turn off Caffeinate when manually locking the device</string>
     <string name="search_lighting_style_title">Lighting Style</string>
     <string name="search_lighting_style_desc">Choose between Stroke, Glow, Spinner, and more</string>
     <string name="search_corner_radius_title">Corner radius</string>

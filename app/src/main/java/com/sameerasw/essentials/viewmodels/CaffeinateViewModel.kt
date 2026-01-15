@@ -14,6 +14,7 @@ class CaffeinateViewModel : ViewModel() {
     val isActive = mutableStateOf(false)
     val postNotificationsGranted = mutableStateOf(false)
     val batteryOptimizationGranted = mutableStateOf(false)
+    val abortWithScreenOff = mutableStateOf(true)
 
     fun check(context: Context) {
         isActive.value = isWakeLockServiceRunning(context)
@@ -24,6 +25,23 @@ class CaffeinateViewModel : ViewModel() {
         
         val powerManager = context.getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
         batteryOptimizationGranted.value = powerManager.isIgnoringBatteryOptimizations(context.packageName)
+
+        val prefs = context.getSharedPreferences("caffeinate_prefs", Context.MODE_PRIVATE)
+        abortWithScreenOff.value = prefs.getBoolean("abort_screen_off", true)
+    }
+
+    fun setAbortWithScreenOff(value: Boolean, context: Context) {
+        val prefs = context.getSharedPreferences("caffeinate_prefs", Context.MODE_PRIVATE)
+        prefs.edit().putBoolean("abort_screen_off", value).apply()
+        abortWithScreenOff.value = value
+        
+        // Notify service if it's running
+        if (isActive.value) {
+            val intent = Intent(context, CaffeinateWakeLockService::class.java).apply {
+                action = "UPDATE_PREFS"
+            }
+            context.startService(intent)
+        }
     }
 
     fun toggle(context: Context) {
