@@ -434,6 +434,9 @@
     <string name="btn_select_keyboard">Switch to Essentials</string>
     <string name="status_keyboard_ready">Keyboard is active and ready!</string>
 
+    <string name="label_enabled">Enabled</string>
+    <string name="label_disabled">Disabled</string>
+
     <string name="search_placeholder_short">Search for Tools, Mods and Tweaks</string>
     <string name="action_search">Search</string>
     <string name="action_stop">Stop</string>
