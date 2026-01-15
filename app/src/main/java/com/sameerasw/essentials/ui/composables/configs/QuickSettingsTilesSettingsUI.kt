@@ -43,6 +43,7 @@ import com.sameerasw.essentials.services.tiles.AppLockTileService
 import com.sameerasw.essentials.services.tiles.FlashlightPulseTileService
 import com.sameerasw.essentials.services.tiles.NfcTileService
 import com.sameerasw.essentials.services.tiles.StayAwakeTileService
+import com.sameerasw.essentials.services.tiles.AdaptiveBrightnessTileService
 import com.sameerasw.essentials.ui.modifiers.highlight
 
 data class QSTileInfo(
@@ -76,7 +77,8 @@ fun QuickSettingsTilesSettingsUI(
         QSTileInfo(R.string.tile_app_freezing, R.drawable.rounded_mode_cool_24, AppFreezingTileService::class.java),
         QSTileInfo(R.string.tile_flashlight_pulse, R.drawable.outline_backlight_high_24, FlashlightPulseTileService::class.java),
         QSTileInfo(R.string.tile_stay_awake, R.drawable.rounded_av_timer_24, StayAwakeTileService::class.java),
-        QSTileInfo(R.string.nfc_tile_label, R.drawable.rounded_nfc_24, NfcTileService::class.java)
+        QSTileInfo(R.string.nfc_tile_label, R.drawable.rounded_nfc_24, NfcTileService::class.java),
+        QSTileInfo(R.string.tile_adaptive_brightness, R.drawable.rounded_brightness_auto_24, AdaptiveBrightnessTileService::class.java)
     )
 
     Column(

@@ -61,4 +61,7 @@ fun initPermissionRegistry() {
 
     // Battery optimization permission
     PermissionRegistry.register("BATTERY_OPTIMIZATION", R.string.feat_caffeinate_title)
+
+    // Modify system settings permission
+    PermissionRegistry.register("WRITE_SETTINGS", R.string.feat_qs_tiles_title)
 }

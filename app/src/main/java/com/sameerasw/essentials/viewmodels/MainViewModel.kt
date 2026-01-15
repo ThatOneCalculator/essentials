@@ -142,6 +142,7 @@ class MainViewModel : ViewModel() {
     val isKeyboardClipboardEnabled = mutableStateOf(true)
     val isKeyboardEnabled = mutableStateOf(false)
     val isKeyboardSelected = mutableStateOf(false)
+    val isWriteSettingsEnabled = mutableStateOf(false)
 
     private var lastUpdateCheckTime: Long = 0
     private lateinit var settingsRepository: SettingsRepository
@@ -212,6 +213,7 @@ class MainViewModel : ViewModel() {
         isFullScreenIntentPermissionGranted.value = PermissionUtils.canUseFullScreenIntent(context)
         isKeyboardEnabled.value = PermissionUtils.isKeyboardEnabled(context)
         isKeyboardSelected.value = PermissionUtils.isKeyboardSelected(context)
+        isWriteSettingsEnabled.value = PermissionUtils.canWriteSystemSettings(context)
         
         isRootAvailable.value = com.sameerasw.essentials.utils.RootUtils.isRootAvailable()
         isRootPermissionGranted.value = com.sameerasw.essentials.utils.RootUtils.isRootPermissionGranted()

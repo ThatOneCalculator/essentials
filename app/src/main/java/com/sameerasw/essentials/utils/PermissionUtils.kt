@@ -147,4 +147,8 @@ object PermissionUtils {
         )
         return defaultIme?.startsWith(context.packageName) == true
     }
+
+    fun canWriteSystemSettings(context: Context): Boolean {
+        return Settings.System.canWrite(context)
+    }
 }

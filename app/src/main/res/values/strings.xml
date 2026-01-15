@@ -408,6 +408,8 @@
     <string name="perm_write_secure_title">Write Secure Settings</string>
     <string name="perm_write_secure_desc_common">Required for Statusbar icons and Screen Locked Security</string>
     <string name="perm_write_secure_desc_night_light">Needed to toggle Night Light. Grant via ADB or root.</string>
+    <string name="perm_write_settings_title">Modify System Settings</string>
+    <string name="perm_write_settings_desc">Required to toggle Adaptive Brightness and other system settings</string>
     <string name="perm_overlay_title">Overlay Permission</string>
     <string name="perm_overlay_desc">Required to display the notification lighting overlay on the screen</string>
     <string name="perm_device_admin_title">Device Administrator</string>
@@ -436,6 +438,9 @@
 
     <string name="label_enabled">Enabled</string>
     <string name="label_disabled">Disabled</string>
+
+    <string name="tile_adaptive_brightness">Adaptive Brightness</string>
+    <string name="tile_adaptive_brightness_desc">Toggle adaptive brightness</string>
 
     <string name="search_placeholder_short">Search for Tools, Mods and Tweaks</string>
     <string name="action_search">Search</string>

@@ -200,6 +200,7 @@ class FeatureSettingsActivity : FragmentActivity() {
                         "App lock" -> !isAccessibilityEnabled
                         "Freeze" -> !com.sameerasw.essentials.utils.ShellUtils.hasPermission(context)
                         "Location reached" -> !viewModel.isLocationPermissionGranted.value || !viewModel.isBackgroundLocationPermissionGranted.value
+                        "Quick settings tiles" -> !viewModel.isWriteSettingsEnabled.value
                         else -> false
                     }
                     showPermissionSheet = hasMissingPermissions
@@ -429,6 +430,21 @@ class FeatureSettingsActivity : FragmentActivity() {
                                 actionLabel = R.string.perm_action_grant,
                                 action = { viewModel.requestBackgroundLocationPermission(this) },
                                 isGranted = viewModel.isBackgroundLocationPermissionGranted.value
+                            )
+                        )
+                        "Quick settings tiles" -> listOf(
+                            PermissionItem(
+                                iconRes = R.drawable.rounded_security_24,
+                                title = R.string.perm_write_settings_title,
+                                description = R.string.perm_write_settings_desc,
+                                dependentFeatures = PermissionRegistry.getFeatures("WRITE_SETTINGS"),
+                                actionLabel = R.string.perm_action_grant,
+                                action = {
+                                    val intent = Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS, Uri.parse("package:${context.packageName}"))
+                                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                    context.startActivity(intent)
+                                },
+                                isGranted = viewModel.isWriteSettingsEnabled.value
                             )
                         )
                         else -> emptyList()
