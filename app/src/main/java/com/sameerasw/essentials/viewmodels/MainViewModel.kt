@@ -86,6 +86,9 @@ class MainViewModel : ViewModel() {
     val isLocationPermissionGranted = mutableStateOf(false)
     val isBackgroundLocationPermissionGranted = mutableStateOf(false)
     val isFullScreenIntentPermissionGranted = mutableStateOf(false)
+    val isBluetoothPermissionGranted = mutableStateOf(false)
+    
+    val isBluetoothDevicesEnabled = mutableStateOf(false)
 
 
 
@@ -144,6 +147,15 @@ class MainViewModel : ViewModel() {
     val isKeyboardSelected = mutableStateOf(false)
     val isWriteSettingsEnabled = mutableStateOf(false)
 
+    // AirSync Bridge
+    val isAirSyncConnectionEnabled = mutableStateOf(false)
+    val macBatteryLevel = mutableIntStateOf(-1)
+    val isMacBatteryCharging = mutableStateOf(false)
+    val macBatteryLastUpdated = mutableStateOf(0L)
+    val isMacConnected = mutableStateOf(false)
+    val batteryWidgetMaxDevices = mutableIntStateOf(8)
+    val isBatteryWidgetBackgroundEnabled = mutableStateOf(true)
+
     private var lastUpdateCheckTime: Long = 0
     private lateinit var settingsRepository: SettingsRepository
     private lateinit var updateRepository: UpdateRepository
@@ -185,6 +197,12 @@ class MainViewModel : ViewModel() {
             SettingsRepository.KEY_KEYBOARD_ALWAYS_DARK -> isKeyboardAlwaysDark.value = settingsRepository.getBoolean(key, false)
             SettingsRepository.KEY_KEYBOARD_PITCH_BLACK -> isKeyboardPitchBlack.value = settingsRepository.getBoolean(key, false)
             SettingsRepository.KEY_KEYBOARD_CLIPBOARD_ENABLED -> isKeyboardClipboardEnabled.value = settingsRepository.getBoolean(key, true)
+            SettingsRepository.KEY_AIRSYNC_CONNECTION_ENABLED -> isAirSyncConnectionEnabled.value = settingsRepository.getBoolean(key)
+            SettingsRepository.KEY_MAC_BATTERY_LEVEL -> macBatteryLevel.intValue = settingsRepository.getInt(key, -1)
+            SettingsRepository.KEY_MAC_BATTERY_IS_CHARGING -> isMacBatteryCharging.value = settingsRepository.getBoolean(key, false)
+            SettingsRepository.KEY_MAC_BATTERY_LAST_UPDATED -> macBatteryLastUpdated.value = settingsRepository.getLong(key, 0L)
+            SettingsRepository.KEY_AIRSYNC_MAC_CONNECTED -> isMacConnected.value = settingsRepository.getBoolean(key, false)
+            SettingsRepository.KEY_BATTERY_WIDGET_MAX_DEVICES -> batteryWidgetMaxDevices.intValue = settingsRepository.getInt(key, 8)
         }
     }
 
@@ -214,6 +232,8 @@ class MainViewModel : ViewModel() {
         isKeyboardEnabled.value = PermissionUtils.isKeyboardEnabled(context)
         isKeyboardSelected.value = PermissionUtils.isKeyboardSelected(context)
         isWriteSettingsEnabled.value = PermissionUtils.canWriteSystemSettings(context)
+        
+        isBluetoothPermissionGranted.value = PermissionUtils.hasBluetoothPermission(context)
         
         isRootAvailable.value = com.sameerasw.essentials.utils.RootUtils.isRootAvailable()
         isRootPermissionGranted.value = com.sameerasw.essentials.utils.RootUtils.isRootPermissionGranted()
@@ -303,6 +323,17 @@ class MainViewModel : ViewModel() {
         isKeyboardAlwaysDark.value = settingsRepository.getBoolean(SettingsRepository.KEY_KEYBOARD_ALWAYS_DARK, false)
         isKeyboardPitchBlack.value = settingsRepository.getBoolean(SettingsRepository.KEY_KEYBOARD_PITCH_BLACK, false)
         isKeyboardClipboardEnabled.value = settingsRepository.getBoolean(SettingsRepository.KEY_KEYBOARD_CLIPBOARD_ENABLED, true)
+
+        isAirSyncConnectionEnabled.value = settingsRepository.getBoolean(SettingsRepository.KEY_AIRSYNC_CONNECTION_ENABLED)
+        macBatteryLevel.intValue = settingsRepository.getInt(SettingsRepository.KEY_MAC_BATTERY_LEVEL, -1)
+        isMacBatteryCharging.value = settingsRepository.getBoolean(SettingsRepository.KEY_MAC_BATTERY_IS_CHARGING, false)
+        macBatteryLastUpdated.value = settingsRepository.getLong(SettingsRepository.KEY_MAC_BATTERY_LAST_UPDATED, 0L)
+        isMacConnected.value = settingsRepository.getBoolean(SettingsRepository.KEY_AIRSYNC_MAC_CONNECTED, false)
+
+        isBluetoothDevicesEnabled.value = settingsRepository.getBoolean(SettingsRepository.KEY_SHOW_BLUETOOTH_DEVICES, false)
+        isBluetoothDevicesEnabled.value = settingsRepository.getBoolean(SettingsRepository.KEY_SHOW_BLUETOOTH_DEVICES, false)
+        batteryWidgetMaxDevices.intValue = settingsRepository.getBatteryWidgetMaxDevices()
+        isBatteryWidgetBackgroundEnabled.value = settingsRepository.isBatteryWidgetBackgroundEnabled()
 
         isScreenLockedSecurityEnabled.value = settingsRepository.getBoolean(SettingsRepository.KEY_SCREEN_LOCKED_SECURITY_ENABLED)
         isDeviceAdminEnabled.value = isDeviceAdminActive(context)
@@ -741,6 +772,48 @@ class MainViewModel : ViewModel() {
         settingsRepository.putBoolean(SettingsRepository.KEY_KEYBOARD_CLIPBOARD_ENABLED, enabled)
     }
 
+    fun setAirSyncConnectionEnabled(enabled: Boolean, context: Context) {
+        if (enabled) {
+            // Request permission if not granted, though it's signature level so should be automatic if signed correctly
+            // but we can check it
+        }
+        isAirSyncConnectionEnabled.value = enabled
+        settingsRepository.putBoolean(SettingsRepository.KEY_AIRSYNC_CONNECTION_ENABLED, enabled)
+    }
+
+    fun setBluetoothDevicesEnabled(enabled: Boolean, context: Context) {
+        isBluetoothDevicesEnabled.value = enabled
+        settingsRepository.setBluetoothDevicesEnabled(enabled)
+        
+        // Trigger widget update to fetch data immediately
+        val intent = Intent(context, com.sameerasw.essentials.services.widgets.BatteriesWidgetReceiver::class.java).apply {
+            action = android.appwidget.AppWidgetManager.ACTION_APPWIDGET_UPDATE
+        }
+        context.sendBroadcast(intent)
+    }
+
+    fun setBatteryWidgetMaxDevices(count: Int, context: Context) {
+        batteryWidgetMaxDevices.intValue = count
+        settingsRepository.setBatteryWidgetMaxDevices(count)
+        
+        // Trigger widget update
+        val intent = Intent(context, com.sameerasw.essentials.services.widgets.BatteriesWidgetReceiver::class.java).apply {
+            action = android.appwidget.AppWidgetManager.ACTION_APPWIDGET_UPDATE
+        }
+        context.sendBroadcast(intent)
+    }
+
+    fun setBatteryWidgetBackgroundEnabled(enabled: Boolean, context: Context) {
+        isBatteryWidgetBackgroundEnabled.value = enabled
+        settingsRepository.setBatteryWidgetBackgroundEnabled(enabled)
+        
+        // Trigger widget update
+        val intent = Intent(context, com.sameerasw.essentials.services.widgets.BatteriesWidgetReceiver::class.java).apply {
+            action = android.appwidget.AppWidgetManager.ACTION_APPWIDGET_UPDATE
+        }
+        context.sendBroadcast(intent)
+    }
+
 
 
     private fun isAccessibilityServiceEnabled(context: Context): Boolean {
@@ -773,6 +846,16 @@ class MainViewModel : ViewModel() {
                 activity,
                 arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION),
                 1004
+            )
+        }
+    }
+
+    fun requestBluetoothPermission(activity: androidx.activity.ComponentActivity) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            androidx.core.app.ActivityCompat.requestPermissions(
+                activity,
+                arrayOf(Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_SCAN),
+                1005
             )
         }
     }

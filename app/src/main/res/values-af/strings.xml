@@ -270,6 +270,12 @@
     <string name="feat_sound_mode_tile_desc">QS tile to toggle sound mode</string>
     <string name="feat_stay_awake_tile_title">Stay awake tile</string>
     <string name="feat_stay_awake_tile_desc">QS tile to toggle stay awake</string>
+    <string name="show_bluetooth_devices">Show Bluetooth devices</string>
+    <string name="show_bluetooth_devices_summary">Display battery level of connected Bluetooth devices</string>
+    <string name="limit_max_devices">Limit max devices</string>
+    <string name="limit_max_devices_summary">Adjust max devices visible in widget</string>
+    <string name="widget_background_title">Widget background</string>
+    <string name="widget_background_summary">Show widget background</string>
     <!-- DIY Automation -->
     <string name="diy_create_trigger_title">Trigger Automation</string>
     <string name="diy_create_trigger_desc">Schedule an action to trigger on an observation</string>
@@ -389,6 +395,8 @@
     <string name="perm_write_secure_title">Write Secure Settings</string>
     <string name="perm_write_secure_desc_common">Required for Statusbar icons and Screen Locked Security</string>
     <string name="perm_write_secure_desc_night_light">Needed to toggle Night Light. Grant via ADB or root.</string>
+    <string name="perm_write_settings_title">Modify System Settings</string>
+    <string name="perm_write_settings_desc">Required to toggle Adaptive Brightness and other system settings</string>
     <string name="perm_overlay_title">Overlay Permission</string>
     <string name="perm_overlay_desc">Required to display the notification lighting overlay on the screen</string>
     <string name="perm_device_admin_title">Device Administrator</string>
@@ -412,6 +420,12 @@
     <string name="btn_enable_keyboard">Enable in settings</string>
     <string name="btn_select_keyboard">Switch to Essentials</string>
     <string name="status_keyboard_ready">Keyboard is active and ready!</string>
+    <string name="label_enabled">Enabled</string>
+    <string name="label_disabled">Disabled</string>
+    <string name="tile_adaptive_brightness">Adaptive Brightness</string>
+    <string name="tile_adaptive_brightness_desc">Toggle adaptive brightness</string>
+    <string name="tile_maps_power_saving">Maps Power Saving</string>
+    <string name="tile_maps_power_saving_desc">Toggle maps power saving mode</string>
     <string name="search_placeholder_short">Search for Tools, Mods and Tweaks</string>
     <string name="action_search">Search</string>
     <string name="action_stop">Stop</string>
@@ -788,7 +802,7 @@
     <string name="location_reached_dist_m">%1$d m</string>
     <string name="location_reached_dist_km">%1$.1f km</string>
     <string name="location_reached_service_title">Travel Alarm active</string>
-    <string name="location_reached_service_remaining">%1$s remaining</string>
+    <string name="location_reached_service_remaining">%1$s remaining (%2$d%%)</string>
     <string name="location_reached_channel_name">Travel Progress</string>
     <string name="location_reached_channel_desc">Shows real-time distance to destination</string>
     <string name="location_reached_alarm_title">Destination Nearby</string>
@@ -823,4 +837,11 @@
     <string name="shape_round">Round</string>
     <string name="shape_flat">Flat</string>
     <string name="shape_inverse">Inverse</string>
+    <string name="feat_batteries_title">Batteries</string>
+    <string name="feat_batteries_desc">Monitor your device battery levels</string>
+    <string name="batteries_widget_label">Battery Status</string>
+    <string name="connect_to_airsync">Connect to AirSync</string>
+    <string name="connect_to_airsync_summary">Display battery from your connected mac device in AirSync</string>
+    <string name="download_airsync">Download AirSync App</string>
+    <string name="download_airsync_summary">Required for Mac battery sync</string>
 </resources>

@@ -107,6 +107,17 @@ class SettingsRepository(private val context: Context) {
         const val KEY_KEYBOARD_PITCH_BLACK = "keyboard_pitch_black"
         const val KEY_KEYBOARD_CLIPBOARD_ENABLED = "keyboard_clipboard_enabled"
 
+        // Essentials-AirSync Bridge
+        const val KEY_AIRSYNC_CONNECTION_ENABLED = "airsync_connection_enabled"
+        const val KEY_MAC_BATTERY_LEVEL = "mac_battery_level"
+        const val KEY_MAC_BATTERY_IS_CHARGING = "mac_battery_is_charging"
+        const val KEY_MAC_BATTERY_LAST_UPDATED = "mac_battery_last_updated"
+        const val KEY_AIRSYNC_MAC_CONNECTED = "airsync_mac_connected"
+        
+        const val KEY_BLUETOOTH_DEVICES_BATTERY = "bluetooth_devices_battery"
+        const val KEY_SHOW_BLUETOOTH_DEVICES = "show_bluetooth_devices"
+        const val KEY_BATTERY_WIDGET_MAX_DEVICES = "battery_widget_max_devices"
+        const val KEY_BATTERY_WIDGET_BACKGROUND_ENABLED = "battery_widget_background_enabled"
     }
 
     // Observe changes
@@ -300,8 +311,8 @@ class SettingsRepository(private val context: Context) {
                 val wrapperMap = mutableMapOf<String, Map<String, Any>>()
                 
                 p.all.forEach { (key, value) ->
-                    // Skip app lists as requested
-                    if (key.endsWith("_selected_apps") || key == "freeze_auto_excluded_apps") {
+                    // Skip app lists as requested, and stale data
+                    if (key.endsWith("_selected_apps") || key == "freeze_auto_excluded_apps" || key.startsWith("mac_battery_") || key == "airsync_mac_connected") {
                         return@forEach
                     }
 
@@ -380,4 +391,28 @@ class SettingsRepository(private val context: Context) {
             try { inputStream.close() } catch(e: Exception) {}
         }
     }
+
+    fun getBluetoothDevicesBattery(): List<com.sameerasw.essentials.utils.BluetoothBatteryUtils.BluetoothDeviceBattery> {
+        val json = prefs.getString(KEY_BLUETOOTH_DEVICES_BATTERY, null) ?: return emptyList()
+        val type = object : TypeToken<List<com.sameerasw.essentials.utils.BluetoothBatteryUtils.BluetoothDeviceBattery>>() {}.type
+        return try {
+            gson.fromJson(json, type) ?: emptyList()
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    fun saveBluetoothDevicesBattery(devices: List<com.sameerasw.essentials.utils.BluetoothBatteryUtils.BluetoothDeviceBattery>) {
+        val json = gson.toJson(devices)
+        putString(KEY_BLUETOOTH_DEVICES_BATTERY, json)
+    }
+
+    fun isBluetoothDevicesEnabled(): Boolean = getBoolean(KEY_SHOW_BLUETOOTH_DEVICES, false)
+    fun setBluetoothDevicesEnabled(enabled: Boolean) = putBoolean(KEY_SHOW_BLUETOOTH_DEVICES, enabled)
+
+    fun getBatteryWidgetMaxDevices(): Int = getInt(KEY_BATTERY_WIDGET_MAX_DEVICES, 8)
+    fun setBatteryWidgetMaxDevices(count: Int) = putInt(KEY_BATTERY_WIDGET_MAX_DEVICES, count)
+
+    fun isBatteryWidgetBackgroundEnabled(): Boolean = getBoolean(KEY_BATTERY_WIDGET_BACKGROUND_ENABLED, true)
+    fun setBatteryWidgetBackgroundEnabled(enabled: Boolean) = putBoolean(KEY_BATTERY_WIDGET_BACKGROUND_ENABLED, enabled)
 }

@@ -118,14 +118,14 @@ class NotificationListener : NotificationListenerService() {
                     val appSelected = isAppSelectedForNotificationLighting(sbn.packageName)
                     if (appSelected) {
                         val cornerRadius = try {
-                            prefs.getInt("edge_lighting_corner_radius", 20)
+                            prefs.getFloat("edge_lighting_corner_radius", 20f)
                         } catch (e: ClassCastException) {
-                            prefs.getFloat("edge_lighting_corner_radius", 20f).toInt()
+                            prefs.getInt("edge_lighting_corner_radius", 20).toFloat()
                         }
                         val strokeThickness = try {
-                            prefs.getInt("edge_lighting_stroke_thickness", 8)
+                            prefs.getFloat("edge_lighting_stroke_thickness", 8f)
                         } catch (e: ClassCastException) {
-                            prefs.getFloat("edge_lighting_stroke_thickness", 8f).toInt()
+                            prefs.getInt("edge_lighting_stroke_thickness", 8).toFloat()
                         }
                         val colorModeName = prefs.getString("edge_lighting_color_mode", NotificationLightingColorMode.SYSTEM.name)
                         val colorMode = NotificationLightingColorMode.valueOf(colorModeName ?: NotificationLightingColorMode.SYSTEM.name)
