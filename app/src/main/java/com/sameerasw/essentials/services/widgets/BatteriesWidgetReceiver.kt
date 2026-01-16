@@ -11,6 +11,31 @@ class BatteriesWidgetReceiver : GlanceAppWidgetReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)
+
+        // Always update widget on configuration changes (including theme changes)
+        if (intent.action == Intent.ACTION_CONFIGURATION_CHANGED) {
+            val glanceAppWidgetManager = androidx.glance.appwidget.GlanceAppWidgetManager(context)
+            kotlinx.coroutines.MainScope().launch {
+                try {
+                    // Add a small delay to allow system theme colors to propagate
+                    kotlinx.coroutines.delay(500)
+
+                    val glanceIds = glanceAppWidgetManager.getGlanceIds(BatteriesWidget::class.java)
+                    glanceIds.forEach { glanceId ->
+                        // Update widget state with a timestamp to force re-render
+                        androidx.glance.appwidget.state.updateAppWidgetState(context, glanceId) { prefs ->
+                            val THEME_UPDATE_KEY = androidx.datastore.preferences.core.longPreferencesKey("theme_update_time")
+                            prefs[THEME_UPDATE_KEY] = System.currentTimeMillis()
+                        }
+                        glanceAppWidget.update(context, glanceId)
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.e("BatteriesWidget", "Error updating widget on config change", e)
+                }
+            }
+            return
+        }
+
         if (intent.action == Intent.ACTION_POWER_CONNECTED ||
             intent.action == Intent.ACTION_POWER_DISCONNECTED ||
             intent.action == Intent.ACTION_BATTERY_LOW ||
@@ -20,7 +45,7 @@ class BatteriesWidgetReceiver : GlanceAppWidgetReceiver() {
             intent.action == android.bluetooth.BluetoothDevice.ACTION_ACL_DISCONNECTED ||
             intent.action == android.bluetooth.BluetoothAdapter.ACTION_STATE_CHANGED ||
             intent.action == android.appwidget.AppWidgetManager.ACTION_APPWIDGET_UPDATE) {
-            
+
             // Trigger update
             val glanceAppWidgetManager = androidx.glance.appwidget.GlanceAppWidgetManager(context)
             kotlinx.coroutines.MainScope().launch {

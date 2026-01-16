@@ -106,8 +106,33 @@ class BatteriesWidget : GlanceAppWidget() {
                 }
 
                 // 3. Render
-                // Resolve Theme Colors once
-                val colors = resolveThemeColors(context)
+                
+                // Use Glance's dynamic colors directly - these update automatically with theme changes
+                val basePrimary = GlanceTheme.colors.primary.getColor(context).toArgb()
+                val onPrimary = GlanceTheme.colors.onPrimary.getColor(context).toArgb()
+                val onSurface = GlanceTheme.colors.onSurface.getColor(context).toArgb()
+                val surfaceColor = GlanceTheme.colors.surface.getColor(context).toArgb()
+                val errorColor = GlanceTheme.colors.error.getColor(context).toArgb()
+
+                // Use the primary color for ring - it adapts to theme automatically
+                val ringColor = basePrimary
+
+                // Use onPrimary for icon tint when ring is primary
+                // onPrimary is specifically designed to contrast with primary color
+                val iconTintColor = onPrimary
+
+                val trackColor = ColorUtils.setAlphaComponent(onSurface, 30)
+                
+                val warningColor = android.graphics.Color.parseColor("#FFC107")
+                
+                val colors = ThemeColors(
+                    primary = ringColor,
+                    error = errorColor,
+                    warning = warningColor,
+                    track = trackColor,
+                    surface = surfaceColor,
+                    iconTint = iconTintColor
+                )
 
                 if (batteryItems.size > 1) {
                     // Multi-item layout
@@ -138,8 +163,6 @@ class BatteriesWidget : GlanceAppWidget() {
                             .padding(16.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        // Use a larger size for single item if needed, but the drawer handles scaling logic internally usually 
-                        // or we pass size. The previous code passed 512x512 for single.
                         BatteryItemBox(context, item, colors, size = 512, modifier = GlanceModifier.fillMaxSize())
                     }
                 }
@@ -154,28 +177,10 @@ class BatteriesWidget : GlanceAppWidget() {
         val error: Int,
         val warning: Int,
         val track: Int,
-        val surface: Int
+        val surface: Int,
+        val iconTint: Int
     )
 
-    private fun resolveThemeColors(context: Context): ThemeColors {
-        val themedContext = android.view.ContextThemeWrapper(context, R.style.Theme_Essentials)
-        val primary = resolveColor(themedContext, android.R.attr.colorActivatedHighlight)
-        val error = resolveColor(themedContext, android.R.attr.colorError)
-        val surfaceVariant = resolveColor(themedContext, android.R.attr.colorPressedHighlight)
-        val surface = resolveColor(themedContext, android.R.attr.colorForeground)
-        val warning = android.graphics.Color.parseColor("#FFC107")
-        val track = ColorUtils.setAlphaComponent(surfaceVariant, 76)
-        
-        return ThemeColors(primary, error, warning, track, surface)
-    }
-
-    private fun resolveColor(context: Context, @androidx.annotation.AttrRes attr: Int): Int {
-        val typedValue = android.util.TypedValue()
-        val theme = context.theme
-        theme.resolveAttribute(attr, typedValue, true)
-        return typedValue.data
-    }
-    
     @androidx.compose.runtime.Composable
     private fun BatteryItemBox(
         context: Context, 
@@ -192,7 +197,7 @@ class BatteriesWidget : GlanceAppWidget() {
         
         val icon = ContextCompat.getDrawable(context, item.iconRes)
         val bitmap = com.sameerasw.essentials.utils.BatteryRingDrawer.drawBatteryWidget(
-            context, item.level, ringColor, colors.track, colors.primary, colors.surface, icon, size, size
+            context, item.level, ringColor, colors.track, colors.iconTint, colors.surface, icon, size, size
         )
         
         Box(modifier = modifier, contentAlignment = Alignment.Center) {
