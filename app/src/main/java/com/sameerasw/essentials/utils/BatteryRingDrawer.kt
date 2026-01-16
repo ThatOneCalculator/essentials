@@ -22,6 +22,7 @@ object BatteryRingDrawer {
         @ColorInt iconTint: Int,
         @ColorInt backgroundColor: Int,
         deviceIcon: Drawable?,
+        statusIcon: Drawable?,  // New parameter for charging/warning icon
         width: Int,
         height: Int
     ): Bitmap {
@@ -29,7 +30,7 @@ object BatteryRingDrawer {
         val canvas = Canvas(bitmap)
 
         // Config
-        val strokeWidth = width * 0.11f // Slightly thicker than before?
+        val strokeWidth = width * 0.11f
         val trackStrokeWidth = strokeWidth * 0.5f 
         
         val padding = strokeWidth + (width * 0.05f)
@@ -46,7 +47,8 @@ object BatteryRingDrawer {
             strokeCap = Paint.Cap.ROUND
         }
 
-        val topGapDegrees = 40f
+        // Dynamic Gap: 60 degrees if status icon present, otherwise 0 (full circle)
+        val topGapDegrees = if (statusIcon != null) 60f else 10f
         
         val capAngleDegrees = ((strokeWidth / 2f) / radius) * (180f / PI.toFloat())
         val trackCapAngleDegrees = ((trackStrokeWidth / 2f) / radius) * (180f / PI.toFloat())
@@ -111,27 +113,25 @@ object BatteryRingDrawer {
              }
         }
 
-        // --- Draw Small Battery Icon (Top) ---
-        val smallIconRadius = strokeWidth * 1.3f
-        val centerX = width / 2f
-        val topY = padding
-        val iconCenterY = rect.top
-
-        val smallIconPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            style = Paint.Style.FILL
-            color = ringColor
-        }
-        // Bubble Background
-        canvas.drawCircle(centerX, iconCenterY, smallIconRadius, smallIconPaint)
-
-        val smallIconDrawable = ContextCompat.getDrawable(context, R.drawable.rounded_battery_android_frame_3_24)
-        smallIconDrawable?.let {
+        // --- Draw Status Icon (Top) if present ---
+        if (statusIcon != null) {
+            val smallIconRadius = strokeWidth * 1.3f
+            val centerX = width / 2f
+            val iconCenterY = rect.top
+    
+            val smallIconPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                style = Paint.Style.FILL
+                color = ringColor
+            }
+            // Bubble Background
+            canvas.drawCircle(centerX, iconCenterY, smallIconRadius, smallIconPaint)
+    
             val iconSize = (smallIconRadius * 1.5f).toInt()
             val iconLeft = (centerX - iconSize / 2).toInt()
             val iconTop = (iconCenterY - iconSize / 2).toInt()
-            it.setBounds(iconLeft, iconTop, iconLeft + iconSize, iconTop + iconSize)
-            it.setTint(backgroundColor) 
-            it.draw(canvas)
+            statusIcon.setBounds(iconLeft, iconTop, iconLeft + iconSize, iconTop + iconSize)
+            statusIcon.setTint(backgroundColor) 
+            statusIcon.draw(canvas)
         }
         
         // --- Draw Center Device Icon ---

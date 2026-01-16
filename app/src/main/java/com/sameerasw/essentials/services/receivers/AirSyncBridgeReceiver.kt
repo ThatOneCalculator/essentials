@@ -43,6 +43,9 @@ class AirSyncBridgeReceiver : BroadcastReceiver() {
                                 prefs[KEY_AIRSYNC_ENABLED] = true
                                 prefs[KEY_MAC_LEVEL] = level
                                 prefs[KEY_MAC_CONNECTED] = isConnected
+                                // Add charging state
+                                val KEY_MAC_IS_CHARGING = androidx.datastore.preferences.core.booleanPreferencesKey(com.sameerasw.essentials.data.repository.SettingsRepository.KEY_MAC_BATTERY_IS_CHARGING)
+                                prefs[KEY_MAC_IS_CHARGING] = isCharging
                             }
                             
                             android.util.Log.d("AirSyncBridge", "Triggering update for glanceId: $glanceId")

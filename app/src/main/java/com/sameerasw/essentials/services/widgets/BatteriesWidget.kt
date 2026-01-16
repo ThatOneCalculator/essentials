@@ -50,6 +50,10 @@ class BatteriesWidget : GlanceAppWidget() {
                 val isMacConnected = prefs[KEY_MAC_CONNECTED] ?: false
                 val isShowBluetoothEnabled = prefs[KEY_SHOW_BLUETOOTH] ?: false
                 val bluetoothJson = prefs[KEY_BLUETOOTH_BATTERY]
+                
+                // Add key for Mac Charging
+                val KEY_MAC_IS_CHARGING = androidx.datastore.preferences.core.booleanPreferencesKey(com.sameerasw.essentials.data.repository.SettingsRepository.KEY_MAC_BATTERY_IS_CHARGING)
+                val macIsCharging = prefs[KEY_MAC_IS_CHARGING] ?: false
 
                 // Force recomposition when theme changes
                 val THEME_UPDATE_KEY = androidx.datastore.preferences.core.longPreferencesKey("theme_update_time")
@@ -62,21 +66,32 @@ class BatteriesWidget : GlanceAppWidget() {
                 val batteryItems = mutableListOf<BatteryItemData>()
 
                 // Android Item
+                val isAndroidCharging = (batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_STATUS) == BatteryManager.BATTERY_STATUS_CHARGING)
+
+                val androidFinalStatusIcon = if (isAndroidCharging) R.drawable.rounded_battery_android_frame_bolt_24
+                                             else if (androidLevel <= 15) R.drawable.rounded_battery_android_frame_alert_24 
+                                             else null
+
                 batteryItems.add(
                     BatteryItemData(
                         level = androidLevel,
                         iconRes = R.drawable.rounded_mobile_24,
-                        name = "Android"
+                        name = "Android",
+                        statusIconRes = androidFinalStatusIcon
                     )
                 )
 
                 // Mac Item
                 if (showMac) {
+                    val macStatusIcon = if (macIsCharging) R.drawable.rounded_battery_android_frame_bolt_24
+                                        else if (macLevel <= 15) R.drawable.rounded_battery_android_frame_alert_24 
+                                        else null
                     batteryItems.add(
                         BatteryItemData(
                             level = macLevel,
                             iconRes = R.drawable.rounded_laptop_mac_24,
-                            name = "Mac"
+                            name = "Mac",
+                            statusIconRes = macStatusIcon
                         )
                     )
                 }
@@ -95,11 +110,16 @@ class BatteriesWidget : GlanceAppWidget() {
                                 device.name.contains("head", true) -> R.drawable.rounded_headphones_24
                                 else -> R.drawable.rounded_bluetooth_24
                             }
+                            
+                            // Bluetooth doesn't report charging usually, so just Low Battery check
+                            val statusIcon = if (device.level <= 15) R.drawable.rounded_battery_android_frame_alert_24 else null
+                            
                             batteryItems.add(
                                 BatteryItemData(
                                     level = device.level,
                                     iconRes = iconRes,
-                                    name = device.name
+                                    name = device.name,
+                                    statusIconRes = statusIcon
                                 )
                             )
                         }
@@ -172,7 +192,7 @@ class BatteriesWidget : GlanceAppWidget() {
         }
     }
 
-    data class BatteryItemData(val level: Int, val iconRes: Int, val name: String)
+    data class BatteryItemData(val level: Int, val iconRes: Int, val name: String, val statusIconRes: Int? = null)
 
     data class ThemeColors(
         val primary: Int,
@@ -198,8 +218,10 @@ class BatteriesWidget : GlanceAppWidget() {
         }
 
         val icon = ContextCompat.getDrawable(context, item.iconRes)
+        val statusIcon = item.statusIconRes?.let { ContextCompat.getDrawable(context, it) }
+        
         val bitmap = com.sameerasw.essentials.utils.BatteryRingDrawer.drawBatteryWidget(
-            context, item.level, ringColor, colors.track, colors.iconTint, colors.surface, icon, size, size
+            context, item.level, ringColor, colors.track, colors.iconTint, colors.surface, icon, statusIcon, size, size
         )
 
         Box(modifier = modifier, contentAlignment = Alignment.Center) {
