@@ -154,6 +154,7 @@ class MainViewModel : ViewModel() {
     val macBatteryLastUpdated = mutableStateOf(0L)
     val isMacConnected = mutableStateOf(false)
     val batteryWidgetMaxDevices = mutableIntStateOf(8)
+    val isBatteryWidgetBackgroundEnabled = mutableStateOf(true)
 
     private var lastUpdateCheckTime: Long = 0
     private lateinit var settingsRepository: SettingsRepository
@@ -330,7 +331,9 @@ class MainViewModel : ViewModel() {
         isMacConnected.value = settingsRepository.getBoolean(SettingsRepository.KEY_AIRSYNC_MAC_CONNECTED, false)
 
         isBluetoothDevicesEnabled.value = settingsRepository.getBoolean(SettingsRepository.KEY_SHOW_BLUETOOTH_DEVICES, false)
+        isBluetoothDevicesEnabled.value = settingsRepository.getBoolean(SettingsRepository.KEY_SHOW_BLUETOOTH_DEVICES, false)
         batteryWidgetMaxDevices.intValue = settingsRepository.getBatteryWidgetMaxDevices()
+        isBatteryWidgetBackgroundEnabled.value = settingsRepository.isBatteryWidgetBackgroundEnabled()
 
         isScreenLockedSecurityEnabled.value = settingsRepository.getBoolean(SettingsRepository.KEY_SCREEN_LOCKED_SECURITY_ENABLED)
         isDeviceAdminEnabled.value = isDeviceAdminActive(context)
@@ -792,6 +795,17 @@ class MainViewModel : ViewModel() {
     fun setBatteryWidgetMaxDevices(count: Int, context: Context) {
         batteryWidgetMaxDevices.intValue = count
         settingsRepository.setBatteryWidgetMaxDevices(count)
+        
+        // Trigger widget update
+        val intent = Intent(context, com.sameerasw.essentials.services.widgets.BatteriesWidgetReceiver::class.java).apply {
+            action = android.appwidget.AppWidgetManager.ACTION_APPWIDGET_UPDATE
+        }
+        context.sendBroadcast(intent)
+    }
+
+    fun setBatteryWidgetBackgroundEnabled(enabled: Boolean, context: Context) {
+        isBatteryWidgetBackgroundEnabled.value = enabled
+        settingsRepository.setBatteryWidgetBackgroundEnabled(enabled)
         
         // Trigger widget update
         val intent = Intent(context, com.sameerasw.essentials.services.widgets.BatteriesWidgetReceiver::class.java).apply {

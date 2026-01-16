@@ -63,6 +63,9 @@ class BatteriesWidget : GlanceAppWidget() {
 
                 val KEY_MAX_DEVICES = androidx.datastore.preferences.core.intPreferencesKey(com.sameerasw.essentials.data.repository.SettingsRepository.KEY_BATTERY_WIDGET_MAX_DEVICES)
                 val maxDevices = prefs[KEY_MAX_DEVICES] ?: 8
+                
+                val KEY_BACKGROUND_ENABLED = androidx.datastore.preferences.core.booleanPreferencesKey(com.sameerasw.essentials.data.repository.SettingsRepository.KEY_BATTERY_WIDGET_BACKGROUND_ENABLED)
+                val isBackgroundEnabled = prefs[KEY_BACKGROUND_ENABLED] ?: true
 
                 // Force recomposition when theme changes
                 val THEME_UPDATE_KEY = androidx.datastore.preferences.core.longPreferencesKey("theme_update_time")
@@ -167,6 +170,13 @@ class BatteriesWidget : GlanceAppWidget() {
                     iconTint = onSurface
                 )
 
+                
+                val backgroundModifier = if (isBackgroundEnabled) {
+                    GlanceModifier.background(GlanceTheme.colors.surface)
+                } else {
+                    GlanceModifier.background(android.graphics.Color.TRANSPARENT)
+                }
+
                 if (displayedItems.size > 1) {
                     val isGridCapable = width >= 200.dp && height >= 140.dp
                     
@@ -179,7 +189,7 @@ class BatteriesWidget : GlanceAppWidget() {
                         Column(
                             modifier = GlanceModifier
                                 .fillMaxSize()
-                                .background(GlanceTheme.colors.surface)
+                                .then(backgroundModifier)
                                 .padding(8.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalAlignment = Alignment.CenterVertically
@@ -213,7 +223,7 @@ class BatteriesWidget : GlanceAppWidget() {
                         Row(
                             modifier = GlanceModifier
                                 .fillMaxSize()
-                                .background(GlanceTheme.colors.surface)
+                                .then(backgroundModifier)
                                 .padding(8.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalAlignment = Alignment.CenterVertically
@@ -234,7 +244,7 @@ class BatteriesWidget : GlanceAppWidget() {
                     Box(
                         modifier = GlanceModifier
                             .fillMaxSize()
-                            .background(GlanceTheme.colors.surface)
+                            .then(backgroundModifier)
                             .padding(16.dp),
                         contentAlignment = Alignment.Center
                     ) {

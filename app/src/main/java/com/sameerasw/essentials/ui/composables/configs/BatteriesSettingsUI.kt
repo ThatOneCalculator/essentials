@@ -169,6 +169,24 @@ fun BatteriesSettingsUI(
                     )
                 }
             )
+
+            // Widget Background Toggle
+            ListItem(
+                leadingContent = {
+                    androidx.compose.material3.Icon(
+                        painter = androidx.compose.ui.res.painterResource(R.drawable.rounded_circles_24),
+                        contentDescription = null
+                    )
+                },
+                headlineContent = { Text(stringResource(R.string.widget_background_title)) },
+                supportingContent = { Text(stringResource(R.string.widget_background_summary)) },
+                trailingContent = {
+                    androidx.compose.material3.Switch(
+                        checked = viewModel.isBatteryWidgetBackgroundEnabled.value,
+                        onCheckedChange = { viewModel.setBatteryWidgetBackgroundEnabled(it, context) }
+                    )
+                }
+            )
         }
     }
 }

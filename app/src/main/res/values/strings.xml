@@ -290,6 +290,8 @@
     <string name="show_bluetooth_devices_summary">Display battery level of connected Bluetooth devices</string>
     <string name="limit_max_devices">Limit max devices</string>
     <string name="limit_max_devices_summary">Adjust max devices visible in widget</string>
+    <string name="widget_background_title">Widget background</string>
+    <string name="widget_background_summary">Show widget background</string>
 
     <!-- DIY Automation -->
     <string name="diy_create_trigger_title">Trigger Automation</string>

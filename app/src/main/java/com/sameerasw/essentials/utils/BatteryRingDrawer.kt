@@ -29,10 +29,14 @@ object BatteryRingDrawer {
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
 
-        // Config
-        val strokeWidth = width * 0.11f
-        val trackStrokeWidth = strokeWidth * 0.5f 
+        val bgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            style = Paint.Style.FILL
+            color = backgroundColor
+        }
+        val centerX = width / 2f
+        val centerY = height / 2f
         
+        val strokeWidth = width * 0.11f
         val padding = strokeWidth + (width * 0.05f)
         val rect = RectF(
             padding,
@@ -41,6 +45,13 @@ object BatteryRingDrawer {
             height - padding
         )
         val radius = rect.width() / 2f
+       
+        val bubbleRadius = radius + (strokeWidth / 2f)
+        
+        canvas.drawCircle(centerX, centerY, bubbleRadius, bgPaint)
+
+        // Config
+        val trackStrokeWidth = strokeWidth * 0.5f
 
         val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             style = Paint.Style.STROKE

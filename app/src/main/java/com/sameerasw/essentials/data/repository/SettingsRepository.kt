@@ -117,6 +117,7 @@ class SettingsRepository(private val context: Context) {
         const val KEY_BLUETOOTH_DEVICES_BATTERY = "bluetooth_devices_battery"
         const val KEY_SHOW_BLUETOOTH_DEVICES = "show_bluetooth_devices"
         const val KEY_BATTERY_WIDGET_MAX_DEVICES = "battery_widget_max_devices"
+        const val KEY_BATTERY_WIDGET_BACKGROUND_ENABLED = "battery_widget_background_enabled"
     }
 
     // Observe changes
@@ -411,4 +412,7 @@ class SettingsRepository(private val context: Context) {
 
     fun getBatteryWidgetMaxDevices(): Int = getInt(KEY_BATTERY_WIDGET_MAX_DEVICES, 8)
     fun setBatteryWidgetMaxDevices(count: Int) = putInt(KEY_BATTERY_WIDGET_MAX_DEVICES, count)
+
+    fun isBatteryWidgetBackgroundEnabled(): Boolean = getBoolean(KEY_BATTERY_WIDGET_BACKGROUND_ENABLED, true)
+    fun setBatteryWidgetBackgroundEnabled(enabled: Boolean) = putBoolean(KEY_BATTERY_WIDGET_BACKGROUND_ENABLED, enabled)
 }
