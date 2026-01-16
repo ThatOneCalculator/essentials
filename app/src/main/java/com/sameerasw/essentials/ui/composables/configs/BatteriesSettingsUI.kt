@@ -85,9 +85,6 @@ fun BatteriesSettingsUI(
                 )
             }
 
-            // Divider? Maybe not needed inside RoundedCardContainer if items are distinct, but useful for visual separation
-            // But usually ListItem handles it or specific design. Assuming standard list items stack fine.
-
             // Bluetooth Devices
             val isBluetoothEnabled = viewModel.isBluetoothDevicesEnabled.value
             val isPermissionGranted = viewModel.isBluetoothPermissionGranted.value
@@ -152,7 +149,6 @@ fun BatteriesSettingsUI(
                 supportingContent = {
                     Column {
                         Text(stringResource(R.string.limit_max_devices_summary))
-                        // val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current (Moved to top)
                         androidx.compose.material3.Slider(
                             value = viewModel.batteryWidgetMaxDevices.intValue.toFloat(),
                             onValueChange = { 
