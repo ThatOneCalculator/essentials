@@ -18,6 +18,7 @@ import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.padding
 import androidx.glance.layout.width
 import androidx.glance.layout.height
+import androidx.glance.layout.fillMaxWidth
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -27,10 +28,15 @@ import androidx.glance.ImageProvider
 import com.sameerasw.essentials.R
 
 class BatteriesWidget : GlanceAppWidget() {
+    override val sizeMode = androidx.glance.appwidget.SizeMode.Exact
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         provideContent {
             GlanceTheme {
+                val size = androidx.glance.LocalSize.current
+                val width = size.width
+                val height = size.height
+
                 // 1. Fetch Data
                 val batteryManager = context.getSystemService(Context.BATTERY_SERVICE) as BatteryManager
                 val androidLevel = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
@@ -162,20 +168,62 @@ class BatteriesWidget : GlanceAppWidget() {
                 )
 
                 if (displayedItems.size > 1) {
-                    // Multi-item layout
-                    Row(
-                        modifier = GlanceModifier
-                            .fillMaxSize()
-                            .background(GlanceTheme.colors.surface)
-                            .padding(8.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        displayedItems.forEachIndexed { index, item ->
-                            BatteryItemBox(configContext, item, colors, modifier = GlanceModifier.defaultWeight().fillMaxHeight())
+                    val isGridCapable = width >= 200.dp && height >= 140.dp
+                    
+                    if (isGridCapable) {
+                         // GRID / WRAPPING LAYOUT
+                        val itemWidth = 72.dp
+                        val columns = (width / itemWidth).toInt().coerceAtLeast(1)
+                        val rows = displayedItems.chunked(columns)
 
-                            if (index < displayedItems.size - 1) {
-                                Spacer(modifier = GlanceModifier.width(8.dp))
+                        Column(
+                            modifier = GlanceModifier
+                                .fillMaxSize()
+                                .background(GlanceTheme.colors.surface)
+                                .padding(8.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            rows.forEachIndexed { rowIndex, rowItems ->
+                                Row(
+                                     modifier = GlanceModifier.fillMaxWidth().defaultWeight(),
+                                     horizontalAlignment = Alignment.CenterHorizontally,
+                                     verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    rowItems.forEachIndexed { colIndex, item ->
+                                        BatteryItemBox(configContext, item, colors, modifier = GlanceModifier.defaultWeight().fillMaxHeight())
+                                        if (colIndex < rowItems.size - 1) {
+                                             Spacer(modifier = GlanceModifier.width(8.dp))
+                                        }
+                                    }
+                                    if (rowItems.size < columns) {
+                                         repeat(columns - rowItems.size) {
+                                              Spacer(modifier = GlanceModifier.defaultWeight().fillMaxHeight())
+                                              if (it < (columns - rowItems.size - 1)) Spacer(modifier = GlanceModifier.width(8.dp))
+                                         }
+                                    }
+                                }
+                                if (rowIndex < rows.size - 1) {
+                                    Spacer(modifier = GlanceModifier.height(8.dp))
+                                }
+                            }
+                        }
+                    } else {
+                        // STANDARD SINGLE ROW LAYOUT
+                        Row(
+                            modifier = GlanceModifier
+                                .fillMaxSize()
+                                .background(GlanceTheme.colors.surface)
+                                .padding(8.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            displayedItems.forEachIndexed { index, item ->
+                                BatteryItemBox(configContext, item, colors, modifier = GlanceModifier.defaultWeight().fillMaxHeight())
+
+                                if (index < displayedItems.size - 1) {
+                                    Spacer(modifier = GlanceModifier.width(8.dp))
+                                }
                             }
                         }
                     }

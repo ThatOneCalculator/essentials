@@ -48,7 +48,7 @@ object BatteryRingDrawer {
         }
 
         // Dynamic Gap: 60 degrees if status icon present, otherwise 0 (full circle)
-        val topGapDegrees = if (statusIcon != null) 60f else 10f
+        val topGapDegrees = if (statusIcon != null) 60f else 0f
         
         val capAngleDegrees = ((strokeWidth / 2f) / radius) * (180f / PI.toFloat())
         val trackCapAngleDegrees = ((trackStrokeWidth / 2f) / radius) * (180f / PI.toFloat())
