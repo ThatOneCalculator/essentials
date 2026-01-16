@@ -27,6 +27,7 @@ fun BatteriesSettingsUI(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
     Column(
         modifier = modifier.padding(16.dp),
         horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
@@ -53,7 +54,10 @@ fun BatteriesSettingsUI(
                     trailingContent = {
                         androidx.compose.material3.Switch(
                             checked = viewModel.isAirSyncConnectionEnabled.value,
-                            onCheckedChange = { viewModel.setAirSyncConnectionEnabled(it, context) }
+                            onCheckedChange = { 
+                                haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove)
+                                viewModel.setAirSyncConnectionEnabled(it, context) 
+                            }
                         )
                     }
                 )
@@ -111,6 +115,7 @@ fun BatteriesSettingsUI(
                     androidx.compose.material3.Switch(
                         checked = isBluetoothEnabled,
                         onCheckedChange = { enabled ->
+                            haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove)
                             if (enabled) {
                                 if (isPermissionGranted) {
                                     viewModel.setBluetoothDevicesEnabled(true, context)
@@ -147,7 +152,7 @@ fun BatteriesSettingsUI(
                 supportingContent = {
                     Column {
                         Text(stringResource(R.string.limit_max_devices_summary))
-                        val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
+                        // val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current (Moved to top)
                         androidx.compose.material3.Slider(
                             value = viewModel.batteryWidgetMaxDevices.intValue.toFloat(),
                             onValueChange = { 
@@ -183,7 +188,10 @@ fun BatteriesSettingsUI(
                 trailingContent = {
                     androidx.compose.material3.Switch(
                         checked = viewModel.isBatteryWidgetBackgroundEnabled.value,
-                        onCheckedChange = { viewModel.setBatteryWidgetBackgroundEnabled(it, context) }
+                        onCheckedChange = {  
+                            haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove)
+                            viewModel.setBatteryWidgetBackgroundEnabled(it, context) 
+                        }
                     )
                 }
             )
