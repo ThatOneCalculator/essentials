@@ -51,6 +51,10 @@ class BatteriesWidget : GlanceAppWidget() {
                 val isShowBluetoothEnabled = prefs[KEY_SHOW_BLUETOOTH] ?: false
                 val bluetoothJson = prefs[KEY_BLUETOOTH_BATTERY]
 
+                // Force recomposition when theme changes
+                val THEME_UPDATE_KEY = androidx.datastore.preferences.core.longPreferencesKey("theme_update_time")
+                val themeLastUpdated = prefs[THEME_UPDATE_KEY]
+
                 val showMac = isAirSyncEnabled && macLevel != -1 && isMacConnected
                 val hasBluetooth = isShowBluetoothEnabled && !bluetoothJson.isNullOrEmpty() && bluetoothJson != "[]"
 
@@ -105,14 +109,32 @@ class BatteriesWidget : GlanceAppWidget() {
                 }
 
                 // 3. Render
-                // Get dynamic theme colors from GlanceTheme
-                val basePrimary = GlanceTheme.colors.primary.getColor(context).toArgb()
-                val baseError = GlanceTheme.colors.error.getColor(context).toArgb()
-                val onSurface = GlanceTheme.colors.onSurface.getColor(context).toArgb()
-                val surfaceColor = GlanceTheme.colors.surface.getColor(context).toArgb()
+                val context = androidx.glance.LocalContext.current
+                val systemConfig = android.content.res.Resources.getSystem().configuration
+                
+                val forcedConfig = android.content.res.Configuration(context.resources.configuration)
+                forcedConfig.uiMode = systemConfig.uiMode
+                
+                val configContext = context.createConfigurationContext(forcedConfig)
+                
+                val basePrimary = GlanceTheme.colors.primary.getColor(configContext).toArgb()
+                val baseError = GlanceTheme.colors.error.getColor(configContext).toArgb()
+                val onSurface = GlanceTheme.colors.onSurface.getColor(configContext).toArgb()
+                val surfaceColor = GlanceTheme.colors.surface.getColor(configContext).toArgb()
+
+                val isNightMode = (systemConfig.uiMode and 
+                        android.content.res.Configuration.UI_MODE_NIGHT_MASK) == 
+                        android.content.res.Configuration.UI_MODE_NIGHT_YES
+
+                // Calculate primary color based on theme
+                val primaryCalculated = if (isNightMode) {
+                    basePrimary
+                } else {
+                    androidx.core.graphics.ColorUtils.blendARGB(basePrimary, android.graphics.Color.BLACK, 0.4f)
+                }
 
                 val colors = ThemeColors(
-                    primary = basePrimary,
+                    primary = primaryCalculated,
                     error = baseError,
                     warning = android.graphics.Color.parseColor("#FFC107"),
                     track = ColorUtils.setAlphaComponent(onSurface, 30),
@@ -131,7 +153,7 @@ class BatteriesWidget : GlanceAppWidget() {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         batteryItems.forEachIndexed { index, item ->
-                            BatteryItemBox(context, item, colors, modifier = GlanceModifier.defaultWeight().fillMaxHeight())
+                            BatteryItemBox(configContext, item, colors, modifier = GlanceModifier.defaultWeight().fillMaxHeight())
 
                             if (index < batteryItems.size - 1) {
                                 Spacer(modifier = GlanceModifier.width(8.dp))
@@ -149,7 +171,7 @@ class BatteriesWidget : GlanceAppWidget() {
                             .padding(16.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        BatteryItemBox(context, item, colors, size = 512, modifier = GlanceModifier.fillMaxSize())
+                        BatteryItemBox(configContext, item, colors, size = 512, modifier = GlanceModifier.fillMaxSize())
                     }
                 }
             }
