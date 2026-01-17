@@ -26,6 +26,7 @@ import androidx.core.graphics.ColorUtils
 import androidx.glance.Image
 import androidx.glance.ImageProvider
 import com.sameerasw.essentials.R
+import androidx.core.graphics.toColorInt
 
 class BatteriesWidget : GlanceAppWidget() {
     override val sizeMode = androidx.glance.appwidget.SizeMode.Exact
@@ -164,7 +165,7 @@ class BatteriesWidget : GlanceAppWidget() {
                 val colors = ThemeColors(
                     primary = basePrimary,
                     error = baseError,
-                    warning = android.graphics.Color.parseColor("#FFC107"),
+                    warning = "#FFC107".toColorInt(),
                     track = ColorUtils.setAlphaComponent(onSurface, 30),
                     surface = surfaceColor,
                     iconTint = onSurface
