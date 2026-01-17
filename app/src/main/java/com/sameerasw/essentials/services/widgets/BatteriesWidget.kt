@@ -172,7 +172,7 @@ class BatteriesWidget : GlanceAppWidget() {
 
                 
                 val backgroundModifier = if (isBackgroundEnabled) {
-                    GlanceModifier.background(GlanceTheme.colors.surface)
+                    GlanceModifier.background(GlanceTheme.colors.widgetBackground)
                 } else {
                     GlanceModifier.background(android.graphics.Color.TRANSPARENT)
                 }
